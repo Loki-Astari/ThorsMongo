@@ -5,11 +5,12 @@
 #include "AuthInfo.h"
 #include "AuthClient.h"
 #include "ConnectionMongo.h"
-#include "MessageHandler.h"
+#include "ThorsMongoCommon.h"
 
 #include "ThorSerialize/MongoUtility.h"
 
 #include <bit>
+#include <optional>
 
 static_assert(
     std::endian::little == std::endian::native,
@@ -33,16 +34,26 @@ class MongoMessageHandler: public MessageHandler
 
 class DB;
 class Collection;
+
+using OptReadConcern    = std::optional<ReadConcern>;
+using OptWriteConcern   = std::optional<WriteConcern>;
+
 class ThorsMongo
 {
     struct DBInfo
     {
+        OptReadConcern                      readConcern;
+        OptWriteConcern                     writeConcern;
     };
     struct CollectionInfo
     {
+        OptReadConcern                      readConcern;
+        OptWriteConcern                     writeConcern;
     };
-    ConnectionMongo     mongoStream;
-    MongoMessageHandler  messageHandler;
+    ConnectionMongo                         mongoStream;
+    MongoMessageHandler                     messageHandler;
+    OptReadConcern                          readConcern;
+    OptWriteConcern                         writeConcern;
 
     friend class DB;
     friend class Collection;
@@ -61,10 +72,19 @@ class ThorsMongo
                    Auth::Client const&              clientInfo = Auth::Client{"", {}}
         );
 
+        OptReadConcern const&   getReadConcern() const              {return readConcern;}
+        OptReadConcern          setReadConcern(ReadConcern val)     {return std::exchange(readConcern, std::move(val));}
+
+        OptWriteConcern const&  getWriteConcern() const             {return writeConcern;}
+        OptWriteConcern         setWriteConcern(WriteConcern val)   {return std::exchange(writeConcern, std::move(val));}
+
+        ReadPreference          getReadPreference() const;
+        ReadPreference          setReadPreference(ReadPreference);
+
         DB operator[](std::string&& dbName);
 
     private:
-        ConnectionMongo&      getStream() {return mongoStream;}
+        ConnectionMongo&        getStream() {return mongoStream;}
 };
 
 class DB
@@ -78,7 +98,16 @@ class DB
             , name(name)
         {}
 
-        std::string const&  getName() const;
+        std::string const&      getName() const;
+
+        OptReadConcern const&   getReadConcern() const              {return mongoServer.databases[name].readConcern;}
+        OptReadConcern          setReadConcern(ReadConcern val)     {return std::exchange(mongoServer.databases[name].readConcern, std::move(val));}
+
+        OptWriteConcern const&  getWriteConcern() const             {return mongoServer.databases[name].writeConcern;}
+        OptWriteConcern         setWriteConcern(WriteConcern val)   {return std::exchange(mongoServer.databases[name].writeConcern, std::move(val));}
+
+        ReadPreference          getReadPreference() const;
+        ReadPreference          setReadPreference(ReadPreference);
 
         Collection operator[](std::string&& collectionName);
 };
@@ -93,9 +122,18 @@ class Collection
             , name(db.name + "::" + name)
         {}
 
+        OptReadConcern const&   getReadConcern() const              {return mongoServer.collections[name].readConcern;}
+        OptReadConcern          setReadConcern(ReadConcern val)     {return std::exchange(mongoServer.collections[name].readConcern, std::move(val));}
+
+        OptWriteConcern const&  getWriteConcern() const             {return mongoServer.collections[name].writeConcern;}
+        OptWriteConcern         setWriteConcern(WriteConcern val)   {return std::exchange(mongoServer.collections[name].writeConcern, std::move(val));}
+
+        ReadPreference          getReadPreference() const;
+        ReadPreference          setReadPreference(ReadPreference);
+
     private:
-        std::string_view    dbName()    const {return {name.data(), name.find("::")};}
-        std::string_view    colName()   const {return {name.data() + name.find("::") + 2};}
+        std::string_view        dbName()    const {return {name.data(), name.find("::")};}
+        std::string_view        colName()   const {return {name.data() + name.find("::") + 2};}
 
 };
 
