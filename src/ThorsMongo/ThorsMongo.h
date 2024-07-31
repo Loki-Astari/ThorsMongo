@@ -4,9 +4,11 @@
 #include "ThorsMongoConfig.h"
 #include "AuthInfo.h"
 #include "AuthClient.h"
+#include "MongoQuery.h"
 #include "ConnectionMongo.h"
 #include "ThorsMongoCommon.h"
 #include "ThorsMongoInsert.h"
+#include "ThorsMongoRemove.h"
 
 #include "ThorSerialize/MongoUtility.h"
 
@@ -140,6 +142,10 @@ class Collection
         template<typename T>                InsertResult        insert(std::vector<T> const& data, InsertConfig const& config = InsertConfig{});
         template<typename... T>             InsertResult        insert(std::tuple<T...> const& data, InsertConfig const& config = InsertConfig{});
 
+        template<typename T>                RemoveResult        remove(std::vector<T> const& search, RemoveConfig const& config = RemoveConfig{});
+        template<typename... T>             RemoveResult        remove(std::tuple<T...> const& search, RemoveConfig const& config = RemoveConfig{});
+        template<typename T>                RemoveResult        remove(Query<T, std::string> const& search, RemoveConfig const& config = RemoveConfig{});
+
     private:
         std::string_view        dbName()    const {return {name.data(), name.find("::")};}
         std::string_view        colName()   const {return {name.data() + name.find("::") + 2};}
@@ -153,6 +159,7 @@ inline Collection  DB::operator[](std::string&& collectionName)     {return Coll
 
 #define THORSANVIL_DB_MONGO_THORSMONGO_H_TEMPLATE
 #include "ThorsMongoInsert.tpp"
+#include "ThorsMongoRemove.tpp"
 #undef THORSANVIL_DB_MONGO_THORSMONGO_H_TEMPLATE
 
 #endif
