@@ -14,6 +14,7 @@
 #include "ThorsMongoGetMore.h"
 #include "ThorsMongoKillCursor.h"
 #include "ThorsMongoFindAndModify.h"
+#include "ThorsMongoCount.h"
 
 #include "ThorSerialize/MongoUtility.h"
 
@@ -146,6 +147,9 @@ class Collection
          * F => Query (i.e. how to search)  See: MongoQuery.h
          * U => Update                      See: MongoUpdate.h
          */
+        template<typename F>                CountResult         countDocuments(F const& query, CountConfig const& config);
+                                            CountResult         countDocuments(CountConfig const& config);
+
         template<typename T>                InsertResult        insert(std::vector<T> const& data, InsertConfig const& config = InsertConfig{});
         template<typename... T>             InsertResult        insert(std::tuple<T...> const& data, InsertConfig const& config = InsertConfig{});
 
@@ -192,6 +196,7 @@ inline Collection  DB::operator[](std::string&& collectionName)     {return Coll
 #include "ThorsMongoGetMore.tpp"
 #include "ThorsMongoKillCursor.tpp"
 #include "ThorsMongoFindAndModify.tpp"
+#include "ThorsMongoCount.tpp"
 #undef THORSANVIL_DB_MONGO_THORSMONGO_H_TEMPLATE
 
 #endif
