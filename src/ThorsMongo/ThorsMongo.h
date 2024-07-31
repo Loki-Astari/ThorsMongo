@@ -6,6 +6,7 @@
 #include "AuthClient.h"
 #include "ConnectionMongo.h"
 #include "ThorsMongoCommon.h"
+#include "ThorsMongoInsert.h"
 
 #include "ThorSerialize/MongoUtility.h"
 
@@ -131,6 +132,14 @@ class Collection
         ReadPreference          getReadPreference() const;
         ReadPreference          setReadPreference(ReadPreference);
 
+        /*
+         * T => Ouptut Data Type.
+         * F => Query (i.e. how to search)  See: MongoQuery.h
+         * U => Update                      See: MongoUpdate.h
+         */
+        template<typename T>                InsertResult        insert(std::vector<T> const& data, InsertConfig const& config = InsertConfig{});
+        template<typename... T>             InsertResult        insert(std::tuple<T...> const& data, InsertConfig const& config = InsertConfig{});
+
     private:
         std::string_view        dbName()    const {return {name.data(), name.find("::")};}
         std::string_view        colName()   const {return {name.data() + name.find("::") + 2};}
@@ -141,5 +150,9 @@ inline DB          ThorsMongo::operator[](std::string&& dbName)     {return DB(*
 inline Collection  DB::operator[](std::string&& collectionName)     {return Collection(*this, std::move(collectionName));}
 
 }
+
+#define THORSANVIL_DB_MONGO_THORSMONGO_H_TEMPLATE
+#include "ThorsMongoInsert.tpp"
+#undef THORSANVIL_DB_MONGO_THORSMONGO_H_TEMPLATE
 
 #endif
