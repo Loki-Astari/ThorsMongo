@@ -19,12 +19,14 @@ using ThorsAnvil::DB::Mongo::ThorsMongo;
 using ThorsAnvil::DB::Mongo::InsertResult;
 using ThorsAnvil::DB::Mongo::RemoveResult;
 using ThorsAnvil::DB::Mongo::FindConfig;
+using ThorsAnvil::DB::Mongo::CountConfig;
 using ThorsAnvil::DB::Mongo::Query;
 using ThorsAnvil::DB::Mongo::Projection;
 using ThorsAnvil::DB::Mongo::SortOrder;
 using ThorsAnvil::DB::Mongo::FAModifyConfig;
 using ThorsAnvil::DB::Mongo::FARemoveConfig;
 using ThorsAnvil::DB::Mongo::FAModifyResult;
+using ThorsAnvil::DB::Mongo::CountResult;
 using ThorsAnvil::DB::Mongo::Range;
 
 using namespace ThorsAnvil::DB::Mongo::QueryOp;
@@ -2475,5 +2477,158 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMultipleExpressions)
 
     RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
     EXPECT_EQ(1, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, Count)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"John", 45, {"Jes terror",   "FW", 48}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}},
+                                {"Blow", 32, {"Court Port",   "PL", 31}}
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(9, iResult.n);
+    EXPECT_EQ(9, iResult.inserted.size());
+
+    CountResult         r1Result = mongo["test"]["People"].countDocuments(FindAgeEq{32}, CountConfig{});
+    EXPECT_EQ(1, r1Result.ok);
+    EXPECT_EQ(2, r1Result.n);
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(9, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, CountWithLimit)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"John", 45, {"Jes terror",   "FW", 48}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
+                                {"Blond",32, {"Glome Blob",   "FV", 26}},
+                                {"Litle",32, {"Time Bob",     "HB", 28}},
+                                {"Klin", 32, {"Court Film",   "PL", 52}},
+                                {"Blow", 32, {"Court Port",   "PL", 31}}
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(9, iResult.n);
+    EXPECT_EQ(9, iResult.inserted.size());
+
+    CountResult         r1Result = mongo["test"]["People"].countDocuments(FindAgeEq{32}, CountConfig{}.setLimit(3));
+    EXPECT_EQ(1, r1Result.ok);
+    EXPECT_EQ(3, r1Result.n);
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(9, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, CountWithSkip)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"John", 45, {"Jes terror",   "FW", 48}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                                {"Lam",  32, {"Limbo terror", "FG", 41}},
+                                {"Ted",  32, {"Line Flog",    "TW", 39}},
+                                {"Rose", 32, {"Twine Forge",  "GB", 25}},
+                                {"Blond",32, {"Glome Blob",   "FV", 26}},
+                                {"Litle",32, {"Time Bob",     "HB", 28}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}},
+                                {"Blow", 32, {"Court Port",   "PL", 31}}
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(9, iResult.n);
+    EXPECT_EQ(9, iResult.inserted.size());
+
+    CountResult         r1Result = mongo["test"]["People"].countDocuments(FindAgeEq{32}, CountConfig{}.setSkip(3));
+    EXPECT_EQ(1, r1Result.ok);
+    EXPECT_EQ(4, r1Result.n);
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(9, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, CountWithHint)
+{
+    GTEST_SKIP();
+}
+
+TEST(IntegrationConnectionMongoTest, CountWithReadConcern)
+{
+    GTEST_SKIP();
+}
+
+TEST(IntegrationConnectionMongoTest, CountWithMaxTimeMS)
+{
+    GTEST_SKIP();
+}
+
+TEST(IntegrationConnectionMongoTest, CountCollation)
+{
+    GTEST_SKIP();
+}
+
+TEST(IntegrationConnectionMongoTest, CountWithComment)
+{
+    GTEST_SKIP();
+}
+
+TEST(IntegrationConnectionMongoTest, CountAll)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"John", 45, {"Jes terror",   "FW", 48}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(9, iResult.n);
+    EXPECT_EQ(9, iResult.inserted.size());
+
+    CountResult         r1Result = mongo["test"]["People"].countDocuments(CountConfig{});
+    EXPECT_EQ(1, r1Result.ok);
+    EXPECT_EQ(9, r1Result.n);
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(9, r2Result.n);
 }
 
