@@ -10,6 +10,38 @@
 namespace ThorsAnvil::DB::Mongo
 {
 
+template<typename T>
+struct HasCType
+{
+    using One = char;
+    struct Two { char x[2]; };
+
+
+    template <typename C> static One testHasType(typename C::CType*);
+    template <typename C> static Two testHasType(...);
+
+    static constexpr bool val = sizeof(testHasType<T>(nullptr)) == sizeof(char);
+};
+
+template<typename T, bool = HasCType<T>::val>
+struct ConstructorType_T;
+
+
+template<typename T>
+struct ConstructorType_T<T, true>
+{
+    using CType = typename T::CType;
+};
+
+template<typename T>
+struct ConstructorType_T<T, false>
+{
+    using CType = T;
+};
+
+template<typename T>
+using ConstructorType = typename ConstructorType_T<T>::CType;
+
 // Standard utility class re-names.
 template<typename T>
 using Cref = std::reference_wrapper<T const>;
@@ -46,6 +78,21 @@ struct WriteConcernError
     ErrInfo                     errInfo;
 };
 
+// Maps name t expression.
+using Let = std::map<std::string, std::string>;
+
+struct Collation
+{
+    std::string                     locale;
+    std::optional<bool>             caseLevel;
+    std::optional<std::string>      caseFirst;
+    std::optional<std::uint32_t>    strength;
+    std::optional<bool>             numericOrdering;
+    std::optional<std::string>      alternate;
+    std::optional<std::string>      maxVariable;
+    std::optional<bool>             backwards;
+};
+
 // Configuration of actions.
 
 // So we don't over create Printer/Parser config object
@@ -56,6 +103,7 @@ class DefaultConfig
         static const PrinterConfig      defaultPrinterConfig;
         static const ParserConfig       defaultParserConfig;
 };
+
 // All Config inherit from this class.
 // This configuration has options that allow us to configure the message sending at the lowest level.
 template<typename T>
@@ -101,5 +149,6 @@ ThorsAnvil_MakeTrait(   ThorsAnvil::DB::Mongo::ErrInfo,                 writeCon
 ThorsAnvil_MakeTrait(   ThorsAnvil::DB::Mongo::WriteConcernError,       code, errmsg, errInfo);
 ThorsAnvil_ExpandTrait( ThorsAnvil::DB::Mongo::CmdReplyBase,
                         ThorsAnvil::DB::Mongo::ModifyResult,            n, writeErrors, writeConcernError);
+ThorsAnvil_MakeTrait(   ThorsAnvil::DB::Mongo::Collation,               locale, caseLevel, caseFirst, strength, numericOrdering, alternate, maxVariable, backwards);
 
 #endif
