@@ -163,6 +163,12 @@ struct Collation
     std::optional<bool>             backwards;
 };
 
+struct LastErrorObject
+{
+    bool            updatedExisting;
+    ObjectID        upserted;
+};
+
 class Cursor
 {
     friend class ThorsAnvil::Serialize::Traits<Cursor>;
@@ -359,6 +365,7 @@ ThorsAnvil_MakeTrait(   ThorsAnvil::DB::Mongo::ErrInfo,                 writeCon
 ThorsAnvil_MakeTrait(   ThorsAnvil::DB::Mongo::WriteConcernError,       code, errmsg, errInfo);
 ThorsAnvil_ExpandTrait( ThorsAnvil::DB::Mongo::CmdReplyBase,
                         ThorsAnvil::DB::Mongo::ModifyResult,            n, writeErrors, writeConcernError);
+ThorsAnvil_MakeTrait(   ThorsAnvil::DB::Mongo::LastErrorObject,         updatedExisting, upserted);
 ThorsAnvil_MakeTrait(   ThorsAnvil::DB::Mongo::Cursor,                  partialResultsReturned, id, ns);
 ThorsAnvil_Template_ExpandTrait(1,
                         ThorsAnvil::DB::Mongo::Cursor,

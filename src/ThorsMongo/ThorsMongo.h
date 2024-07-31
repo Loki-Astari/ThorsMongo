@@ -5,13 +5,15 @@
 #include "AuthInfo.h"
 #include "AuthClient.h"
 #include "MongoQuery.h"
+#include "MongoUpdate.h"
 #include "ConnectionMongo.h"
 #include "ThorsMongoCommon.h"
 #include "ThorsMongoInsert.h"
+#include "ThorsMongoRemove.h"
 #include "ThorsMongoFind.h"
 #include "ThorsMongoGetMore.h"
 #include "ThorsMongoKillCursor.h"
-#include "ThorsMongoRemove.h"
+#include "ThorsMongoFindAndModify.h"
 
 #include "ThorSerialize/MongoUtility.h"
 
@@ -147,6 +149,14 @@ class Collection
         template<typename T>                InsertResult        insert(std::vector<T> const& data, InsertConfig const& config = InsertConfig{});
         template<typename... T>             InsertResult        insert(std::tuple<T...> const& data, InsertConfig const& config = InsertConfig{});
 
+        template<typename T, typename F>    FAModifyResult<T>   findAndReplaceOne(F const& search, T const& replace, FAModifyConfig const& config = FAModifyConfig{});
+        template<typename T, typename F>    FAModifyResult<T>   findAndRemoveOne(F const& search, FARemoveConfig const& config = FARemoveConfig{});
+        template<typename T, typename F, typename U>
+                                            FAModifyResult<T>   findAndUpdateOne(F const& search, U const& update, FAModifyConfig const& config = FAModifyConfig{});
+        template<typename T, typename F, typename... U>
+                                            FAModifyResult<T>   findAndUpdateOne(F const& search, std::tuple<U const&...> update, FAModifyConfig const& config = FAModifyConfig{});
+
+
         template<typename T>                RemoveResult        remove(std::vector<T> const& search, RemoveConfig const& config = RemoveConfig{});
         template<typename... T>             RemoveResult        remove(std::tuple<T...> const& search, RemoveConfig const& config = RemoveConfig{});
         template<typename T>                RemoveResult        remove(Query<T, std::string> const& search, RemoveConfig const& config = RemoveConfig{});
@@ -181,6 +191,7 @@ inline Collection  DB::operator[](std::string&& collectionName)     {return Coll
 #include "ThorsMongoFind.tpp"
 #include "ThorsMongoGetMore.tpp"
 #include "ThorsMongoKillCursor.tpp"
+#include "ThorsMongoFindAndModify.tpp"
 #undef THORSANVIL_DB_MONGO_THORSMONGO_H_TEMPLATE
 
 #endif
