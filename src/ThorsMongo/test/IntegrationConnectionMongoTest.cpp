@@ -18,8 +18,31 @@ using ThorsAnvil::DB::Mongo::Auth::Client;
 using ThorsAnvil::DB::Mongo::ThorsMongo;
 using ThorsAnvil::DB::Mongo::InsertResult;
 using ThorsAnvil::DB::Mongo::RemoveResult;
+using ThorsAnvil::DB::Mongo::FindConfig;
 using ThorsAnvil::DB::Mongo::Query;
+using ThorsAnvil::DB::Mongo::Projection;
+using ThorsAnvil::DB::Mongo::SortOrder;
+using ThorsAnvil::DB::Mongo::Range;
+
 using namespace ThorsAnvil::DB::Mongo::QueryOp;
+
+namespace ThorsAnvil::DB::Mongo
+{
+template<typename T>
+struct TestFindResult
+{
+    ThorsAnvil::DB::Mongo::CursorFirst<T>&              cursor;
+    std::size_t&                                        index;
+    double&                                             ok;
+    TestFindResult(Range<T>& range)
+        : cursor(range.getResult().cursor)
+        , index(range.getResult().index)
+        , ok(range.getResult().ok)
+    {}
+};
+}
+using ThorsAnvil::DB::Mongo::TestFindResult;
+
 
 TEST(IntegrationConnectionMongoTest, connectToMongoWithAuthenticator)
 {
@@ -614,4 +637,421 @@ TEST(IntegrationConnectionMongoTest, removeQueryAnySet)
     EXPECT_EQ(1, r2Result.ok);
     EXPECT_EQ(3, r2Result.n);
 }
+
+TEST(IntegrationConnectionMongoTest, findQueryEq)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{{"Sam", 45, {"Cour terror",  "NY", 12}}, {"John", 45, {"Jes terror",   "FW", 23}}, {"John", 45, {"Limbo terror", "FG", 56}}};
+    using FindName      = NameField<Eq<std::string>>;
+    using FindAge       = AgeField<Eq<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    Range<People>       r1Result = mongo["test"]["People"].find<People>(FindName{"John"});
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAge>{45});
+
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(3, iResult.n);
+    EXPECT_EQ(3, iResult.inserted.size());
+
+    TestFindResult<People>  findResult(r1Result);
+    EXPECT_EQ(1, findResult.ok);
+    EXPECT_EQ(2, findResult.cursor.data().size());
+    EXPECT_EQ(1, r2Result.ok);
+    EXPECT_EQ(3, r2Result.n);
+    EXPECT_EQ(0, findResult.cursor.getId());
+}
+
+TEST(IntegrationConnectionMongoTest, SerializeFindAddSort)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}},{"Sam", 45, {"Cour terror",  "NY", 12}}, {"John", 38, {"Limbo terror", "FG", 56}}};
+    using FindAge       = AgeField<Gt<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    Range<People>       r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
+        .setSort({{"name", SortOrder::Descending}, {"age", SortOrder::Ascending}})
+    );
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAge>{0});
+
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(3, iResult.n);
+    EXPECT_EQ(3, iResult.inserted.size());
+
+    TestFindResult<People>  findResult(r1Result);
+    EXPECT_EQ(1, findResult.ok);
+    EXPECT_EQ(3, findResult.cursor.data().size());
+    EXPECT_EQ("Sam", findResult.cursor.data()[0].name);
+    EXPECT_EQ("John", findResult.cursor.data()[1].name);
+    EXPECT_EQ("John", findResult.cursor.data()[2].name);
+    EXPECT_EQ(38, findResult.cursor.data()[1].age);
+    EXPECT_EQ(45, findResult.cursor.data()[2].age);
+    EXPECT_EQ(1, r2Result.ok);
+    EXPECT_EQ(3, r2Result.n);
+    EXPECT_EQ(0, findResult.cursor.getId());
+}
+
+TEST(IntegrationConnectionMongoTest, SerializeFindAddProjection)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}},{"John", 45, {"Cour terror",  "NY", 12}}, {"John", 38, {"Limbo terror", "FG", 56}}};
+    using FindAge       = AgeField<Gt<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    Range<People>       r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
+        .setProjection(Projection::create<PeopleWithAddressCode>())
+    );
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAge>{0});
+
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(3, iResult.n);
+    EXPECT_EQ(3, iResult.inserted.size());
+
+    TestFindResult<People>  findResult(r1Result);
+    EXPECT_EQ(1, findResult.ok);
+    EXPECT_EQ(3, findResult.cursor.data().size());
+    EXPECT_EQ("John", findResult.cursor.data()[0].name);
+    EXPECT_EQ("John", findResult.cursor.data()[1].name);
+    EXPECT_EQ("John", findResult.cursor.data()[2].name);
+    std::vector<int>    codes = {findResult.cursor.data()[0].address.code, findResult.cursor.data()[1].address.code, findResult.cursor.data()[2].address.code};
+    std::sort(std::begin(codes), std::end(codes));
+    std::vector<int>    expectedCodes{12,23,56};
+    EXPECT_EQ(expectedCodes, codes);
+    EXPECT_EQ("John", findResult.cursor.data()[1].name);
+    EXPECT_EQ("John", findResult.cursor.data()[2].name);
+    EXPECT_EQ(0, findResult.cursor.data()[0].age);
+    EXPECT_EQ(0, findResult.cursor.data()[1].age);
+    EXPECT_EQ(0, findResult.cursor.data()[2].age);
+    EXPECT_EQ("", findResult.cursor.data()[0].address.street);
+    EXPECT_EQ("", findResult.cursor.data()[1].address.street);
+    EXPECT_EQ("", findResult.cursor.data()[2].address.street);
+    EXPECT_EQ("", findResult.cursor.data()[0].address.city);
+    EXPECT_EQ("", findResult.cursor.data()[1].address.city);
+    EXPECT_EQ("", findResult.cursor.data()[2].address.city);
+    EXPECT_EQ(1, r2Result.ok);
+    EXPECT_EQ(3, r2Result.n);
+    EXPECT_EQ(0, findResult.cursor.getId());
+}
+
+TEST(IntegrationConnectionMongoTest, SerializeFindSetSkip)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}},{"Sam", 45, {"Cour terror",  "NY", 12}}, {"John", 38, {"Limbo terror", "FG", 56}}};
+    using FindAge       = AgeField<Gt<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    Range<People>       r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
+        .setSort({{"name", SortOrder::Descending}, {"age", SortOrder::Ascending}})
+        .setSkip(2)
+    );
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAge>{0});
+
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(3, iResult.n);
+    EXPECT_EQ(3, iResult.inserted.size());
+
+    TestFindResult<People>  findResult(r1Result);
+    EXPECT_EQ(1, findResult.ok);
+    EXPECT_EQ(1, findResult.cursor.data().size());
+    EXPECT_EQ("John", findResult.cursor.data()[0].name);
+    EXPECT_EQ(45, findResult.cursor.data()[0].age);
+    EXPECT_EQ(23, findResult.cursor.data()[0].address.code);
+    EXPECT_EQ(1, r2Result.ok);
+    EXPECT_EQ(3, r2Result.n);
+    EXPECT_EQ(0, findResult.cursor.getId());
+}
+
+TEST(IntegrationConnectionMongoTest, SerializeFindSetLimit)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}},{"Sam", 45, {"Cour terror",  "NY", 12}}, {"John", 38, {"Limbo terror", "FG", 56}}};
+    using FindAge       = AgeField<Gt<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    Range<People>       r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
+        .setSort({{"name", SortOrder::Descending}, {"age", SortOrder::Ascending}})
+        .setSkip(1)
+        .setLimit(1)
+    );
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAge>{0});
+
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(3, iResult.n);
+    EXPECT_EQ(3, iResult.inserted.size());
+
+    TestFindResult<People>  findResult(r1Result);
+    EXPECT_EQ(1, findResult.ok);
+    EXPECT_EQ(1, findResult.cursor.data().size());
+    EXPECT_EQ("John", findResult.cursor.data()[0].name);
+    EXPECT_EQ(38, findResult.cursor.data()[0].age);
+    EXPECT_EQ(56, findResult.cursor.data()[0].address.code);
+    EXPECT_EQ(1, r2Result.ok);
+    EXPECT_EQ(3, r2Result.n);
+    EXPECT_EQ(0, findResult.cursor.getId());
+}
+
+TEST(IntegrationConnectionMongoTest, SerializeFindSetBatchSize)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}},{"Sam", 45, {"Cour terror",  "NY", 12}}, {"John", 38, {"Limbo terror", "FG", 56}}};
+    using FindAge       = AgeField<Gt<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    Range<People>       r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
+        .setBatchSize(1)
+    );
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAge>{0});
+
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(3, iResult.n);
+    EXPECT_EQ(3, iResult.inserted.size());
+
+    TestFindResult<People>  findResult(r1Result);
+    EXPECT_EQ(1, findResult.ok);
+    EXPECT_EQ(1, findResult.cursor.data().size());
+    EXPECT_EQ(3, r2Result.n);
+    EXPECT_NE(0, findResult.cursor.getId());
+}
+
+TEST(IntegrationConnectionMongoTest, SerializeFindSetSingleBatch)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}},{"Sam", 45, {"Cour terror",  "NY", 12}}, {"John", 38, {"Limbo terror", "FG", 56}}};
+    using FindAge       = AgeField<Gt<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    Range<People>       r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
+        .setBatchSize(1)
+        .setSingleBatch(true)
+    );
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAge>{0});
+
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(3, iResult.n);
+    EXPECT_EQ(3, iResult.inserted.size());
+
+    TestFindResult<People>  findResult(r1Result);
+    EXPECT_EQ(1, findResult.ok);
+    EXPECT_EQ(1, findResult.cursor.data().size());
+    EXPECT_EQ(3, r2Result.n);
+    EXPECT_EQ(0, findResult.cursor.getId());
+}
+
+TEST(IntegrationConnectionMongoTest, SerializeFindSetComment)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}},{"Sam", 45, {"Cour terror",  "NY", 12}}, {"John", 38, {"Limbo terror", "FG", 56}}};
+    using FindAge       = AgeField<Gt<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    Range<People>       r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
+        .setComment("Comment Time")
+    );
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAge>{0});
+
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(3, iResult.n);
+    EXPECT_EQ(3, iResult.inserted.size());
+
+    TestFindResult<People>  findResult(r1Result);
+    EXPECT_EQ(1, findResult.ok);
+    EXPECT_EQ(3, r2Result.n);
+    EXPECT_EQ(0, findResult.cursor.getId());
+}
+
+TEST(IntegrationConnectionMongoTest, SerializeFindSetMaxTimeMS)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}},{"Sam", 45, {"Cour terror",  "NY", 12}}, {"John", 38, {"Limbo terror", "FG", 56}}};
+    using FindAge       = AgeField<Gt<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    Range<People>       r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
+        .setMaxTimeMS(256)
+    );
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAge>{0});
+
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(3, iResult.n);
+    EXPECT_EQ(3, iResult.inserted.size());
+
+    TestFindResult<People>  findResult(r1Result);
+    EXPECT_EQ(1, findResult.ok);
+    EXPECT_EQ(3, r2Result.n);
+    EXPECT_EQ(0, findResult.cursor.getId());
+}
+
+TEST(IntegrationConnectionMongoTest, SerializeFindSetHint)
+{
+    // TODO
+    GTEST_SKIP();
+}
+
+TEST(IntegrationConnectionMongoTest, SerializeFindSetSetMax)
+{
+    // TODO
+    GTEST_SKIP();
+}
+
+TEST(IntegrationConnectionMongoTest, SerializeFindSetMin)
+{
+    // TODO
+    GTEST_SKIP();
+}
+
+TEST(IntegrationConnectionMongoTest, SerializeFindSetReturnKey)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}},{"Sam", 45, {"Cour terror",  "NY", 12}}, {"John", 38, {"Limbo terror", "FG", 56}}};
+    using FindAge       = AgeField<Gt<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    Range<People>       r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
+        .setReturnKey(true)
+    );
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAge>{0});
+
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(3, iResult.n);
+    EXPECT_EQ(3, iResult.inserted.size());
+
+    TestFindResult<People>  findResult(r1Result);
+    EXPECT_EQ(1, findResult.ok);
+    EXPECT_EQ(3, findResult.cursor.data().size());
+    EXPECT_EQ("", findResult.cursor.data()[0].name);
+    EXPECT_EQ("", findResult.cursor.data()[1].name);
+    EXPECT_EQ("", findResult.cursor.data()[2].name);
+    EXPECT_EQ(3, r2Result.n);
+    EXPECT_EQ(0, findResult.cursor.getId());
+}
+
+TEST(IntegrationConnectionMongoTest, SerializeFindSetShowRecordId)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}},{"Sam", 45, {"Cour terror",  "NY", 12}}, {"John", 38, {"Limbo terror", "FG", 56}}};
+    using FindAge       = AgeField<Gt<std::uint32_t>>;
+
+    InsertResult                iResult = mongo["test"]["People"].insert(people);
+    Range<PeopleWithRecordID>   r1Result = mongo["test"]["People"].find<PeopleWithRecordID>(FindAge{12}, FindConfig{}
+        .setShowRecordId(true)
+    );
+    RemoveResult                r2Result = mongo["test"]["People"].remove(Query<FindAge>{0});
+
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(3, iResult.n);
+    EXPECT_EQ(3, iResult.inserted.size());
+
+    TestFindResult<PeopleWithRecordID>  findResult(r1Result);
+    EXPECT_EQ(1, findResult.ok);
+    EXPECT_EQ(3, findResult.cursor.data().size());
+    EXPECT_NE(0, findResult.cursor.data()[0].$recordId);
+    EXPECT_NE(0, findResult.cursor.data()[1].$recordId);
+    EXPECT_NE(0, findResult.cursor.data()[2].$recordId);
+    EXPECT_EQ(3, r2Result.n);
+    EXPECT_EQ(0, findResult.cursor.getId());
+}
+
+TEST(IntegrationConnectionMongoTest, SerializeFindSetTailablPlusAwait)
+{
+    // TODO: This test requires a capped collection.
+    //       Need to work out how to do that.
+    //       Currently this generates an error from the server.
+    //       Use this test to test both Tailable and AwaitData.
+    GTEST_SKIP();
+}
+
+TEST(IntegrationConnectionMongoTest, SerializeFindSetNoCursorTimeout)
+{
+    // TODO: How do we test this without waiting for 30 minutes?
+    GTEST_SKIP();
+}
+
+TEST(IntegrationConnectionMongoTest, SerializeFindSetCollation)
+{
+    // TODO: Not sure how to test that this is working
+    GTEST_SKIP();
+}
+
+TEST(IntegrationConnectionMongoTest, SerializeFindSetAllowDiskUse)
+{
+    // TODO: How do we test this.
+    GTEST_SKIP();
+}
+
+TEST(IntegrationConnectionMongoTest, SerializeFindSetLet)
+{
+    // TODO: Testing this works depends on expressions.
+    //       Currently we don't support expressions.
+    //       So further work needs to be done to find a way to represent expressions.
+    //       Then update this integration test to make sure it works with variables.
+    GTEST_SKIP();
+}
+
+TEST(IntegrationConnectionMongoTest, SerializeFindAndIterate)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"John", 45, {"Jes terror",   "FW", 48}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                              };
+    using FindAge       = AgeField<Gt<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(9, iResult.n);
+    EXPECT_EQ(9, iResult.inserted.size());
+
+    Range<People>       r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
+        .setBatchSize(2)
+    );
+    std::vector<std::uint32_t>  age;
+    std::vector<std::uint32_t>  code;
+
+    for (auto const& v: r1Result)
+    {
+        age.emplace_back(v.age);
+        code.emplace_back(v.address.code);
+
+        EXPECT_EQ(v.age + 3, v.address.code);
+    }
+    EXPECT_EQ(9, age.size());
+    std::sort(std::begin(age), std::end(age));
+    std::vector<std::uint32_t>  expectedResult{22, 23, 25, 28, 32, 36, 38, 45, 49};
+    EXPECT_EQ(age, expectedResult);
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAge>{0});
+    EXPECT_EQ(9, r2Result.n);
+}
+
 
