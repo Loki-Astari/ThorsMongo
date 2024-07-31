@@ -3,12 +3,25 @@
 
 #include "ThorsMongoConfig.h"
 
+#include "ThorSerialize/Traits.h"
+#include "ThorSerialize/MongoUtility.h"
+
 #include <cstdint>
+#include <string>
 
 namespace ThorsAnvil::DB::Mongo
 {
 
 using MessageId     = std::uint32_t;
+using ObjectID      = ThorsAnvil::Serialize::MongoUtility::ObjectID;
+using UTCDateTime   = ThorsAnvil::Serialize::MongoUtility::UTCDateTime;
+
+namespace Internal
+{
+    MessageId& getMessageId();
+    MessageId getNextMessageId();
+}
+
 
 enum class OP_MsgFlag: std::uint32_t
 {
@@ -73,6 +86,7 @@ inline std::int8_t operator&=(Compression& lhs, Compression rhs)
     lhs = static_cast<Compression>(result);
     return result;
 }
+
 struct OpMsgHeader
 {
     // Message Header.
@@ -109,6 +123,18 @@ struct OpCompressedBlock
     // Compressed Data
 };
 
+struct CmdReplyBase
+{
+    double                      ok              = 0.0;
+    std::string                 errmsg;
+    std::string                 codeName;
+    int                         code            = 0;
+
+    bool isOk() const;
+    std::string getHRErrorMessage() const;
+};
+
+
 static constexpr std::uint32_t  kSizeUInt32                     = 4;
 static constexpr std::uint32_t  kSizeOpMsgHeaderSize            = 16;
 static constexpr std::uint32_t  kSizeOpMsgBlock                 = 21;
@@ -117,5 +143,8 @@ static constexpr std::uint32_t  kSizeOpCompressedMessage        = 9;
 static constexpr std::uint32_t  kSizeSmallestPossibleMessage    = 26;
 
 }
+
+ThorsAnvil_MakeTrait(ThorsAnvil::DB::Mongo::CmdReplyBase,               ok, errmsg, codeName, code);
+
 
 #endif
