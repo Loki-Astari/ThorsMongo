@@ -15,6 +15,7 @@
 #include "ThorsMongoKillCursor.h"
 #include "ThorsMongoFindAndModify.h"
 #include "ThorsMongoCount.h"
+#include "ThorsMongoDistinct.h"
 
 #include "ThorSerialize/MongoUtility.h"
 
@@ -168,6 +169,9 @@ class Collection
         template<typename T>                Range<T>            find(FindConfig const& config = FindConfig{});
         template<typename T, typename F>    Range<T>            find(F const& search, FindConfig const& config = FindConfig{});
 
+        template<typename T, typename F>    DistinctResult<T>   distinct(std::string const& key, F const& query, DistinctConfig const& config = DistinctConfig{});
+        template<typename T>                DistinctResult<T>   distinct(std::string const& key, DistinctConfig const& config = DistinctConfig{});
+
     private:
         template<typename T>
         friend class FindResult;
@@ -197,6 +201,7 @@ inline Collection  DB::operator[](std::string&& collectionName)     {return Coll
 #include "ThorsMongoKillCursor.tpp"
 #include "ThorsMongoFindAndModify.tpp"
 #include "ThorsMongoCount.tpp"
+#include "ThorsMongoDistinct.tpp"
 #undef THORSANVIL_DB_MONGO_THORSMONGO_H_TEMPLATE
 
 #endif

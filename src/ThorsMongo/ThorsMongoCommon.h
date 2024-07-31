@@ -7,6 +7,55 @@
 #include "BinaryData.h"
 #include "MessageHandler.h"
 
+#if 0
+    // Helper rename to make things easier to read.
+    using Cref
+    using Nref
+    using TimeStamp
+
+    // Interface for objects that need to be written as Actions.
+    struct MongoActionWriteInterface
+    struct MongoActionReadInterface
+
+    // Default implementation of the above interface.
+    struct MongoActionWriteInterfaceTrivialImpl: public MongoActionWriteInterface
+    struct MongoActionReadInterfaceTrivialImpl: public MongoActionReadInterface
+
+    // Classes that represent properties that can be
+    // sent to or received from the Mongo server
+    enum class ReadPreference
+    enum class SortOrder
+    struct WriteError
+    struct WriteConcernWithProv
+    struct ErrInfo
+    struct WriteConcernError
+    struct Signature
+    struct ClusterTime
+    using Let
+    class Sort
+    class Projection
+    using Hint
+    using Limit
+    struct Collation
+    class Cursor
+    class CursorFirst
+    class CursorNext
+
+    // Top Level Replies from Mongo server.
+    // These represent the replies to actions that can be taken on the Mongo server
+    struct ModifyResult: public CmdReplyBase
+
+    // Custom serialization classes.
+    // Some classes need special handling.
+    // These provide this handling.
+    class SerializeSort
+    class SerializeProjection: public ThorsAnvil::Serialize::DefaultCustomSerializer<Projection>
+
+    // Interface for Find.
+    class CursorIterator
+    struct Range
+#endif
+
 namespace ThorsAnvil::DB::Mongo
 {
 
