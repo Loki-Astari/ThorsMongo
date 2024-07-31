@@ -22,6 +22,9 @@ using ThorsAnvil::DB::Mongo::FindConfig;
 using ThorsAnvil::DB::Mongo::Query;
 using ThorsAnvil::DB::Mongo::Projection;
 using ThorsAnvil::DB::Mongo::SortOrder;
+using ThorsAnvil::DB::Mongo::FAModifyConfig;
+using ThorsAnvil::DB::Mongo::FARemoveConfig;
+using ThorsAnvil::DB::Mongo::FAModifyResult;
 using ThorsAnvil::DB::Mongo::Range;
 
 using namespace ThorsAnvil::DB::Mongo::QueryOp;
@@ -1054,4 +1057,1423 @@ TEST(IntegrationConnectionMongoTest, SerializeFindAndIterate)
     EXPECT_EQ(9, r2Result.n);
 }
 
+
+TEST(IntegrationConnectionMongoTest, FindAndReplace)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"John", 45, {"Jes terror",   "FW", 48}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(9, iResult.n);
+    EXPECT_EQ(9, iResult.inserted.size());
+
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndReplaceOne<People>(FindAgeEq{32}, People{"Tom", 128, {}});
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Sam",         r1Result.value->name);
+    EXPECT_EQ(32,            r1Result.value->age);
+    EXPECT_EQ("Cour terror", r1Result.value->address.street);
+    EXPECT_EQ("NY",          r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(true,           r1Result.lastErrorObject.updatedExisting);
+    // ObjectID        upserted;
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(8, r2Result.n);
+    RemoveResult        r3Result = mongo["test"]["People"].remove(Query<FindAgeLt>{200});
+    EXPECT_EQ(1, r3Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndReplaceUsingSortAscending)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"John", 45, {"Jes terror",   "FW", 48}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}},   // Two people aged 32
+                                {"Lam",  32, {"Limbo terror", "FG", 41}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(9, iResult.n);
+    EXPECT_EQ(9, iResult.inserted.size());
+
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndReplaceOne<People>(FindAgeEq{32}, People{"Tom", 128, {}}, FAModifyConfig{}.setSort({{"name",SortOrder::Ascending}}));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Lam",         r1Result.value->name);
+    EXPECT_EQ(32,            r1Result.value->age);
+    EXPECT_EQ("Limbo terror",r1Result.value->address.street);
+    EXPECT_EQ("FG",          r1Result.value->address.city);
+    EXPECT_EQ(41,            r1Result.value->address.code);
+    EXPECT_EQ(true,          r1Result.lastErrorObject.updatedExisting);
+    // ObjectID        upserted;
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(8, r2Result.n);
+    RemoveResult        r3Result = mongo["test"]["People"].remove(Query<FindAgeLt>{200});
+    EXPECT_EQ(1, r3Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndReplaceUsingSortDescending)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"John", 45, {"Jes terror",   "FW", 48}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}},   // Two people aged 32
+                                {"Lam",  38, {"Limbo terror", "FG", 41}},
+                                {"Ted",  32, {"Line Flog",    "TW", 39}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(9, iResult.n);
+    EXPECT_EQ(9, iResult.inserted.size());
+
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndReplaceOne<People>(FindAgeEq{32}, People{"Tom", 128, {}}, FAModifyConfig{}.setSort({{"name",SortOrder::Descending}}));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Ted",         r1Result.value->name);
+    EXPECT_EQ(32,            r1Result.value->age);
+    EXPECT_EQ("Line Flog",   r1Result.value->address.street);
+    EXPECT_EQ("TW",          r1Result.value->address.city);
+    EXPECT_EQ(39,            r1Result.value->address.code);
+    EXPECT_EQ(true,          r1Result.lastErrorObject.updatedExisting);
+    // ObjectID        upserted;
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(8, r2Result.n);
+    RemoveResult        r3Result = mongo["test"]["People"].remove(Query<FindAgeLt>{200});
+    EXPECT_EQ(1, r3Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndReplaceUsingNew)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"John", 45, {"Jes terror",   "FW", 48}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(9, iResult.n);
+    EXPECT_EQ(9, iResult.inserted.size());
+
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndReplaceOne<People>(FindAgeEq{32}, People{"Tom", 128, {}}, FAModifyConfig{}.setReturnNew(true));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Tom",         r1Result.value->name);
+    EXPECT_EQ(128,           r1Result.value->age);
+    EXPECT_EQ("",            r1Result.value->address.street);
+    EXPECT_EQ("",            r1Result.value->address.city);
+    EXPECT_EQ(0,             r1Result.value->address.code);
+    EXPECT_EQ(true,          r1Result.lastErrorObject.updatedExisting);
+    // ObjectID        upserted;
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(8, r2Result.n);
+    RemoveResult        r3Result = mongo["test"]["People"].remove(Query<FindAgeLt>{200});
+    EXPECT_EQ(1, r3Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndReplaceUsingFields)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"John", 45, {"Jes terror",   "FW", 48}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(9, iResult.n);
+    EXPECT_EQ(9, iResult.inserted.size());
+
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndReplaceOne<People>(FindAgeEq{32}, People{"Tom", 128, {}}, FAModifyConfig{}.setFields(Projection::create<PeopleWithAddressCode>()));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Sam",         r1Result.value->name);
+    EXPECT_EQ(0,             r1Result.value->age);
+    EXPECT_EQ("",            r1Result.value->address.street);
+    EXPECT_EQ("",            r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(true,          r1Result.lastErrorObject.updatedExisting);
+    // ObjectID        upserted;
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(8, r2Result.n);
+    RemoveResult        r3Result = mongo["test"]["People"].remove(Query<FindAgeLt>{200});
+    EXPECT_EQ(1, r3Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndReplaceUpsertFalse)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"John", 45, {"Jes terror",   "FW", 48}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(9, iResult.n);
+    EXPECT_EQ(9, iResult.inserted.size());
+
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndReplaceOne<People>(FindAgeEq{128}, People{"Tom", 128, {}}, FAModifyConfig{}.setUpsert(false));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_EQ(nullptr,       r1Result.value.get());
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(9, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndReplaceUpsertTrue)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"John", 45, {"Jes terror",   "FW", 48}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(9, iResult.n);
+    EXPECT_EQ(9, iResult.inserted.size());
+
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndReplaceOne<People>(FindAgeEq{128}, People{"Tom", 128, {}}, FAModifyConfig{}
+        .setUpsert(true)
+    );
+
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_EQ(nullptr,       r1Result.value.get());
+    EXPECT_EQ(false, r1Result.lastErrorObject.updatedExisting);
+    // ObjectID        upserted;
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(9, r2Result.n);
+    RemoveResult        r3Result = mongo["test"]["People"].remove(Query<FindAgeLt>{200});
+    EXPECT_EQ(1, r3Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndReplaceUpsertTrueMatch)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"John", 45, {"Jes terror",   "FW", 48}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(9, iResult.n);
+    EXPECT_EQ(9, iResult.inserted.size());
+
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndReplaceOne<People>(FindAgeEq{32}, People{"Tom", 128, {}}, FAModifyConfig{}.setUpsert(true));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Sam",         r1Result.value->name);
+    EXPECT_EQ(32,            r1Result.value->age);
+    EXPECT_EQ("Cour terror", r1Result.value->address.street);
+    EXPECT_EQ("NY",          r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(true,           r1Result.lastErrorObject.updatedExisting);
+    // ObjectID        upserted;
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(8, r2Result.n);
+    RemoveResult        r3Result = mongo["test"]["People"].remove(Query<FindAgeLt>{200});
+    EXPECT_EQ(1, r3Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndReplaceByPassDocumentValidation)
+{
+    // TODO
+    GTEST_SKIP();
+}
+TEST(IntegrationConnectionMongoTest, FindAndReplaceWriteConcern)
+{
+    // TODO
+    GTEST_SKIP();
+}
+TEST(IntegrationConnectionMongoTest, FindAndReplaceMaxTimeMS)
+{
+    // TODO
+    GTEST_SKIP();
+}
+TEST(IntegrationConnectionMongoTest, FindAndReplaceCollation)
+{
+    // TODO
+    GTEST_SKIP();
+}
+TEST(IntegrationConnectionMongoTest, FindAndReplaceArrayFilters)
+{
+    // TODO
+    GTEST_SKIP();
+}
+TEST(IntegrationConnectionMongoTest, FindAndReplaceHint)
+{
+    // TODO
+    GTEST_SKIP();
+}
+TEST(IntegrationConnectionMongoTest, FindAndReplaceComment)
+{
+    // TODO
+    GTEST_SKIP();
+}
+TEST(IntegrationConnectionMongoTest, FindAndReplaceLet)
+{
+    // TODO
+    GTEST_SKIP();
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndRemove)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"John", 45, {"Jes terror",   "FW", 48}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(9, iResult.n);
+    EXPECT_EQ(9, iResult.inserted.size());
+
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndRemoveOne<People>(FindAgeEq{32});
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Sam",         r1Result.value->name);
+    EXPECT_EQ(32,            r1Result.value->age);
+    EXPECT_EQ("Cour terror", r1Result.value->address.street);
+    EXPECT_EQ("NY",          r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(false,         r1Result.lastErrorObject.updatedExisting);
+    // ObjectID        upserted;
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{200});
+    EXPECT_EQ(8, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndRemoveSortAsc)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"John", 45, {"Jes terror",   "FW", 48}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}}, // Two people are 32
+                                {"Lam",  32, {"Limbo terror", "FG", 41}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(9, iResult.n);
+    EXPECT_EQ(9, iResult.inserted.size());
+
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndRemoveOne<People>(FindAgeEq{32}, FARemoveConfig{}.setSort({{"name", SortOrder::Ascending}}));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Lam",         r1Result.value->name);
+    EXPECT_EQ(32,            r1Result.value->age);
+    EXPECT_EQ("Limbo terror",r1Result.value->address.street);
+    EXPECT_EQ("FG",          r1Result.value->address.city);
+    EXPECT_EQ(41,            r1Result.value->address.code);
+    EXPECT_EQ(false,         r1Result.lastErrorObject.updatedExisting);
+    // ObjectID        upserted;
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{200});
+    EXPECT_EQ(8, r2Result.n);
+}
+TEST(IntegrationConnectionMongoTest, FindAndRemoveSortDec)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"John", 45, {"Jes terror",   "FW", 48}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}}, // Two people aged 32
+                                {"Lam",  38, {"Limbo terror", "FG", 41}},
+                                {"Ted",  32, {"Line Flog",    "TW", 39}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(9, iResult.n);
+    EXPECT_EQ(9, iResult.inserted.size());
+
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndRemoveOne<People>(FindAgeEq{32}, FARemoveConfig{}.setSort({{"name", SortOrder::Descending}}));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Ted",         r1Result.value->name);
+    EXPECT_EQ(32,            r1Result.value->age);
+    EXPECT_EQ("Line Flog",   r1Result.value->address.street);
+    EXPECT_EQ("TW",          r1Result.value->address.city);
+    EXPECT_EQ(39,            r1Result.value->address.code);
+    EXPECT_EQ(false,         r1Result.lastErrorObject.updatedExisting);
+    // ObjectID        upserted;
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{200});
+    EXPECT_EQ(8, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndRemoveMiss)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"John", 45, {"Jes terror",   "FW", 48}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(9, iResult.n);
+    EXPECT_EQ(9, iResult.inserted.size());
+
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndRemoveOne<People>(FindAgeEq{33});
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_EQ(nullptr,       r1Result.value.get());
+    EXPECT_EQ(false,         r1Result.lastErrorObject.updatedExisting);
+    // ObjectID        upserted;
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{200});
+    EXPECT_EQ(9, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndRemoveFields)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"John", 45, {"Jes terror",   "FW", 48}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(9, iResult.n);
+    EXPECT_EQ(9, iResult.inserted.size());
+
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndRemoveOne<People>(FindAgeEq{32}, FARemoveConfig{}.setFields(Projection::create<PeopleWithAddressCode>()));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Sam",         r1Result.value->name);
+    EXPECT_EQ(0,             r1Result.value->age);
+    EXPECT_EQ("",            r1Result.value->address.street);
+    EXPECT_EQ("",            r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(false,         r1Result.lastErrorObject.updatedExisting);
+    // ObjectID        upserted;
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{200});
+    EXPECT_EQ(8, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndRemoveByPassDocumentValidation)
+{
+    // TODO
+    GTEST_SKIP();
+}
+TEST(IntegrationConnectionMongoTest, FindAndRemoveWriteConcern)
+{
+    // TODO
+    GTEST_SKIP();
+}
+TEST(IntegrationConnectionMongoTest, FindAndRemoveMaxTimeMS)
+{
+    // TODO
+    GTEST_SKIP();
+}
+TEST(IntegrationConnectionMongoTest, FindAndRemoveCollation)
+{
+    // TODO
+    GTEST_SKIP();
+}
+TEST(IntegrationConnectionMongoTest, FindAndRemoveHint)
+{
+    // TODO
+    GTEST_SKIP();
+}
+TEST(IntegrationConnectionMongoTest, FindAndRemoveComment)
+{
+    // TODO
+    GTEST_SKIP();
+}
+TEST(IntegrationConnectionMongoTest, FindAndRemoveLet)
+{
+    // TODO
+    GTEST_SKIP();
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingSet)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+    using Update        = Set<AgeField<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(1, iResult.n);
+    EXPECT_EQ(1, iResult.inserted.size());
+
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndUpdateOne<People>(FindAgeEq{32}, Update{12}, FAModifyConfig{}.setReturnNew(true));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Sam",         r1Result.value->name);
+    EXPECT_EQ(12,            r1Result.value->age);
+    EXPECT_EQ("Cour terror", r1Result.value->address.street);
+    EXPECT_EQ("NY",          r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(true,           r1Result.lastErrorObject.updatedExisting);
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(1, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingCurrentDateDateTime)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+    using Update        = CurrentDate<DateField, SetDate>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(1, iResult.n);
+    EXPECT_EQ(1, iResult.inserted.size());
+
+    FAModifyResult<PeopleWithTime>  r1Result = mongo["test"]["People"].findAndUpdateOne<PeopleWithTime>(FindAgeEq{32}, Update{}, FAModifyConfig{}.setReturnNew(true));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Sam",         r1Result.value->name);
+    EXPECT_EQ(32,            r1Result.value->age);
+    EXPECT_EQ("Cour terror", r1Result.value->address.street);
+    EXPECT_EQ("NY",          r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(true,          r1Result.lastErrorObject.updatedExisting);
+    std::int64_t    milli = r1Result.value->dateTime.getMillSecSinceEpoch();
+    std::int64_t    sec   = milli / 1000 / 2;
+
+    auto            now   = std::chrono::system_clock::now();
+    auto            nowS  = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count() / 2;
+
+    // Check the updated time was in the last 10 seconds.
+    // Just rying to allow for some time drift and rounding errors.
+    EXPECT_EQ(sec, nowS);
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(1, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingCurrentDateTimeStamp)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+    using Update        = CurrentDate<TimeStampField, SetDate>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(1, iResult.n);
+    EXPECT_EQ(1, iResult.inserted.size());
+
+    FAModifyResult<PeopleWithTime>  r1Result = mongo["test"]["People"].findAndUpdateOne<PeopleWithTime>(FindAgeEq{32}, Update{}, FAModifyConfig{}.setReturnNew(true));
+    EXPECT_EQ(1, r1Result.ok);
+    //std::cerr << ThorsAnvil::Serialize::jsonExporter(Update{}) << "\n";
+    //std::cerr << ThorsAnvil::Serialize::jsonExporter(r1Result) << "\n";
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Sam",         r1Result.value->name);
+    EXPECT_EQ(32,            r1Result.value->age);
+    EXPECT_EQ("Cour terror", r1Result.value->address.street);
+    EXPECT_EQ("NY",          r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(true,          r1Result.lastErrorObject.updatedExisting);
+
+    // This is an internal mongo type.
+    // No documentation about it.
+    // This should be seconds since epoch but if it is then it is strangely encoded.
+    // TODO: Work out how to check the timestamp.
+    //       See: ThorsAnvil::Serialize::MongoUtility::BsonTimeStamp
+    //       for details about reading from the MongoDB.
+    //       it could be done incorrectly there.
+    std::uint32_t   sec   = r1Result.value->timeStamp.getSecSinceEpoch();
+    std::uint64_t   inc   = r1Result.value->timeStamp.getIncrement();
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(1, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingIncrement)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+    using Update        = Inc<AgeField>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(1, iResult.n);
+    EXPECT_EQ(1, iResult.inserted.size());
+
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndUpdateOne<People>(FindAgeEq{32}, Update{4}, FAModifyConfig{}.setReturnNew(true));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Sam",         r1Result.value->name);
+    EXPECT_EQ(36,            r1Result.value->age);
+    EXPECT_EQ("Cour terror", r1Result.value->address.street);
+    EXPECT_EQ("NY",          r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(true,          r1Result.lastErrorObject.updatedExisting);
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(1, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMinFail)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+    using Update        = Min<AgeField>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(1, iResult.n);
+    EXPECT_EQ(1, iResult.inserted.size());
+
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndUpdateOne<People>(FindAgeEq{32}, Update{36}, FAModifyConfig{}.setReturnNew(true));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Sam",         r1Result.value->name);
+    EXPECT_EQ(32,            r1Result.value->age);
+    EXPECT_EQ("Cour terror", r1Result.value->address.street);
+    EXPECT_EQ("NY",          r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(true,          r1Result.lastErrorObject.updatedExisting);
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(1, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMinWork)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+    using Update        = Min<AgeField>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(1, iResult.n);
+    EXPECT_EQ(1, iResult.inserted.size());
+
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndUpdateOne<People>(FindAgeEq{32}, Update{12}, FAModifyConfig{}.setReturnNew(true));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Sam",         r1Result.value->name);
+    EXPECT_EQ(12,            r1Result.value->age);
+    EXPECT_EQ("Cour terror", r1Result.value->address.street);
+    EXPECT_EQ("NY",          r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(true,          r1Result.lastErrorObject.updatedExisting);
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(1, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMaxFail)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+    using Update        = Max<AgeField>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(1, iResult.n);
+    EXPECT_EQ(1, iResult.inserted.size());
+
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndUpdateOne<People>(FindAgeEq{32}, Update{12}, FAModifyConfig{}.setReturnNew(true));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Sam",         r1Result.value->name);
+    EXPECT_EQ(32,            r1Result.value->age);
+    EXPECT_EQ("Cour terror", r1Result.value->address.street);
+    EXPECT_EQ("NY",          r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(true,          r1Result.lastErrorObject.updatedExisting);
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(1, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMaxWork)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+    using Update        = Max<AgeField>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(1, iResult.n);
+    EXPECT_EQ(1, iResult.inserted.size());
+
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndUpdateOne<People>(FindAgeEq{32}, Update{56}, FAModifyConfig{}.setReturnNew(true));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Sam",         r1Result.value->name);
+    EXPECT_EQ(56,            r1Result.value->age);
+    EXPECT_EQ("Cour terror", r1Result.value->address.street);
+    EXPECT_EQ("NY",          r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(true,          r1Result.lastErrorObject.updatedExisting);
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(1, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMul)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+    using Update        = Mul<AgeField>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(1, iResult.n);
+    EXPECT_EQ(1, iResult.inserted.size());
+
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndUpdateOne<People>(FindAgeEq{32}, Update{2}, FAModifyConfig{}.setReturnNew(true));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Sam",         r1Result.value->name);
+    EXPECT_EQ(64,            r1Result.value->age);
+    EXPECT_EQ("Cour terror", r1Result.value->address.street);
+    EXPECT_EQ("NY",          r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(true,          r1Result.lastErrorObject.updatedExisting);
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(1, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingRename)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+    using FindName      = NameField<Eq<std::string>>;
+    using Update        = Rename<AgeField>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(1, iResult.n);
+    EXPECT_EQ(1, iResult.inserted.size());
+
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndUpdateOne<People>(FindAgeEq{32}, Update{"originalAge"}, FAModifyConfig{}.setReturnNew(true));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Sam",         r1Result.value->name);
+    EXPECT_EQ(0,             r1Result.value->age);
+    EXPECT_EQ("Cour terror", r1Result.value->address.street);
+    EXPECT_EQ("NY",          r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(true,          r1Result.lastErrorObject.updatedExisting);
+
+    // The age field nolonger exists.
+    // So you can't remove it.
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(0, r2Result.n);
+
+    RemoveResult        r3Result = mongo["test"]["People"].remove(Query<FindName>{"Sam"});
+    EXPECT_EQ(0, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingUnset)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+    using FindName      = NameField<Eq<std::string>>;
+    using Update        = Unset<AgeField>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(1, iResult.n);
+    EXPECT_EQ(1, iResult.inserted.size());
+
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndUpdateOne<People>(FindAgeEq{32}, Update{}, FAModifyConfig{}.setReturnNew(true));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Sam",         r1Result.value->name);
+    EXPECT_EQ(0,             r1Result.value->age);
+    EXPECT_EQ("Cour terror", r1Result.value->address.street);
+    EXPECT_EQ("NY",          r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(true,          r1Result.lastErrorObject.updatedExisting);
+
+    // The age field was removed so we should not be able to find it.
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(0, r2Result.n);
+
+    RemoveResult        r3Result = mongo["test"]["People"].remove(Query<FindName>{"Sam"});
+    EXPECT_EQ(0, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingAddToSet)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<PeopleWithFood> people
+                                {
+                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}}
+                                };
+    people[0].food = {"Beacon", "Eggs"};
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+    using FindName      = NameField<Eq<std::string>>;
+    using Update        = AddToSet<FoodField<std::string>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(1, iResult.n);
+    EXPECT_EQ(1, iResult.inserted.size());
+
+    std::vector<std::string>    expectedFood{"Beacon", "Eggs", "Ham"};
+    FAModifyResult<PeopleWithFood>  r1Result = mongo["test"]["People"].findAndUpdateOne<PeopleWithFood>(FindAgeEq{32}, Update{"Ham"}, FAModifyConfig{}.setReturnNew(true));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Sam",         r1Result.value->name);
+    EXPECT_EQ(32,            r1Result.value->age);
+    EXPECT_EQ("Cour terror", r1Result.value->address.street);
+    EXPECT_EQ("NY",          r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(expectedFood,  r1Result.value->food);
+    EXPECT_EQ(true,          r1Result.lastErrorObject.updatedExisting);
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(1, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPopFront)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<PeopleWithFood> people
+                                {
+                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}}
+                                };
+    people[0].food = {"Beacon", "Eggs", "Ham"};
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+    using FindName      = NameField<Eq<std::string>>;
+    using Update        = PopFront<FoodField>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(1, iResult.n);
+    EXPECT_EQ(1, iResult.inserted.size());
+
+    std::vector<std::string>    expectedFood{"Eggs", "Ham"};
+    FAModifyResult<PeopleWithFood>  r1Result = mongo["test"]["People"].findAndUpdateOne<PeopleWithFood>(FindAgeEq{32}, Update{}, FAModifyConfig{}.setReturnNew(true));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Sam",         r1Result.value->name);
+    EXPECT_EQ(32,            r1Result.value->age);
+    EXPECT_EQ("Cour terror", r1Result.value->address.street);
+    EXPECT_EQ("NY",          r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(expectedFood,  r1Result.value->food);
+    EXPECT_EQ(true,          r1Result.lastErrorObject.updatedExisting);
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(1, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPopBack)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<PeopleWithFood> people
+                                {
+                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}}
+                                };
+    people[0].food = {"Beacon", "Eggs", "Ham"};
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+    using FindName      = NameField<Eq<std::string>>;
+    using Update        = PopBack<FoodField>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(1, iResult.n);
+    EXPECT_EQ(1, iResult.inserted.size());
+
+    std::vector<std::string>    expectedFood{"Beacon", "Eggs"};
+    FAModifyResult<PeopleWithFood>  r1Result = mongo["test"]["People"].findAndUpdateOne<PeopleWithFood>(FindAgeEq{32}, Update{}, FAModifyConfig{}.setReturnNew(true));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Sam",         r1Result.value->name);
+    EXPECT_EQ(32,            r1Result.value->age);
+    EXPECT_EQ("Cour terror", r1Result.value->address.street);
+    EXPECT_EQ("NY",          r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(expectedFood,  r1Result.value->food);
+    EXPECT_EQ(true,          r1Result.lastErrorObject.updatedExisting);
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(1, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPull)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<PeopleWithFood> people
+                                {
+                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}}
+                                };
+    people[0].food = {"Beacon", "Eggs", "Ham"};
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+    using FindName      = NameField<Eq<std::string>>;
+    using Update        = Pull<FoodField<std::string>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(1, iResult.n);
+    EXPECT_EQ(1, iResult.inserted.size());
+
+    std::vector<std::string>    expectedFood{"Beacon", "Ham"};
+    FAModifyResult<PeopleWithFood>  r1Result = mongo["test"]["People"].findAndUpdateOne<PeopleWithFood>(FindAgeEq{32}, Update{"Eggs"}, FAModifyConfig{}.setReturnNew(true));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Sam",         r1Result.value->name);
+    EXPECT_EQ(32,            r1Result.value->age);
+    EXPECT_EQ("Cour terror", r1Result.value->address.street);
+    EXPECT_EQ("NY",          r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(expectedFood,  r1Result.value->food);
+    EXPECT_EQ(true,          r1Result.lastErrorObject.updatedExisting);
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(1, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPullWithTest)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<PeopleWithFood> people
+                                {
+                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}}
+                                };
+    people[0].food = {"Beacon", "Eggs", "Ham"};
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+    using FindName      = NameField<Eq<std::string>>;
+    using Update        = Pull<FoodField<Lt<std::string>>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(1, iResult.n);
+    EXPECT_EQ(1, iResult.inserted.size());
+
+    std::vector<std::string>    expectedFood{"Ham"};
+    FAModifyResult<PeopleWithFood>  r1Result = mongo["test"]["People"].findAndUpdateOne<PeopleWithFood>(FindAgeEq{32}, Update{"Figgs"}, FAModifyConfig{}.setReturnNew(true));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Sam",         r1Result.value->name);
+    EXPECT_EQ(32,            r1Result.value->age);
+    EXPECT_EQ("Cour terror", r1Result.value->address.street);
+    EXPECT_EQ("NY",          r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(expectedFood,  r1Result.value->food);
+    EXPECT_EQ(true,          r1Result.lastErrorObject.updatedExisting);
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(1, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPush)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<PeopleWithFood> people
+                                {
+                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}}
+                                };
+    people[0].food = {"Beacon", "Eggs", "Ham"};
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+    using FindName      = NameField<Eq<std::string>>;
+    using Update        = Push<FoodField<std::string>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(1, iResult.n);
+    EXPECT_EQ(1, iResult.inserted.size());
+
+    std::vector<std::string>    expectedFood{"Beacon", "Eggs", "Ham", "Figgs"};
+    FAModifyResult<PeopleWithFood>  r1Result = mongo["test"]["People"].findAndUpdateOne<PeopleWithFood>(FindAgeEq{32}, Update{"Figgs"}, FAModifyConfig{}.setReturnNew(true));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Sam",         r1Result.value->name);
+    EXPECT_EQ(32,            r1Result.value->age);
+    EXPECT_EQ("Cour terror", r1Result.value->address.street);
+    EXPECT_EQ("NY",          r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(expectedFood,  r1Result.value->food);
+    EXPECT_EQ(true,          r1Result.lastErrorObject.updatedExisting);
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(1, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPullAll)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<PeopleWithFood> people
+                                {
+                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}}
+                                };
+    people[0].food = {"Beacon", "Eggs", "Ham"};
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+    using FindName      = NameField<Eq<std::string>>;
+    using Update        = PullAll<FoodField, std::string>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(1, iResult.n);
+    EXPECT_EQ(1, iResult.inserted.size());
+
+    std::vector<std::string>    expectedFood{"Beacon", "Eggs"};
+    FAModifyResult<PeopleWithFood>  r1Result = mongo["test"]["People"].findAndUpdateOne<PeopleWithFood>(FindAgeEq{32}, Update{{"Figgs", "Ham"}}, FAModifyConfig{}.setReturnNew(true));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Sam",         r1Result.value->name);
+    EXPECT_EQ(32,            r1Result.value->age);
+    EXPECT_EQ("Cour terror", r1Result.value->address.street);
+    EXPECT_EQ("NY",          r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(expectedFood,  r1Result.value->food);
+    EXPECT_EQ(true,          r1Result.lastErrorObject.updatedExisting);
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(1, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingEachAddToSet)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<PeopleWithFood> people
+                                {
+                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}}
+                                };
+    people[0].food = {"Beacon", "Eggs", "Ham"};
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+    using FindName      = NameField<Eq<std::string>>;
+    using Update        = AddToSet<FoodField<Each<std::string>>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(1, iResult.n);
+    EXPECT_EQ(1, iResult.inserted.size());
+
+    std::vector<std::string>    expectedFood{"Beacon", "Eggs", "Ham", "Figgs", "Beans", "Bunns"};
+    FAModifyResult<PeopleWithFood>  r1Result = mongo["test"]["People"].findAndUpdateOne<PeopleWithFood>(FindAgeEq{32}, Update{{"Figgs", "Beans", "Bunns"}}, FAModifyConfig{}.setReturnNew(true));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Sam",         r1Result.value->name);
+    EXPECT_EQ(32,            r1Result.value->age);
+    EXPECT_EQ("Cour terror", r1Result.value->address.street);
+    EXPECT_EQ("NY",          r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(expectedFood,  r1Result.value->food);
+    EXPECT_EQ(true,          r1Result.lastErrorObject.updatedExisting);
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(1, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingEachPush)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<PeopleWithFood> people
+                                {
+                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}}
+                                };
+    people[0].food = {"Beacon", "Eggs", "Ham"};
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+    using FindName      = NameField<Eq<std::string>>;
+    using Update        = Push<FoodField<Each<std::string>>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(1, iResult.n);
+    EXPECT_EQ(1, iResult.inserted.size());
+
+    std::vector<std::string>    expectedFood{"Beacon", "Eggs", "Ham", "Figgs", "Beans", "Bunns"};
+    FAModifyResult<PeopleWithFood>  r1Result = mongo["test"]["People"].findAndUpdateOne<PeopleWithFood>(FindAgeEq{32}, Update{{"Figgs", "Beans", "Bunns"}}, FAModifyConfig{}.setReturnNew(true));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Sam",         r1Result.value->name);
+    EXPECT_EQ(32,            r1Result.value->age);
+    EXPECT_EQ("Cour terror", r1Result.value->address.street);
+    EXPECT_EQ("NY",          r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(expectedFood,  r1Result.value->food);
+    EXPECT_EQ(true,          r1Result.lastErrorObject.updatedExisting);
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(1, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPosition)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<PeopleWithFood> people
+                                {
+                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}}
+                                };
+    people[0].food = {"Beacon", "Eggs", "Ham"};
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+    using FindName      = NameField<Eq<std::string>>;
+    using Update        = Push<FoodField<Position<std::string>>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(1, iResult.n);
+    EXPECT_EQ(1, iResult.inserted.size());
+
+    std::vector<std::string>    expectedFood{"Beacon", "Honey", "Toast", "Eggs", "Ham"};
+    FAModifyResult<PeopleWithFood>  r1Result = mongo["test"]["People"].findAndUpdateOne<PeopleWithFood>(FindAgeEq{32}, Update{{{"Honey", "Toast"}, 1}}, FAModifyConfig{}.setReturnNew(true));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Sam",         r1Result.value->name);
+    EXPECT_EQ(32,            r1Result.value->age);
+    EXPECT_EQ("Cour terror", r1Result.value->address.street);
+    EXPECT_EQ("NY",          r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(expectedFood,  r1Result.value->food);
+    EXPECT_EQ(true,          r1Result.lastErrorObject.updatedExisting);
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(1, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingSlice)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<PeopleWithFood> people
+                                {
+                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}}
+                                };
+    people[0].food = {"Beacon", "Eggs", "Ham"};
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+    using FindName      = NameField<Eq<std::string>>;
+    using Update        = Push<FoodField<Slice<std::string>>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(1, iResult.n);
+    EXPECT_EQ(1, iResult.inserted.size());
+
+    std::vector<std::string>    expectedFood{};
+    FAModifyResult<PeopleWithFood>  r1Result = mongo["test"]["People"].findAndUpdateOne<PeopleWithFood>(FindAgeEq{32}, Update{{{"Honey", "Toast"}, 0}}, FAModifyConfig{}.setReturnNew(true));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Sam",         r1Result.value->name);
+    EXPECT_EQ(32,            r1Result.value->age);
+    EXPECT_EQ("Cour terror", r1Result.value->address.street);
+    EXPECT_EQ("NY",          r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(expectedFood,  r1Result.value->food);
+    EXPECT_EQ(true,          r1Result.lastErrorObject.updatedExisting);
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(1, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingSort)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<PeopleWithFood> people
+                                {
+                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}}
+                                };
+    people[0].food = {"Beacon", "Ham", "Eggs"};
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+    using FindName      = NameField<Eq<std::string>>;
+    using Update        = Push<FoodField<Sort<std::string>>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(1, iResult.n);
+    EXPECT_EQ(1, iResult.inserted.size());
+
+    std::vector<std::string>    expectedFood{"Beacon", "Eggs", "Ham", "Honey", "Toast"};
+    FAModifyResult<PeopleWithFood>  r1Result = mongo["test"]["People"].findAndUpdateOne<PeopleWithFood>(FindAgeEq{32}, Update{{{"Toast", "Honey"}, SortOrder::Ascending}}, FAModifyConfig{}.setReturnNew(true));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Sam",         r1Result.value->name);
+    EXPECT_EQ(32,            r1Result.value->age);
+    EXPECT_EQ("Cour terror", r1Result.value->address.street);
+    EXPECT_EQ("NY",          r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(expectedFood,  r1Result.value->food);
+    EXPECT_EQ(true,          r1Result.lastErrorObject.updatedExisting);
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(1, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMultipleExpressions)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<People> people{
+                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+    using Update1       = Set<AgeField<std::uint32_t>>;
+    using Update2       = Set<NameField<std::string>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(1, iResult.n);
+    EXPECT_EQ(1, iResult.inserted.size());
+
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndUpdateOne<People>(FindAgeEq{32}, std::make_tuple(Update1{12}, Update2{"Tim"}), FAModifyConfig{}.setReturnNew(true));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Tim",         r1Result.value->name);
+    EXPECT_EQ(12,            r1Result.value->age);
+    EXPECT_EQ("Cour terror", r1Result.value->address.street);
+    EXPECT_EQ("NY",          r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(true,           r1Result.lastErrorObject.updatedExisting);
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
+    EXPECT_EQ(1, r2Result.n);
+}
 
