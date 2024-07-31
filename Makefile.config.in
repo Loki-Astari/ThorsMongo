@@ -1,0 +1,14 @@
+
+snappy_ROOT_DIR=@snappy_ROOT_DIR@
+snappy_ROOT_LIB=@snappy_ROOT_LIB@
+
+crypto_ROOT_DIR=@crypto_ROOT_DIR@
+crypto_ROOT_LIB=@crypto_ROOT_LIB@
+
+MagicEnumHeaderOnly_ROOT_DIR=@MagicEnumHeaderOnly_ROOT_DIR@
+
+ThorSerialize_ROOT_DIR=@ThorSerialize_ROOT_DIR@
+ThorSerialize_ROOT_LIB=@ThorSerialize_ROOT_LIB@
+ThorSerializeHeaderOnly_ROOT_DIR=@ThorSerializeHeaderOnly_ROOT_DIR@
+
+
