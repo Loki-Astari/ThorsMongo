@@ -8,6 +8,8 @@
 namespace ThorsAnvil::DB::Mongo
 {
 
+using MessageId     = std::uint32_t;
+
 enum class OP_MsgFlag: std::uint32_t
 {
     empty           = 0,
