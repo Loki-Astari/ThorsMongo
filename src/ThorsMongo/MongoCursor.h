@@ -3,7 +3,8 @@
 
 #include "ThorsMongoConfig.h"
 #include "ThorsMongoCommon.h"
-#include "ThorSerialize/Traits.h"
+#include "ThorsMongoGetMore.h"
+#include "ThorsMongoKillCursor.h"
 
 namespace ThorsAnvil::DB::Mongo
 {
@@ -37,12 +38,13 @@ class CursorNext: public Cursor
 };
 
 template<typename T>
-class FindResult;
+class CursorData;
+
 template<typename T>
 class CursorFirst: public Cursor
 {
     friend class ThorsAnvil::Serialize::Traits<CursorFirst<T>>;
-    friend class FindResult<T>;
+    friend class CursorData<T>;
 
     std::vector<T>              firstBatch;
     public:
@@ -58,7 +60,7 @@ class CursorFirst: public Cursor
 template<typename T>
 class CursorIterator
 {
-    Nref<FindResult<T>>     findResult;
+    Nref<CursorData<T>>     cursorData;
     bool                    input;
 
     public:
@@ -67,8 +69,8 @@ class CursorIterator
         using pointer           = T*;
         using reference         = T&;
         using iterator_category = std::input_iterator_tag;
-        CursorIterator(FindResult<T>& findResult, bool input)
-            : findResult(findResult)
+        CursorIterator(CursorData<T>& cursorData, bool input)
+            : cursorData(cursorData)
             , input(input)
         {}
 
@@ -78,25 +80,27 @@ class CursorIterator
         friend bool operator==(CursorIterator const& lhs, CursorIterator const& rhs)    {return lhs.input == rhs.input;}
         friend bool operator!=(CursorIterator const& lhs, CursorIterator const& rhs)    {return !(lhs == rhs);}
 
-        T& operator*()  {return findResult.get().current();}
-        T* operator->() {return &findResult.get().current();}
+        T& operator*()  {return cursorData.get().current();}
+        T* operator->() {return &cursorData.get().current();}
         CursorIterator& operator++()     /* prefix */
         {
             // increment() returns true if more data is
             // available after getting more data.
-            input = findResult.get().increment();
+            input = cursorData.get().increment();
             return *this;
         }
         // Postfix ++ is not supported on input iterators.
         //CursorIterator  operator++(int)  /* postfix */
 };
 
-template<typename T, typename I = CursorIterator<T>>
+template<typename R> // FindType<T>
 struct Range
 {
-    std::shared_ptr<FindResult<T>>   findData;
+    using T = typename R::ValueType;
+
+    std::shared_ptr<R>   findData;
     public:
-        Range(std::unique_ptr<FindResult<T>> result)
+        Range(std::unique_ptr<R> result)
             : findData(std::move(result))
         {}
         CursorIterator<T> begin()   {return CursorIterator<T>{*findData, true};}
@@ -104,9 +108,61 @@ struct Range
 
     private:
         friend class TestFindResult<T>;
-        FindResult<T>& getResult() const {return *findData;}
+        R& getResult() const {return *findData;}
 };
 
+template<typename T>
+class CursorData: public CmdReplyBase
+{
+    friend class ThorsAnvil::Serialize::Traits<CursorData<T>>;
+    friend class TestFindResult<T>;
+
+    Nref<Collection>            owner;
+    GetMoreConfig               moreConfig;
+    std::size_t                 index;
+    CursorFirst<T>              cursor;
+    TimeStamp                   operationTime;
+    ClusterTime                 $clusterTime;
+
+    public:
+        CursorData(Collection& owner, GetMoreConfig const& moreConfig)
+            : owner(owner)
+            , moreConfig(moreConfig)
+            , index(0)
+        {}
+        ~CursorData()
+        {
+            if (cursor.getId() != 0) {
+                owner.get().killCursor(cursor.getId());
+            }
+        }
+        friend void swap(CursorData<T>& lhs, GetMoreResult<T>& rhs) noexcept
+        {
+            using std::swap;
+            swap(static_cast<CmdReplyBase&>(lhs), static_cast<CmdReplyBase&>(rhs));
+            swap(lhs.cursor                     , rhs.cursor);
+            swap(lhs.operationTime              , rhs.operationTime);
+            swap(lhs.$clusterTime               , rhs.$clusterTime);
+        }
+
+    private:
+        friend class CursorIterator<T>;
+        // These functions are for the CursorIterator.
+        bool increment()
+        {
+            ++index;
+            if (cursor.data().size() == index)
+            {
+                index = 0;
+                owner.get().getMore(*this, cursor.getId(), moreConfig);
+            }
+            return index != cursor.data().size();
+        }
+        T& current()
+        {
+            return cursor.firstBatch[index];
+        }
+};
 }
 
 ThorsAnvil_MakeTrait(   ThorsAnvil::DB::Mongo::Cursor,                  partialResultsReturned, id, ns);
@@ -116,5 +172,8 @@ ThorsAnvil_Template_ExpandTrait(1,
 ThorsAnvil_Template_ExpandTrait(1,
                         ThorsAnvil::DB::Mongo::Cursor,
                         ThorsAnvil::DB::Mongo::CursorNext,              nextBatch);
+ThorsAnvil_Template_ExpandTrait(1,
+                        ThorsAnvil::DB::Mongo::CmdReplyBase,
+                        ThorsAnvil::DB::Mongo::CursorData,              cursor);
 
 #endif

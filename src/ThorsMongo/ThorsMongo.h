@@ -166,20 +166,20 @@ class Collection
         template<typename... T>             RemoveResult        remove(std::tuple<T...> const& search, RemoveConfig const& config = RemoveConfig{});
         template<typename T>                RemoveResult        remove(Query<T, std::string> const& search, RemoveConfig const& config = RemoveConfig{});
 
-        template<typename T>                Range<T>            find(FindConfig const& config = FindConfig{});
-        template<typename T, typename F>    Range<T>            find(F const& search, FindConfig const& config = FindConfig{});
+        template<typename T>                FindRange<T>        find(FindConfig const& config = FindConfig{});
+        template<typename T, typename F>    FindRange<T>        find(F const& search, FindConfig const& config = FindConfig{});
 
         template<typename T, typename F>    DistinctResult<T>   distinct(std::string const& key, F const& query, DistinctConfig const& config = DistinctConfig{});
         template<typename T>                DistinctResult<T>   distinct(std::string const& key, DistinctConfig const& config = DistinctConfig{});
 
     private:
         template<typename T>
-        friend class FindResult;
+        friend class CursorData;
         // These function can be used by the FindResult.
         // This is becuase the find result contains (and owns a Cursor).
         // So we need to be able to tidy that up with exposing the details to the user.
         template<typename T>
-        void                                                getMore(FindResult<T>& find, GetMoreConfig const& config = GetMoreConfig{});
+        void                                                getMore(CursorData<T>& find, std::uint64_t cursorId, GetMoreConfig const& config = GetMoreConfig{});
         void                                                killCursor(std::uint64_t cursorId, KillCursorConfig const& config = KillCursorConfig{});
 
     private:

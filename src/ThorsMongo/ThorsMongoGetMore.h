@@ -3,7 +3,6 @@
 
 #include "ThorsMongoConfig.h"
 #include "ThorsMongoCommon.h"
-#include "MongoCurser.h"
 
 namespace ThorsAnvil::DB::Mongo
 {
@@ -22,6 +21,10 @@ class GetMoreConfig: public ActionConfig<GetMoreConfig>
         GetMoreConfig&  setMaxTimeMS(std::uint32_t value)   {maxTimeMS.emplace(value);return *this;}
         GetMoreConfig&  setComment(std::string value)       {comment.emplace(value);return *this;}
 };
+
+// See in MongoCursor.h
+template<typename T>
+class CursorNext;
 
 template<typename T>
 class GetMoreResult: public CmdReplyBase, public MongoActionReadInterfaceTrivialImpl<GetMoreResult<T>>
