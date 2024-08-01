@@ -3,6 +3,7 @@
 
 #include "ThorsMongoConfig.h"
 #include "ThorsMongoCommon.h"
+#include "MongoCurser.h"
 
 namespace ThorsAnvil::DB::Mongo
 {
