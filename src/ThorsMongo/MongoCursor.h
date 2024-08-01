@@ -9,6 +9,15 @@
 namespace ThorsAnvil::DB::Mongo
 {
 
+// Forward Declarations.
+template<typename T>
+class CursorFirst;
+
+template<typename T>
+class CursorData;
+
+class ThorsMongo;
+
 class Cursor
 {
     friend class ThorsAnvil::Serialize::Traits<Cursor>;
@@ -27,8 +36,6 @@ class Cursor
 };
 
 template<typename T>
-class CursorFirst;
-template<typename T>
 class CursorNext: public Cursor
 {
     friend class ThorsAnvil::Serialize::Traits<CursorNext<T>>;
@@ -37,8 +44,6 @@ class CursorNext: public Cursor
         std::vector<T> const&   data()  const {return nextBatch;}
 };
 
-template<typename T>
-class CursorData;
 
 template<typename T>
 class CursorFirst: public Cursor
@@ -117,23 +122,29 @@ class CursorData: public CmdReplyBase
     friend class ThorsAnvil::Serialize::Traits<CursorData<T>>;
     friend class TestFindResult<T>;
 
-    Nref<Collection>            owner;
-    GetMoreConfig               moreConfig;
+    Nref<ThorsMongo>            owner;
+    std::string                 dbName;
+    std::string                 colName;
+    GetMoreConfig               getMoreConfig;
+    KillCursorConfig            killCursorConfig;
     std::size_t                 index;
     CursorFirst<T>              cursor;
     TimeStamp                   operationTime;
     ClusterTime                 $clusterTime;
 
     public:
-        CursorData(Collection& owner, GetMoreConfig const& moreConfig)
+        CursorData(ThorsMongo& owner, std::string_view dbName, std::string_view colName, GetMoreConfig const& getMoreConfig, KillCursorConfig const& killCursorConfig)
             : owner(owner)
-            , moreConfig(moreConfig)
+            , dbName(dbName)
+            , colName(colName)
+            , getMoreConfig(getMoreConfig)
+            , killCursorConfig(killCursorConfig)
             , index(0)
         {}
         ~CursorData()
         {
             if (cursor.getId() != 0) {
-                owner.get().killCursor(cursor.getId());
+                owner.get().killCursor(dbName, colName, cursor.getId(), killCursorConfig);
             }
         }
         friend void swap(CursorData<T>& lhs, GetMoreResult<T>& rhs) noexcept
@@ -154,7 +165,7 @@ class CursorData: public CmdReplyBase
             if (cursor.data().size() == index)
             {
                 index = 0;
-                owner.get().getMore(*this, cursor.getId(), moreConfig);
+                owner.get().getMore(*this, dbName, colName, cursor.getId(), getMoreConfig);
             }
             return index != cursor.data().size();
         }

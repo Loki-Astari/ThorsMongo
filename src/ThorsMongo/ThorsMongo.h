@@ -97,6 +97,14 @@ class ThorsMongo
 
     private:
         ConnectionMongo&        getStream() {return mongoStream;}
+        template<typename T>
+        friend class CursorData;
+        // These function can be used by the FindResult.
+        // This is becuase the find result contains (and owns a Cursor).
+        // So we need to be able to tidy that up with exposing the details to the user.
+        template<typename T>
+        void                    getMore(CursorData<T>& find, std::string_view dbName, std::string_view colName, std::uint64_t cursorId, GetMoreConfig const& config);
+        void                    killCursor(std::string_view dbName, std::string_view colName, std::uint64_t cursorId, KillCursorConfig const& config);
 };
 
 class DB
@@ -171,16 +179,6 @@ class Collection
 
         template<typename T, typename F>    DistinctResult<T>   distinct(std::string const& key, F const& query, DistinctConfig const& config = DistinctConfig{});
         template<typename T>                DistinctResult<T>   distinct(std::string const& key, DistinctConfig const& config = DistinctConfig{});
-
-    private:
-        template<typename T>
-        friend class CursorData;
-        // These function can be used by the FindResult.
-        // This is becuase the find result contains (and owns a Cursor).
-        // So we need to be able to tidy that up with exposing the details to the user.
-        template<typename T>
-        void                                                getMore(CursorData<T>& find, std::uint64_t cursorId, GetMoreConfig const& config = GetMoreConfig{});
-        void                                                killCursor(std::uint64_t cursorId, KillCursorConfig const& config = KillCursorConfig{});
 
     private:
         std::string_view        dbName()    const {return {name.data(), name.find("::")};}

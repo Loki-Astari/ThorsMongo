@@ -27,16 +27,16 @@ class KillCursors: public MongoActionWriteInterfaceTrivialImpl<KillCursors>
 
 
 inline
-void Collection::killCursor(std::uint64_t cursorId, KillCursorConfig const& config)
+void ThorsMongo::killCursor(std::string_view dbName, std::string_view colName, std::uint64_t cursorId, KillCursorConfig const& config)
 {
     KillCursorResult    response;
     MessageId           messageId;
-    if (mongoServer.messageHandler.sendMessage(Action::KillCursors{colName(), dbName(), config, {cursorId}},
+    if (messageHandler.sendMessage(Action::KillCursors{colName, dbName, config, {cursorId}},
                                                messageId,
                                                config.getMsgFlag(),
                                                config.getPrinterConfig()))
     {
-        if (mongoServer.messageHandler.recvMessage(response, messageId, config.getParserConfig()))
+        if (messageHandler.recvMessage(response, messageId, config.getParserConfig()))
         {
             // The message was sent and reply read correctly.
             // Note: This does not mean it worked.

@@ -102,16 +102,26 @@ class FindResult: public CursorData<T>, public MongoActionReadInterfaceTrivialIm
         if (comment.has_value()) {
             result.setComment(comment.value());
         }
+
+        result.setPrinterConfig(config.getPrinterConfig());
+        result.setParserConfig(config.getParserConfig());
+        return result;
+    }
+
+    static KillCursorConfig buildKillCursorConfig(FindConfig const& config)
+    {
+        KillCursorConfig    result;
+        result.setPrinterConfig(config.getPrinterConfig());
+        result.setParserConfig(config.getParserConfig());
         return result;
     }
 
     public:
         using ValueType = T;
 
-        FindResult(Collection& owner, FindConfig const& config)
-            : CursorData<T>(owner, buildGetMoreConfig(config))
-        {
-        }
+        FindResult(ThorsMongo& owner, std::string_view dbName, std::string_view colName, FindConfig const& config)
+            : CursorData<T>(owner, dbName, colName, buildGetMoreConfig(config), buildKillCursorConfig(config))
+        {}
         friend void swap(FindResult<T>& lhs, GetMoreResult<T>& rhs) noexcept
         {
             using std::swap;

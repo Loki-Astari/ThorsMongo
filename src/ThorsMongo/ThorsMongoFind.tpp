@@ -94,7 +94,7 @@ template<typename T, typename F>
 inline
 FindRange<T> Collection::find(F const& search, FindConfig const& config)
 {
-    auto            response = std::make_unique<FindResult<T>>(*this, config);
+    auto            response = std::make_unique<FindResult<T>>(mongoServer, dbName(), colName(), config);
     MessageId       messageId;
     if (mongoServer.messageHandler.sendMessage(Action::Finder<T, F>{colName(), dbName(), config, search},
                                                messageId,

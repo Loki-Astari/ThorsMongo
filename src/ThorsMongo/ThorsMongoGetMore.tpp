@@ -35,16 +35,16 @@ class GetMore: public MongoActionWriteInterfaceTrivialImpl<GetMore<T>>
 
 template<typename T>
 inline
-void Collection::getMore(CursorData<T>& findResult, std::uint64_t cursorId, GetMoreConfig const& config)
+void ThorsMongo::getMore(CursorData<T>& findResult, std::string_view dbName, std::string_view colName, std::uint64_t cursorId, GetMoreConfig const& config)
 {
     GetMoreResult<T>    response;
     MessageId           messageId;
-    if (mongoServer.messageHandler.sendMessage(Action::GetMore<T>{colName(), dbName(), config, cursorId},
+    if (messageHandler.sendMessage(Action::GetMore<T>{colName, dbName, config, cursorId},
                                                messageId,
                                                config.getMsgFlag(),
                                                config.getPrinterConfig()))
     {
-        if (mongoServer.messageHandler.recvMessage(response, messageId, config.getParserConfig()))
+        if (messageHandler.recvMessage(response, messageId, config.getParserConfig()))
         {
             // The message was sent and reply read correctly.
             // Note: This does not mean it worked.
