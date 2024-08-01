@@ -3,7 +3,7 @@
 
 #include "ThorsMongoConfig.h"
 #include "ThorsMongoCommon.h"
-#include "ThorsMongoGetMore.h"
+#include "MongoCursor.h"
 
 namespace ThorsAnvil::DB::Mongo
 {
@@ -80,78 +80,64 @@ class FindConfig: public ActionConfig<FindConfig>
 
 
 template<typename T>
-class FindResult: public CmdReplyBase, public MongoActionReadInterfaceTrivialImpl<FindResult<T>>
+class FindResult: public CursorData<T>, public MongoActionReadInterfaceTrivialImpl<FindResult<T>>
 {
     friend class ThorsAnvil::Serialize::Traits<FindResult<T>>;
-    friend class TestFindResult<T>;
 
-    Nref<Collection>            owner;
-    GetMoreConfig               moreConfig;
-    std::size_t                 index;
-    CursorFirst<T>              cursor;
     TimeStamp                   operationTime;
     ClusterTime                 $clusterTime;
 
+    static GetMoreConfig buildGetMoreConfig(FindConfig const& config)
+    {
+        GetMoreConfig   result;
+        std::optional<std::uint32_t> const& batchSize   = config.getBatchSize();
+        if (batchSize.has_value()) {
+            result.setBatchSize(batchSize.value());
+        }
+        std::optional<std::uint32_t> const& maxTimeMS   = config.getMaxTimeMS();
+        if (maxTimeMS.has_value()) {
+            result.setMaxTimeMS(maxTimeMS.value());
+        }
+        std::optional<std::string> const&   comment     = config.getComment();
+        if (comment.has_value()) {
+            result.setComment(comment.value());
+        }
+
+        result.setPrinterConfig(config.getPrinterConfig());
+        result.setParserConfig(config.getParserConfig());
+        return result;
+    }
+
+    static KillCursorConfig buildKillCursorConfig(FindConfig const& config)
+    {
+        KillCursorConfig    result;
+        result.setPrinterConfig(config.getPrinterConfig());
+        result.setParserConfig(config.getParserConfig());
+        return result;
+    }
+
     public:
-        FindResult(Collection& owner, FindConfig const& config)
-            : owner(owner)
-            , index(0)
-        {
-            std::optional<std::uint32_t> const& batchSize   = config.getBatchSize();
-            if (batchSize.has_value()) {
-                moreConfig.setBatchSize(batchSize.value());
-            }
-            std::optional<std::uint32_t> const& maxTimeMS   = config.getMaxTimeMS();
-            if (maxTimeMS.has_value()) {
-                moreConfig.setMaxTimeMS(maxTimeMS.value());
-            }
-            std::optional<std::string> const&   comment     = config.getComment();
-            if (comment.has_value()) {
-                moreConfig.setComment(comment.value());
-            }
-        }
-        ~FindResult()
-        {
-            if (cursor.getId() != 0) {
-                owner.get().killCursor(cursor.getId());
-            }
-        }
+        using ValueType = T;
+
+        FindResult(ThorsMongo& owner, std::string_view dbName, std::string_view colName, FindConfig const& config)
+            : CursorData<T>(owner, dbName, colName, buildGetMoreConfig(config), buildKillCursorConfig(config))
+        {}
         friend void swap(FindResult<T>& lhs, GetMoreResult<T>& rhs) noexcept
         {
             using std::swap;
-            swap(static_cast<CmdReplyBase&>(lhs), static_cast<CmdReplyBase&>(rhs));
-            swap(lhs.cursor                     , rhs.cursor);
-            swap(lhs.operationTime              , rhs.operationTime);
-            swap(lhs.$clusterTime               , rhs.$clusterTime);
+            swap(static_cast<CursorData<T>&>(lhs), static_cast<CmdReplyBase&>(rhs));
+            swap(lhs.operationTime               , rhs.operationTime);
+            swap(lhs.$clusterTime                , rhs.$clusterTime);
         }
-
-    private:
-        friend class CursorIterator<T>;
-        // These functions are for the CursorIterator.
-        bool increment()
-        {
-            ++index;
-            if (cursor.data().size() == index)
-            {
-                index = 0;
-                owner.get().getMore(*this, moreConfig);
-            }
-            return index != cursor.data().size();
-        }
-        T& current()
-        {
-            return cursor.firstBatch[index];
-        }
-    private:
-        friend class Collection;
-        // These functions are for Collection.
-        CursorFirst<T>& getCursor() {return cursor;}
 };
+
+template<typename T>
+using FindRange = Range<FindResult<T>>;
 
 }
 
 ThorsAnvil_Template_ExpandTrait(1,
-                        ThorsAnvil::DB::Mongo::CmdReplyBase,
-                        ThorsAnvil::DB::Mongo::FindResult,              cursor, operationTime, $clusterTime);
+                        ThorsAnvil::DB::Mongo::CursorData<T1>,
+                        ThorsAnvil::DB::Mongo::FindResult,              operationTime, $clusterTime);
 
 #endif

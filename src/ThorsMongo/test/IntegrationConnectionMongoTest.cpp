@@ -6,45 +6,58 @@
 #include "AuthInfo.h"
 #include "AuthClient.h"
 #include "MongoQuery.h"
+#include "MongoCursor.h"
 #include "AuthenticateScramSha.h"
 #include "ThorSerialize/Traits.h"
 #include "test/Action.h"
 
 using ThorsAnvil::DB::Mongo::ConnectionMongo;
 using ThorsAnvil::DB::Mongo::MongoMessageHandler;
+
 using ThorsAnvil::DB::Mongo::Authenticate;
 using ThorsAnvil::DB::Mongo::Compression;
 using ThorsAnvil::DB::Mongo::Auth::Client;
+
 using ThorsAnvil::DB::Mongo::ThorsMongo;
-using ThorsAnvil::DB::Mongo::InsertResult;
-using ThorsAnvil::DB::Mongo::RemoveResult;
-using ThorsAnvil::DB::Mongo::FindConfig;
-using ThorsAnvil::DB::Mongo::CountConfig;
-using ThorsAnvil::DB::Mongo::DistinctConfig;
 using ThorsAnvil::DB::Mongo::Query;
 using ThorsAnvil::DB::Mongo::Projection;
 using ThorsAnvil::DB::Mongo::SortOrder;
+
+using ThorsAnvil::DB::Mongo::FindConfig;
 using ThorsAnvil::DB::Mongo::FAModifyConfig;
 using ThorsAnvil::DB::Mongo::FARemoveConfig;
+using ThorsAnvil::DB::Mongo::CountConfig;
+using ThorsAnvil::DB::Mongo::DistinctConfig;
+
+using ThorsAnvil::DB::Mongo::InsertResult;
+using ThorsAnvil::DB::Mongo::RemoveResult;
+using ThorsAnvil::DB::Mongo::FindResult;
 using ThorsAnvil::DB::Mongo::FAModifyResult;
 using ThorsAnvil::DB::Mongo::CountResult;
 using ThorsAnvil::DB::Mongo::DistinctResult;
-using ThorsAnvil::DB::Mongo::Range;
+using ThorsAnvil::DB::Mongo::ListCollectionResult;
+
+using ThorsAnvil::DB::Mongo::FindRange;
+using ThorsAnvil::DB::Mongo::LCRange;
 
 using namespace ThorsAnvil::DB::Mongo::QueryOp;
 
 namespace ThorsAnvil::DB::Mongo
 {
-template<typename T>
+template<typename R>
 struct TestFindResult
 {
+    using T = typename R::ValueType;
+
     ThorsAnvil::DB::Mongo::CursorFirst<T>&              cursor;
     std::size_t&                                        index;
     double&                                             ok;
-    TestFindResult(Range<T>& range)
+    R&                                                  result;
+    TestFindResult(Range<R>& range)
         : cursor(range.getResult().cursor)
         , index(range.getResult().index)
         , ok(range.getResult().ok)
+        , result(range.getResult())
     {}
 };
 }
@@ -655,19 +668,40 @@ TEST(IntegrationConnectionMongoTest, findQueryEq)
     using FindAge       = AgeField<Eq<std::uint32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
-    Range<People>       r1Result = mongo["test"]["People"].find<People>(FindName{"John"});
+    FindRange<People>   r1Result = mongo["test"]["People"].find<People>(FindName{"John"});
     RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAge>{45});
 
     EXPECT_EQ(1, iResult.ok);
     EXPECT_EQ(3, iResult.n);
     EXPECT_EQ(3, iResult.inserted.size());
 
-    TestFindResult<People>  findResult(r1Result);
+    TestFindResult<FindResult<People>>  findResult(r1Result);
     EXPECT_EQ(1, findResult.ok);
     EXPECT_EQ(2, findResult.cursor.data().size());
     EXPECT_EQ(1, r2Result.ok);
     EXPECT_EQ(3, r2Result.n);
     EXPECT_EQ(0, findResult.cursor.getId());
+}
+
+TEST(IntegrationConnectionMongoTest, ListCollections)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+
+    using ParserConfig  = ThorsAnvil::Serialize::ParserInterface::ParserConfig;
+
+
+    LCRange                   r1Result = mongo["test"].listCollections();
+    TestFindResult<ListCollectionResult>  findResult(r1Result);
+    EXPECT_EQ(1, findResult.ok);
+    EXPECT_EQ(0, findResult.cursor.getId());
+
+    int count = 0;
+    for (auto const& v: r1Result) {
+        ++count;
+    }
+    EXPECT_NE(0, count);
 }
 
 TEST(IntegrationConnectionMongoTest, SerializeFindAddSort)
@@ -679,7 +713,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindAddSort)
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
-    Range<People>       r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
+    FindRange<People>   r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
         .setSort({{"name", SortOrder::Descending}, {"age", SortOrder::Ascending}})
     );
     RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAge>{0});
@@ -688,7 +722,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindAddSort)
     EXPECT_EQ(3, iResult.n);
     EXPECT_EQ(3, iResult.inserted.size());
 
-    TestFindResult<People>  findResult(r1Result);
+    TestFindResult<FindResult<People>>  findResult(r1Result);
     EXPECT_EQ(1, findResult.ok);
     EXPECT_EQ(3, findResult.cursor.data().size());
     EXPECT_EQ("Sam", findResult.cursor.data()[0].name);
@@ -710,7 +744,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindAddProjection)
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
-    Range<People>       r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
+    FindRange<People>   r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
         .setProjection(Projection::create<PeopleWithAddressCode>())
     );
 
@@ -720,7 +754,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindAddProjection)
     EXPECT_EQ(3, iResult.n);
     EXPECT_EQ(3, iResult.inserted.size());
 
-    TestFindResult<People>  findResult(r1Result);
+    TestFindResult<FindResult<People>>  findResult(r1Result);
     EXPECT_EQ(1, findResult.ok);
     EXPECT_EQ(3, findResult.cursor.data().size());
     EXPECT_EQ("John", findResult.cursor.data()[0].name);
@@ -755,7 +789,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetSkip)
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
-    Range<People>       r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
+    FindRange<People>   r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
         .setSort({{"name", SortOrder::Descending}, {"age", SortOrder::Ascending}})
         .setSkip(2)
     );
@@ -765,7 +799,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetSkip)
     EXPECT_EQ(3, iResult.n);
     EXPECT_EQ(3, iResult.inserted.size());
 
-    TestFindResult<People>  findResult(r1Result);
+    TestFindResult<FindResult<People>>  findResult(r1Result);
     EXPECT_EQ(1, findResult.ok);
     EXPECT_EQ(1, findResult.cursor.data().size());
     EXPECT_EQ("John", findResult.cursor.data()[0].name);
@@ -785,7 +819,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetLimit)
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
-    Range<People>       r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
+    FindRange<People>   r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
         .setSort({{"name", SortOrder::Descending}, {"age", SortOrder::Ascending}})
         .setSkip(1)
         .setLimit(1)
@@ -796,7 +830,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetLimit)
     EXPECT_EQ(3, iResult.n);
     EXPECT_EQ(3, iResult.inserted.size());
 
-    TestFindResult<People>  findResult(r1Result);
+    TestFindResult<FindResult<People>>  findResult(r1Result);
     EXPECT_EQ(1, findResult.ok);
     EXPECT_EQ(1, findResult.cursor.data().size());
     EXPECT_EQ("John", findResult.cursor.data()[0].name);
@@ -816,7 +850,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetBatchSize)
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
-    Range<People>       r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
+    FindRange<People>   r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
         .setBatchSize(1)
     );
     RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAge>{0});
@@ -825,7 +859,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetBatchSize)
     EXPECT_EQ(3, iResult.n);
     EXPECT_EQ(3, iResult.inserted.size());
 
-    TestFindResult<People>  findResult(r1Result);
+    TestFindResult<FindResult<People>>  findResult(r1Result);
     EXPECT_EQ(1, findResult.ok);
     EXPECT_EQ(1, findResult.cursor.data().size());
     EXPECT_EQ(3, r2Result.n);
@@ -841,7 +875,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetSingleBatch)
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
-    Range<People>       r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
+    FindRange<People>   r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
         .setBatchSize(1)
         .setSingleBatch(true)
     );
@@ -851,7 +885,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetSingleBatch)
     EXPECT_EQ(3, iResult.n);
     EXPECT_EQ(3, iResult.inserted.size());
 
-    TestFindResult<People>  findResult(r1Result);
+    TestFindResult<FindResult<People>>  findResult(r1Result);
     EXPECT_EQ(1, findResult.ok);
     EXPECT_EQ(1, findResult.cursor.data().size());
     EXPECT_EQ(3, r2Result.n);
@@ -867,7 +901,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetComment)
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
-    Range<People>       r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
+    FindRange<People>   r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
         .setComment("Comment Time")
     );
     RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAge>{0});
@@ -876,7 +910,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetComment)
     EXPECT_EQ(3, iResult.n);
     EXPECT_EQ(3, iResult.inserted.size());
 
-    TestFindResult<People>  findResult(r1Result);
+    TestFindResult<FindResult<People>>  findResult(r1Result);
     EXPECT_EQ(1, findResult.ok);
     EXPECT_EQ(3, r2Result.n);
     EXPECT_EQ(0, findResult.cursor.getId());
@@ -891,7 +925,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetMaxTimeMS)
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
-    Range<People>       r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
+    FindRange<People>   r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
         .setMaxTimeMS(256)
     );
     RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAge>{0});
@@ -900,7 +934,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetMaxTimeMS)
     EXPECT_EQ(3, iResult.n);
     EXPECT_EQ(3, iResult.inserted.size());
 
-    TestFindResult<People>  findResult(r1Result);
+    TestFindResult<FindResult<People>>  findResult(r1Result);
     EXPECT_EQ(1, findResult.ok);
     EXPECT_EQ(3, r2Result.n);
     EXPECT_EQ(0, findResult.cursor.getId());
@@ -933,7 +967,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetReturnKey)
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
-    Range<People>       r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
+    FindRange<People>   r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
         .setReturnKey(true)
     );
     RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAge>{0});
@@ -942,7 +976,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetReturnKey)
     EXPECT_EQ(3, iResult.n);
     EXPECT_EQ(3, iResult.inserted.size());
 
-    TestFindResult<People>  findResult(r1Result);
+    TestFindResult<FindResult<People>>  findResult(r1Result);
     EXPECT_EQ(1, findResult.ok);
     EXPECT_EQ(3, findResult.cursor.data().size());
     EXPECT_EQ("", findResult.cursor.data()[0].name);
@@ -961,7 +995,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetShowRecordId)
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
     InsertResult                iResult = mongo["test"]["People"].insert(people);
-    Range<PeopleWithRecordID>   r1Result = mongo["test"]["People"].find<PeopleWithRecordID>(FindAge{12}, FindConfig{}
+    FindRange<PeopleWithRecordID>   r1Result = mongo["test"]["People"].find<PeopleWithRecordID>(FindAge{12}, FindConfig{}
         .setShowRecordId(true)
     );
     RemoveResult                r2Result = mongo["test"]["People"].remove(Query<FindAge>{0});
@@ -970,7 +1004,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetShowRecordId)
     EXPECT_EQ(3, iResult.n);
     EXPECT_EQ(3, iResult.inserted.size());
 
-    TestFindResult<PeopleWithRecordID>  findResult(r1Result);
+    TestFindResult<FindResult<PeopleWithRecordID>>  findResult(r1Result);
     EXPECT_EQ(1, findResult.ok);
     EXPECT_EQ(3, findResult.cursor.data().size());
     EXPECT_NE(0, findResult.cursor.data()[0].$recordId);
@@ -1039,7 +1073,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindAndIterate)
     EXPECT_EQ(9, iResult.n);
     EXPECT_EQ(9, iResult.inserted.size());
 
-    Range<People>       r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
+    FindRange<People>   r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
         .setBatchSize(2)
     );
     std::vector<std::uint32_t>  age;

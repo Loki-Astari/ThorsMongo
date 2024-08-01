@@ -54,9 +54,8 @@ TEST(ThorsMongGetMoreTest, MessageGetMore)
 {
     std::string             collection("col");
     std::string             db("db");
-    CursorFirst<People>     cursor;
 
-    GetMore<People>         getMore(collection, db, GetMoreConfig{}, cursor);
+    GetMore<People>         getMore(collection, db, GetMoreConfig{}, 256);
 
     EXPECT_EQ(0x36, getMore.getSizeBson());
 
@@ -66,7 +65,7 @@ TEST(ThorsMongGetMoreTest, MessageGetMore)
     using namespace std::string_literals;
     std::string expected = 
         "\x36\x00\x00\x00"
-            "\x12" "getMore\x00"    "\x00\x00\x00\x00\x00\x00\x00\x00"
+            "\x12" "getMore\x00"    "\x00\x01\x00\x00\x00\x00\x00\x00"
             "\x02" "collection\x00" "\x04\x00\x00\x00"  "col\x00"
             "\x02" "$db\x00"        "\x03\x00\x00\x00"  "db\x00"
             "\x00"s;
@@ -78,9 +77,8 @@ TEST(ThorsMongGetMoreTest, MessageGetMoreWithBatchSize)
 {
     std::string             collection("col");
     std::string             db("db");
-    CursorFirst<People>     cursor;
 
-    GetMore<People>         getMore(collection, db, GetMoreConfig{}.setBatchSize(12), cursor);
+    GetMore<People>         getMore(collection, db, GetMoreConfig{}.setBatchSize(12), 257);
 
     EXPECT_EQ(0x45, getMore.getSizeBson());
 
@@ -90,7 +88,7 @@ TEST(ThorsMongGetMoreTest, MessageGetMoreWithBatchSize)
     using namespace std::string_literals;
     std::string expected = 
         "\x45\x00\x00\x00"
-            "\x12" "getMore\x00"    "\x00\x00\x00\x00\x00\x00\x00\x00"
+            "\x12" "getMore\x00"    "\x01\x01\x00\x00\x00\x00\x00\x00"
             "\x02" "collection\x00" "\x04\x00\x00\x00"  "col\x00"
             "\x02" "$db\x00"        "\x03\x00\x00\x00"  "db\x00"
             "\x10" "batchSize\x00"  "\x0C\x00\x00\x00"
@@ -103,9 +101,8 @@ TEST(ThorsMongGetMoreTest, MessageGetMoreWithMaxTimeMS)
 {
     std::string             collection("col");
     std::string             db("db");
-    CursorFirst<People>     cursor;
 
-    GetMore<People>         getMore(collection, db, GetMoreConfig{}.setMaxTimeMS(256), cursor);
+    GetMore<People>         getMore(collection, db, GetMoreConfig{}.setMaxTimeMS(256), 258);
 
     EXPECT_EQ(0x45, getMore.getSizeBson());
 
@@ -115,7 +112,7 @@ TEST(ThorsMongGetMoreTest, MessageGetMoreWithMaxTimeMS)
     using namespace std::string_literals;
     std::string expected = 
         "\x45\x00\x00\x00"
-            "\x12" "getMore\x00"    "\x00\x00\x00\x00\x00\x00\x00\x00"
+            "\x12" "getMore\x00"    "\x02\x01\x00\x00\x00\x00\x00\x00"
             "\x02" "collection\x00" "\x04\x00\x00\x00"  "col\x00"
             "\x02" "$db\x00"        "\x03\x00\x00\x00"  "db\x00"
             "\x10" "maxTimeMS\x00"  "\x00\x01\x00\x00"
@@ -128,9 +125,8 @@ TEST(ThorsMongGetMoreTest, MessageGetMoreWithComment)
 {
     std::string             collection("col");
     std::string             db("db");
-    CursorFirst<People>     cursor;
 
-    GetMore<People>         getMore(collection, db, GetMoreConfig{}.setComment("Long Shadows"), cursor);
+    GetMore<People>         getMore(collection, db, GetMoreConfig{}.setComment("Long Shadows"), 259);
 
     EXPECT_EQ(0x50, getMore.getSizeBson());
 
@@ -140,7 +136,7 @@ TEST(ThorsMongGetMoreTest, MessageGetMoreWithComment)
     using namespace std::string_literals;
     std::string expected = 
         "\x50\x00\x00\x00"
-            "\x12" "getMore\x00"    "\x00\x00\x00\x00\x00\x00\x00\x00"
+            "\x12" "getMore\x00"    "\x03\x01\x00\x00\x00\x00\x00\x00"
             "\x02" "collection\x00" "\x04\x00\x00\x00"  "col\x00"
             "\x02" "$db\x00"        "\x03\x00\x00\x00"  "db\x00"
             "\x02" "comment\x00"    "\x0D\x00\x00\x00"  "Long Shadows\x00"

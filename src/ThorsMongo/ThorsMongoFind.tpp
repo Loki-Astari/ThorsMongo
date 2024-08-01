@@ -72,7 +72,7 @@ class Finder: public MongoActionWriteInterfaceTrivialImpl<Finder<T, F>>
 
 template<typename T>
 inline
-Range<T> Collection::find(FindConfig const& config)
+FindRange<T> Collection::find(FindConfig const& config)
 {
     auto            response = std::make_unique<FindResult<T>>(*this, config);
     MessageId       messageId;
@@ -92,9 +92,9 @@ Range<T> Collection::find(FindConfig const& config)
 }
 template<typename T, typename F>
 inline
-Range<T> Collection::find(F const& search, FindConfig const& config)
+FindRange<T> Collection::find(F const& search, FindConfig const& config)
 {
-    auto            response = std::make_unique<FindResult<T>>(*this, config);
+    auto            response = std::make_unique<FindResult<T>>(mongoServer, dbName(), colName(), config);
     MessageId       messageId;
     if (mongoServer.messageHandler.sendMessage(Action::Finder<T, F>{colName(), dbName(), config, search},
                                                messageId,

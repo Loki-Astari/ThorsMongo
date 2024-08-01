@@ -20,8 +20,8 @@ class GetMore: public MongoActionWriteInterfaceTrivialImpl<GetMore<T>>
     std::optional<std::string>      comment;
 
     public:
-        GetMore(std::string_view collection, std::string_view db, GetMoreConfig const& config, CursorFirst<T>& cursor)
-            : getMore(cursor.getId())
+        GetMore(std::string_view collection, std::string_view db, GetMoreConfig const& config, std::uint64_t cursorId)
+            : getMore(cursorId)
             , collection(collection)
             , $db(db)
             , batchSize(config.getBatchSize())
@@ -35,16 +35,16 @@ class GetMore: public MongoActionWriteInterfaceTrivialImpl<GetMore<T>>
 
 template<typename T>
 inline
-void Collection::getMore(FindResult<T>& findResult, GetMoreConfig const& config)
+void ThorsMongo::getMore(CursorData<T>& findResult, std::string_view dbName, std::string_view colName, std::uint64_t cursorId, GetMoreConfig const& config)
 {
     GetMoreResult<T>    response;
     MessageId           messageId;
-    if (mongoServer.messageHandler.sendMessage(Action::GetMore<T>{colName(), dbName(), config, findResult.getCursor()},
+    if (messageHandler.sendMessage(Action::GetMore<T>{colName, dbName, config, cursorId},
                                                messageId,
                                                config.getMsgFlag(),
                                                config.getPrinterConfig()))
     {
-        if (mongoServer.messageHandler.recvMessage(response, messageId, config.getParserConfig()))
+        if (messageHandler.recvMessage(response, messageId, config.getParserConfig()))
         {
             // The message was sent and reply read correctly.
             // Note: This does not mean it worked.

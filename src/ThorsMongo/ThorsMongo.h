@@ -16,6 +16,7 @@
 #include "ThorsMongoFindAndModify.h"
 #include "ThorsMongoCount.h"
 #include "ThorsMongoDistinct.h"
+#include "ThorsMongoListCollection.h"
 
 #include "ThorSerialize/MongoUtility.h"
 
@@ -97,6 +98,16 @@ class ThorsMongo
 
     private:
         ConnectionMongo&        getStream() {return mongoStream;}
+
+    private:
+        template<typename T>
+        friend class CursorData;
+        // These function can be used by the FindResult.
+        // This is becuase the find result contains (and owns a Cursor).
+        // So we need to be able to tidy that up with exposing the details to the user.
+        template<typename T>
+        void                    getMore(CursorData<T>& find, std::string_view dbName, std::string_view colName, std::uint64_t cursorId, GetMoreConfig const& config);
+        void                    killCursor(std::string_view dbName, std::string_view colName, std::uint64_t cursorId, KillCursorConfig const& config);
 };
 
 class DB
@@ -110,7 +121,7 @@ class DB
             , name(name)
         {}
 
-        std::string const&      getName() const;
+        std::string const&      getName() const                     {return name;}
 
         OptReadConcern const&   getReadConcern() const              {return mongoServer.databases[name].readConcern;}
         OptReadConcern          setReadConcern(ReadConcern val)     {return std::exchange(mongoServer.databases[name].readConcern, std::move(val));}
@@ -120,6 +131,10 @@ class DB
 
         ReadPreference          getReadPreference() const;
         ReadPreference          setReadPreference(ReadPreference);
+
+        template<typename F>
+        LCRange                 listCollections(F const& filter, ListCollectionConfig const& config = ListCollectionConfig{});
+        LCRange                 listCollections(ListCollectionConfig const& config = ListCollectionConfig{});
 
         Collection operator[](std::string&& collectionName);
 };
@@ -166,21 +181,11 @@ class Collection
         template<typename... T>             RemoveResult        remove(std::tuple<T...> const& search, RemoveConfig const& config = RemoveConfig{});
         template<typename T>                RemoveResult        remove(Query<T, std::string> const& search, RemoveConfig const& config = RemoveConfig{});
 
-        template<typename T>                Range<T>            find(FindConfig const& config = FindConfig{});
-        template<typename T, typename F>    Range<T>            find(F const& search, FindConfig const& config = FindConfig{});
+        template<typename T>                FindRange<T>        find(FindConfig const& config = FindConfig{});
+        template<typename T, typename F>    FindRange<T>        find(F const& search, FindConfig const& config = FindConfig{});
 
         template<typename T, typename F>    DistinctResult<T>   distinct(std::string const& key, F const& query, DistinctConfig const& config = DistinctConfig{});
         template<typename T>                DistinctResult<T>   distinct(std::string const& key, DistinctConfig const& config = DistinctConfig{});
-
-    private:
-        template<typename T>
-        friend class FindResult;
-        // These function can be used by the FindResult.
-        // This is becuase the find result contains (and owns a Cursor).
-        // So we need to be able to tidy that up with exposing the details to the user.
-        template<typename T>
-        void                                                getMore(FindResult<T>& find, GetMoreConfig const& config = GetMoreConfig{});
-        void                                                killCursor(std::uint64_t cursorId, KillCursorConfig const& config = KillCursorConfig{});
 
     private:
         std::string_view        dbName()    const {return {name.data(), name.find("::")};}
@@ -202,6 +207,7 @@ inline Collection  DB::operator[](std::string&& collectionName)     {return Coll
 #include "ThorsMongoFindAndModify.tpp"
 #include "ThorsMongoCount.tpp"
 #include "ThorsMongoDistinct.tpp"
+#include "ThorsMongoListCollection.tpp"
 #undef THORSANVIL_DB_MONGO_THORSMONGO_H_TEMPLATE
 
 #endif

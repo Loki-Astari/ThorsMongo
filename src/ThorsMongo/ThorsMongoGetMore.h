@@ -22,6 +22,10 @@ class GetMoreConfig: public ActionConfig<GetMoreConfig>
         GetMoreConfig&  setComment(std::string value)       {comment.emplace(value);return *this;}
 };
 
+// See in MongoCursor.h
+template<typename T>
+class CursorNext;
+
 template<typename T>
 class GetMoreResult: public CmdReplyBase, public MongoActionReadInterfaceTrivialImpl<GetMoreResult<T>>
 {
