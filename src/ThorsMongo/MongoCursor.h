@@ -10,14 +10,23 @@ namespace ThorsAnvil::DB::Mongo
 {
 
 // Forward Declarations.
-template<typename T>
-class CursorFirst;
+    template<typename T>
+    class CursorFirst;
 
-template<typename T>
-class CursorData;
+    template<typename T>
+    class CursorData;
 
-class ThorsMongo;
+    template<typename>
+    class FindResult;
 
+    class ListCollectionResult;
+
+    class ThorsMongo;
+
+
+// Basic Cursor class.
+// We stream data into this type from Mongo.
+// Note: This class does NOT hold any of the data.
 class Cursor
 {
     friend class ThorsAnvil::Serialize::Traits<Cursor>;
@@ -35,6 +44,10 @@ class Cursor
         }
 };
 
+// The Cursor for the results of GetMore.
+// Note: Once the GetMore has complete the data is moved.
+//       into an object of type CursorFirst.
+//       Thus the functionality all uses CursorFirst.
 template<typename T>
 class CursorNext: public Cursor
 {
@@ -112,7 +125,7 @@ struct Range
         CursorIterator<T> end()     {return CursorIterator<T>{*findData, false};}
 
     private:
-        friend class TestFindResult<T>;
+        friend class TestFindResult<R>;
         R& getResult() const {return *findData;}
 };
 
@@ -120,7 +133,8 @@ template<typename T>
 class CursorData: public CmdReplyBase
 {
     friend class ThorsAnvil::Serialize::Traits<CursorData<T>>;
-    friend class TestFindResult<T>;
+    friend class TestFindResult<FindResult<T>>;
+    friend class TestFindResult<ListCollectionResult>;
 
     Nref<ThorsMongo>            owner;
     std::string                 dbName;

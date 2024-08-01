@@ -16,6 +16,7 @@
 #include "ThorsMongoFindAndModify.h"
 #include "ThorsMongoCount.h"
 #include "ThorsMongoDistinct.h"
+#include "ThorsMongoListCollection.h"
 
 #include "ThorSerialize/MongoUtility.h"
 
@@ -97,6 +98,8 @@ class ThorsMongo
 
     private:
         ConnectionMongo&        getStream() {return mongoStream;}
+
+    private:
         template<typename T>
         friend class CursorData;
         // These function can be used by the FindResult.
@@ -118,7 +121,7 @@ class DB
             , name(name)
         {}
 
-        std::string const&      getName() const;
+        std::string const&      getName() const                     {return name;}
 
         OptReadConcern const&   getReadConcern() const              {return mongoServer.databases[name].readConcern;}
         OptReadConcern          setReadConcern(ReadConcern val)     {return std::exchange(mongoServer.databases[name].readConcern, std::move(val));}
@@ -128,6 +131,10 @@ class DB
 
         ReadPreference          getReadPreference() const;
         ReadPreference          setReadPreference(ReadPreference);
+
+        template<typename F>
+        LCRange                 listCollections(F const& filter, ListCollectionConfig const& config = ListCollectionConfig{});
+        LCRange                 listCollections(ListCollectionConfig const& config = ListCollectionConfig{});
 
         Collection operator[](std::string&& collectionName);
 };
@@ -200,6 +207,7 @@ inline Collection  DB::operator[](std::string&& collectionName)     {return Coll
 #include "ThorsMongoFindAndModify.tpp"
 #include "ThorsMongoCount.tpp"
 #include "ThorsMongoDistinct.tpp"
+#include "ThorsMongoListCollection.tpp"
 #undef THORSANVIL_DB_MONGO_THORSMONGO_H_TEMPLATE
 
 #endif
