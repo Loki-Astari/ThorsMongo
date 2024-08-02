@@ -17,6 +17,7 @@
 #include "ThorsMongoCount.h"
 #include "ThorsMongoDistinct.h"
 #include "ThorsMongoListCollection.h"
+#include "ThorsMongoListDatabase.h"
 
 #include "ThorSerialize/MongoUtility.h"
 
@@ -96,6 +97,11 @@ class ThorsMongo
 
         DB operator[](std::string&& dbName);
 
+        template<typename F>
+        DBRange                 listDatabases(F const& filter, CommandConfig const& config = CommandConfig{});
+        DBRange                 listDatabases(CommandConfig const& config = CommandConfig{});
+
+
     private:
         ConnectionMongo&        getStream() {return mongoStream;}
 
@@ -133,8 +139,8 @@ class DB
         ReadPreference          setReadPreference(ReadPreference);
 
         template<typename F>
-        LCRange                 listCollections(F const& filter, ListCollectionConfig const& config = ListCollectionConfig{});
-        LCRange                 listCollections(ListCollectionConfig const& config = ListCollectionConfig{});
+        LCRange                 listCollections(F const& filter, CommandConfig const& config = CommandConfig{});
+        LCRange                 listCollections(CommandConfig const& config = CommandConfig{});
 
         Collection operator[](std::string&& collectionName);
 };
@@ -208,6 +214,7 @@ inline Collection  DB::operator[](std::string&& collectionName)     {return Coll
 #include "ThorsMongoCount.tpp"
 #include "ThorsMongoDistinct.tpp"
 #include "ThorsMongoListCollection.tpp"
+#include "ThorsMongoListDatabase.tpp"
 #undef THORSANVIL_DB_MONGO_THORSMONGO_H_TEMPLATE
 
 #endif

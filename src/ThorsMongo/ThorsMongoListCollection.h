@@ -3,26 +3,11 @@
 
 #include "ThorsMongoConfig.h"
 #include "ThorsMongoCommon.h"
+#include "ThorsMongoCommandConfig.h"
 #include "MongoCursor.h"
 
 namespace ThorsAnvil::DB::Mongo
 {
-
-class ListCollectionConfig: public ActionConfig<ListCollectionConfig>
-{
-    std::optional<bool>             nameOnly;
-    std::optional<bool>             authorizedCollections;
-    std::optional<std::string>      comment;
-
-    public:
-        std::optional<bool>             const& getNameOnly()                const {return nameOnly;}
-        std::optional<bool>             const& getAuthorizedCollections()   const {return authorizedCollections;}
-        std::optional<std::string>      const& getComment()                 const {return comment;}
-
-        ListCollectionConfig&     setNameOnly(bool value)               {nameOnly.emplace(value);return *this;}
-        ListCollectionConfig&     setAuthorizedCollections(bool value)  {authorizedCollections.emplace(value);return *this;}
-        ListCollectionConfig&     setComment(std::string value)         {comment.emplace(value);return *this;}
-};
 
 struct TimeSeries
 {
@@ -88,7 +73,7 @@ class UUIDSerializer: public ThorsAnvil::Serialize::MongoUtility::BinarySerializ
         }
 };
 
-struct CollectionInfo
+struct CollectionID
 {
     bool                        readOnly;   // Seen
     UUID                        uuid;       // Seen
@@ -104,21 +89,21 @@ struct CollectionIndex
     CollectionIndexKey          key;        // Seen
 };
 
-struct ListInfo
+struct CollectionInfo
 {
     std::string                 name;       // Seen
     std::string                 type;       // Seen
     CollectionOptions           options;    // Seen
-    CollectionInfo              info;       // Seen
+    CollectionID                info;       // Seen
     CollectionIndex             idIndex;    // Seen
 };
 
-class ListCollectionResult: public CursorData<ListInfo>, public MongoActionReadInterfaceTrivialImpl<ListCollectionResult>
+class ListCollectionResult: public CursorData<CollectionInfo>, public MongoActionReadInterfaceTrivialImpl<ListCollectionResult>
 {
     friend class ThorsAnvil::Serialize::Traits<ListCollectionResult>;
-    friend class TestFindResult<ListInfo>;
+    friend class TestFindResult<CollectionInfo>;
 
-    static GetMoreConfig buildGetMoreConfig(ListCollectionConfig const& config)
+    static GetMoreConfig buildGetMoreConfig(CommandConfig const& config)
     {
         GetMoreConfig   result;
         std::optional<std::string> const&   comment     = config.getComment();
@@ -131,7 +116,7 @@ class ListCollectionResult: public CursorData<ListInfo>, public MongoActionReadI
         return result;
     }
 
-    static KillCursorConfig buildKillCursorConfig(ListCollectionConfig const& config)
+    static KillCursorConfig buildKillCursorConfig(CommandConfig const& config)
     {
         KillCursorConfig    result;
         result.setPrinterConfig(config.getPrinterConfig());
@@ -141,16 +126,16 @@ class ListCollectionResult: public CursorData<ListInfo>, public MongoActionReadI
 
     public:
 
-        using ValueType = ListInfo;
+        using ValueType = CollectionInfo;
 
-        ListCollectionResult(ThorsMongo& owner, std::string_view dbName, ListCollectionConfig const& config)
-            : CursorData<ListInfo>(owner, dbName, "", buildGetMoreConfig(config), buildKillCursorConfig(config))
+        ListCollectionResult(ThorsMongo& owner, std::string_view dbName, CommandConfig const& config)
+            : CursorData<CollectionInfo>(owner, dbName, "", buildGetMoreConfig(config), buildKillCursorConfig(config))
         {}
 
-        friend void swap(ListCollectionResult& lhs, GetMoreResult<ListInfo>& rhs) noexcept
+        friend void swap(ListCollectionResult& lhs, GetMoreResult<CollectionInfo>& rhs) noexcept
         {
             using std::swap;
-            swap(static_cast<CursorData<ListInfo>&>(lhs), rhs);
+            swap(static_cast<CursorData<CollectionInfo>&>(lhs), rhs);
         }
 };
 
@@ -165,11 +150,11 @@ ThorsAnvil_MakeTrait(   ThorsAnvil::DB::Mongo::TimeSeries,                      
 ThorsAnvil_MakeTrait(   ThorsAnvil::DB::Mongo::ClusterIndex,                    key, unique, name);
 ThorsAnvil_MakeTrait(   ThorsAnvil::DB::Mongo::ChangeStreamPrePost,             enabled);
 ThorsAnvil_MakeTrait(   ThorsAnvil::DB::Mongo::CollectionOptions /* TODO */);
-ThorsAnvil_MakeTrait(   ThorsAnvil::DB::Mongo::CollectionInfo,                  readOnly, uuid);
+ThorsAnvil_MakeTrait(   ThorsAnvil::DB::Mongo::CollectionID,                    readOnly, uuid);
 ThorsAnvil_MakeTrait(   ThorsAnvil::DB::Mongo::CollectionIndexKey,              _id);
 ThorsAnvil_MakeTrait(   ThorsAnvil::DB::Mongo::CollectionIndex,                 v, key);
-ThorsAnvil_MakeTrait(   ThorsAnvil::DB::Mongo::ListInfo,                        name, type, options, info, idIndex);
-ThorsAnvil_ExpandTrait( ThorsAnvil::DB::Mongo::CursorData<ThorsAnvil::DB::Mongo::ListInfo>,
+ThorsAnvil_MakeTrait(   ThorsAnvil::DB::Mongo::CollectionInfo,                  name, type, options, info, idIndex);
+ThorsAnvil_ExpandTrait( ThorsAnvil::DB::Mongo::CursorData<ThorsAnvil::DB::Mongo::CollectionInfo>,
                         ThorsAnvil::DB::Mongo::ListCollectionResult);
 
 
