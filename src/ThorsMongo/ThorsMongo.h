@@ -18,6 +18,7 @@
 #include "ThorsMongoDistinct.h"
 #include "ThorsMongoListCollection.h"
 #include "ThorsMongoListDatabase.h"
+#include "ThorsMongoAdmin.h"
 
 #include "ThorSerialize/MongoUtility.h"
 
@@ -141,6 +142,7 @@ class DB
         template<typename F>
         LCRange                 listCollections(F const& filter, CommandConfig const& config = CommandConfig{});
         LCRange                 listCollections(CommandConfig const& config = CommandConfig{});
+        AdminResult             createCollection(std::string colName, CreateCollectionConfig const& config = CreateCollectionConfig{});
 
         Collection operator[](std::string&& collectionName);
 };
@@ -154,6 +156,9 @@ class Collection
             : mongoServer(db.mongoServer)
             , name(db.name + "::" + name)
         {}
+
+        AdminResult             rename(std::string const& name, RenameConfig const& config = RenameConfig{});
+        AdminResult             drop(DropCollectionConfig const& config = DropCollectionConfig{});
 
         OptReadConcern const&   getReadConcern() const              {return mongoServer.collections[name].readConcern;}
         OptReadConcern          setReadConcern(ReadConcern val)     {return std::exchange(mongoServer.collections[name].readConcern, std::move(val));}
@@ -215,6 +220,7 @@ inline Collection  DB::operator[](std::string&& collectionName)     {return Coll
 #include "ThorsMongoDistinct.tpp"
 #include "ThorsMongoListCollection.tpp"
 #include "ThorsMongoListDatabase.tpp"
+#include "ThorsMongoAdmin.tpp"
 #undef THORSANVIL_DB_MONGO_THORSMONGO_H_TEMPLATE
 
 #endif
