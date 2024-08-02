@@ -22,6 +22,7 @@ using ThorsAnvil::DB::Mongo::ThorsMongo;
 using ThorsAnvil::DB::Mongo::Query;
 using ThorsAnvil::DB::Mongo::Projection;
 using ThorsAnvil::DB::Mongo::SortOrder;
+using ThorsAnvil::DB::Mongo::CollectionInfo;
 
 using ThorsAnvil::DB::Mongo::FindConfig;
 using ThorsAnvil::DB::Mongo::FAModifyConfig;
@@ -37,6 +38,7 @@ using ThorsAnvil::DB::Mongo::CountResult;
 using ThorsAnvil::DB::Mongo::DistinctResult;
 using ThorsAnvil::DB::Mongo::ListCollectionResult;
 using ThorsAnvil::DB::Mongo::ListDatabaseResult;
+using ThorsAnvil::DB::Mongo::AdminResult;
 
 using ThorsAnvil::DB::Mongo::FindRange;
 using ThorsAnvil::DB::Mongo::LCRange;
@@ -687,12 +689,7 @@ TEST(IntegrationConnectionMongoTest, findQueryEq)
 
 TEST(IntegrationConnectionMongoTest, ListCollections)
 {
-    using namespace std::string_literals;
-
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-
-    using ParserConfig  = ThorsAnvil::Serialize::ParserInterface::ParserConfig;
-
 
     LCRange                   r1Result = mongo["test"].listCollections();
     TestFindResult<ListCollectionResult>  findResult(r1Result);
@@ -708,12 +705,7 @@ TEST(IntegrationConnectionMongoTest, ListCollections)
 
 TEST(IntegrationConnectionMongoTest, ListDatabases)
 {
-    using namespace std::string_literals;
-
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-
-    using ParserConfig  = ThorsAnvil::Serialize::ParserInterface::ParserConfig;
-
 
     DBRange                   r1Result = mongo.listDatabases();
     EXPECT_EQ(1, r1Result.rangeData->ok);
@@ -723,6 +715,54 @@ TEST(IntegrationConnectionMongoTest, ListDatabases)
         ++count;
     }
     EXPECT_NE(0, count);
+}
+
+TEST(IntegrationConnectionMongoTest, RenameCollection)
+{
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+
+    LCRange             collections1 = mongo["test"].listCollections();
+    auto find1 = std::find_if(std::begin(collections1), std::end(collections1), [](CollectionInfo const& v) {return v.name == "Blob";});
+    ASSERT_NE(find1, std::end(collections1));
+
+    AdminResult         r1Result = mongo["test"]["Blob"].rename("Blob1");
+    EXPECT_EQ(1, r1Result.ok);
+
+    // Check
+    LCRange             collections2 = mongo["test"].listCollections();
+    auto find2 = std::find_if(std::begin(collections2), std::end(collections2), [](CollectionInfo const& v) {return v.name == "Blob";});
+    ASSERT_EQ(find2, std::end(collections2));
+
+    // Put Back.
+    AdminResult         r2Result = mongo["test"]["Blob1"].rename("Blob");
+    EXPECT_EQ(1, r2Result.ok);
+}
+
+TEST(IntegrationConnectionMongoTest, CreateDropCollection)
+{
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+
+    LCRange             collections1 = mongo["test"].listCollections();
+    auto find1 = std::find_if(std::begin(collections1), std::end(collections1), [](CollectionInfo const& v) {return v.name == "CreateTest";});
+    ASSERT_EQ(find1, std::end(collections1));
+
+    AdminResult         r1Result = mongo["test"].createCollection("CreateTest");
+    EXPECT_EQ(1, r1Result.ok);
+    std::cerr << ThorsAnvil::Serialize::jsonExporter(r1Result) << "\n\n";
+
+    // Check
+    LCRange             collections2 = mongo["test"].listCollections();
+    auto find2 = std::find_if(std::begin(collections2), std::end(collections2), [](CollectionInfo const& v) {return v.name == "CreateTest";});
+    ASSERT_NE(find2, std::end(collections2));
+
+    AdminResult         r2Result = mongo["test"]["CreateTest"].drop();
+    EXPECT_EQ(1, r2Result.ok);
+    std::cerr << ThorsAnvil::Serialize::jsonExporter(r1Result) << "\n\n";
+    std::cerr << ThorsAnvil::Serialize::jsonExporter(r2Result) << "\n\n";
+
+    LCRange             collections3 = mongo["test"].listCollections();
+    auto find3 = std::find_if(std::begin(collections3), std::end(collections3), [](CollectionInfo const& v) {return v.name == "CreateTest";});
+    ASSERT_EQ(find3, std::end(collections3));
 }
 
 TEST(IntegrationConnectionMongoTest, SerializeFindAddSort)

@@ -106,6 +106,7 @@ using TimeStamp     = ThorsAnvil::Serialize::MongoUtility::BsonTimeStamp;
 // The following represent information that is either written to or received from Mongo.
 enum class ReadPreference   { Primary, PrimaryPreferred, Secondary, SecondaryPreferred, Nearest};
 enum class SortOrder        { Ascending = 1, Descending = -1};
+enum class ValidationLevel  { Off, Strict, Moderate };
 
 struct WriteError
 {
