@@ -9,21 +9,20 @@ namespace Action
 {
 
 template<typename F>
-class ListCollection: public MongoActionWriteInterfaceTrivialImpl<ListCollection<F>>
+class ListDatabase: public MongoActionWriteInterfaceTrivialImpl<ListDatabase<F>>
 {
-    friend class ThorsAnvil::Serialize::Traits<ListCollection<F>>;
+    friend class ThorsAnvil::Serialize::Traits<ListDatabase<F>>;
 
-    std::uint32_t                   listCollections;
-    std::string_view                $db;
+    std::uint32_t                   listDatabases;
+    std::string                     $db = "admin";
     std::optional<F>                filter;
     std::optional<bool>             nameOnly;
     std::optional<bool>             authorizedCollections;
     std::optional<std::string>      comment;
 
     public:
-        ListCollection(std::string_view db, CommandConfig const& config, std::optional<F> filter)
-            : listCollections(1)
-            , $db(db)
+        ListDatabase(CommandConfig const& config, std::optional<F> filter)
+            : listDatabases(1)
             , filter(filter)
             , nameOnly(config.getNameOnly())
             , authorizedCollections(config.getAuthorizedCollections())
@@ -35,16 +34,16 @@ class ListCollection: public MongoActionWriteInterfaceTrivialImpl<ListCollection
 
 template<typename F>
 inline
-LCRange DB::listCollections(F const& filter, CommandConfig const& config)
+DBRange ThorsMongo::listDatabases(F const& filter, CommandConfig const& config)
 {
-    auto            response = std::make_unique<ListCollectionResult>(mongoServer, getName(), config);
+    auto            response = std::make_unique<ListDatabaseResult>();
     MessageId       messageId;
-    if (mongoServer.messageHandler.sendMessage(Action::ListCollection<F>{getName(), config, filter},
+    if (messageHandler.sendMessage(Action::ListDatabase<F>{config, filter},
                                                messageId,
                                                config.getMsgFlag(),
                                                config.getPrinterConfig()))
     {
-        if (mongoServer.messageHandler.recvMessage(*response, messageId, config.getParserConfig()))
+        if (messageHandler.recvMessage(*response, messageId, config.getParserConfig()))
         {
             // The message was sent and reply read correctly.
             // Note: This does not mean it worked.
@@ -54,16 +53,16 @@ LCRange DB::listCollections(F const& filter, CommandConfig const& config)
     return response;
 }
 inline
-LCRange DB::listCollections(CommandConfig const& config)
+DBRange ThorsMongo::listDatabases(CommandConfig const& config)
 {
-    auto            response = std::make_unique<ListCollectionResult>(mongoServer, getName(), config);
+    auto            response = std::make_unique<ListDatabaseResult>();
     MessageId       messageId;
-    if (mongoServer.messageHandler.sendMessage(Action::ListCollection<bool>{getName(), config, {}},
+    if (messageHandler.sendMessage(Action::ListDatabase<bool>{config, {}},
                                                messageId,
                                                config.getMsgFlag(),
                                                config.getPrinterConfig()))
     {
-        if (mongoServer.messageHandler.recvMessage(*response, messageId, config.getParserConfig()))
+        if (messageHandler.recvMessage(*response, messageId, config.getParserConfig()))
         {
             // The message was sent and reply read correctly.
             // Note: This does not mean it worked.
@@ -76,6 +75,6 @@ LCRange DB::listCollections(CommandConfig const& config)
 }
 
 ThorsAnvil_Template_MakeTrait(1,
-                        ThorsAnvil::DB::Mongo::Action::ListCollection,  listCollections, $db, filter,
+                        ThorsAnvil::DB::Mongo::Action::ListDatabase,    listDatabases, $db, filter,
                                                                         nameOnly, authorizedCollections,
                                                                         comment);

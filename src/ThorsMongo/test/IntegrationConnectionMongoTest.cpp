@@ -36,9 +36,11 @@ using ThorsAnvil::DB::Mongo::FAModifyResult;
 using ThorsAnvil::DB::Mongo::CountResult;
 using ThorsAnvil::DB::Mongo::DistinctResult;
 using ThorsAnvil::DB::Mongo::ListCollectionResult;
+using ThorsAnvil::DB::Mongo::ListDatabaseResult;
 
 using ThorsAnvil::DB::Mongo::FindRange;
 using ThorsAnvil::DB::Mongo::LCRange;
+using ThorsAnvil::DB::Mongo::DBRange;
 
 using namespace ThorsAnvil::DB::Mongo::QueryOp;
 
@@ -696,6 +698,25 @@ TEST(IntegrationConnectionMongoTest, ListCollections)
     TestFindResult<ListCollectionResult>  findResult(r1Result);
     EXPECT_EQ(1, findResult.ok);
     EXPECT_EQ(0, findResult.cursor.getId());
+
+    int count = 0;
+    for (auto const& v: r1Result) {
+        ++count;
+    }
+    EXPECT_NE(0, count);
+}
+
+TEST(IntegrationConnectionMongoTest, ListDatabases)
+{
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+
+    using ParserConfig  = ThorsAnvil::Serialize::ParserInterface::ParserConfig;
+
+
+    DBRange                   r1Result = mongo.listDatabases();
+    EXPECT_EQ(1, r1Result.rangeData->ok);
 
     int count = 0;
     for (auto const& v: r1Result) {

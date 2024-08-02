@@ -75,10 +75,11 @@ class CursorFirst: public Cursor
         }
 };
 
-template<typename T>
+template<typename R>
 class CursorIterator
 {
-    Nref<CursorData<T>>     cursorData;
+    using T = typename R::ValueType;
+    Nref<R>                 cursorData;
     bool                    input;
 
     public:
@@ -87,7 +88,7 @@ class CursorIterator
         using pointer           = T*;
         using reference         = T&;
         using iterator_category = std::input_iterator_tag;
-        CursorIterator(CursorData<T>& cursorData, bool input)
+        CursorIterator(R& cursorData, bool input)
             : cursorData(cursorData)
             , input(input)
         {}
@@ -116,23 +117,33 @@ struct Range
 {
     using T = typename R::ValueType;
 
-    std::shared_ptr<R>   findData;
+    std::shared_ptr<R>   rangeData;
+
+    bool cursorhasData() const
+    {
+        // If there is no valid data: !ok
+        // Or if there is no data     size() == 0
+        // Then return false.
+        return ((!rangeData->ok) || (rangeData->size() == 0)) ? false : true;
+    }
     public:
-        Range(std::unique_ptr<R> result)
-            : findData(std::move(result))
+        Range(std::unique_ptr<R> rangeData)
+            : rangeData(std::move(rangeData))
         {}
-        CursorIterator<T> begin()   {return CursorIterator<T>{*findData, true};}
-        CursorIterator<T> end()     {return CursorIterator<T>{*findData, false};}
+        CursorIterator<R> begin()   {return CursorIterator<R>{*rangeData, cursorhasData()};}
+        CursorIterator<R> end()     {return CursorIterator<R>{*rangeData, false};}
 
     private:
         friend class TestFindResult<R>;
-        R& getResult() const {return *findData;}
+        R& getResult() const {return *rangeData;}
 };
 
 template<typename T>
 class CursorData: public CmdReplyBase
 {
     friend class ThorsAnvil::Serialize::Traits<CursorData<T>>;
+    friend struct Range<FindResult<T>>;
+    friend struct Range<ListCollectionResult>;
     friend class TestFindResult<FindResult<T>>;
     friend class TestFindResult<ListCollectionResult>;
 
@@ -171,7 +182,8 @@ class CursorData: public CmdReplyBase
         }
 
     private:
-        friend class CursorIterator<T>;
+        friend class CursorIterator<FindResult<T>>;
+        friend class CursorIterator<ListCollectionResult>;
         // These functions are for the CursorIterator.
         bool increment()
         {
@@ -186,6 +198,10 @@ class CursorData: public CmdReplyBase
         T& current()
         {
             return cursor.firstBatch[index];
+        }
+        std::size_t size() const
+        {
+            return cursor.firstBatch.size();
         }
 };
 }
