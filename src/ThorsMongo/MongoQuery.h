@@ -5,6 +5,29 @@
 #include "ThorsMongoCommon.h"
 #include <iterator>
 
+#define ThorsMongo_CreateFilter(Name, TypeName, FieldName, Operator)                                \
+template<typename T>                                                                                \
+struct THOR_BUILD_NAME(Name, THOR_FIELD_ACCESS)                                                     \
+{                                                                                                   \
+    using CType = ThorsAnvil::DB::Mongo::ConstructorType<T>;                                        \
+    THOR_BUILD_NAME(Name, THOR_FIELD_ACCESS)(CType init) : FieldName(std::move(init)) {}            \
+    T             FieldName;                                                                        \
+};                                                                                                  \
+ThorsAnvil_Template_MakeTrait(1, THOR_BUILD_NAME(Name, THOR_FIELD_ACCESS), FieldName);              \
+                                                                                                    \
+using Name    = THOR_BUILD_NAME(Name, THOR_FIELD_ACCESS)<ThorsAnvil::DB::Mongo::QueryOp:: Operator <typename ThorsAnvil::Serialize::Traits<TypeName>::THOR_BUILD_NAME(Type, FieldName)>>
+
+#define ThorsMongo_CreateUpdate(Name, Action, TypeName, FieldName)                                  \
+template<typename T>                                                                                \
+struct THOR_BUILD_NAME(Name, THOR_FIELD_UPDATE)                                                     \
+{                                                                                                   \
+    using CType = ThorsAnvil::DB::Mongo::ConstructorType<T>;                                        \
+    THOR_BUILD_NAME(Name, THOR_FIELD_UPDATE)(CType init) : FieldName(std::move(init)) {}          \
+    T           FieldName;                                                                          \
+};                                                                                                  \
+ThorsAnvil_Template_MakeTrait(1, THOR_BUILD_NAME(Name, THOR_FIELD_UPDATE), FieldName);              \
+using Name = ThorsAnvil::DB::Mongo::QueryOp:: Action <THOR_BUILD_NAME(Name, THOR_FIELD_UPDATE)<ThorsAnvil::Serialize::Traits<TypeName>::THOR_BUILD_NAME(Type, FieldName)>>
+
 namespace ThorsAnvil::DB::Mongo
 {
 
@@ -14,18 +37,20 @@ template<typename T>
 concept IsQuery = requires {typename T::Query; };
 }
 
+enum class Remove {All, One};
+
 template<typename T, typename Hint = std::string>
 struct Query
 {
     using CType = ConstructorType<T>;
-    Query(CType init, std::uint32_t limit = 0, std::optional<Collation> collation = {}, std::optional<Hint> hint = {})
+    Query(CType init, Remove r = Remove::All, std::optional<Collation> collation = {}, std::optional<Hint> hint = {})
         : q(std::move(init))
-        , limit(limit)
+        , limit(r == Remove::One ? 1 : 0)
         , collation(collation)
         , hint(hint)
     {}
     T                               q;
-    std::uint32_t                   limit       = 0;
+    std::uint32_t                   limit;
     std::optional<Collation>        collation;
     std::optional<Hint>             hint;
 };

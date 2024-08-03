@@ -133,6 +133,12 @@ struct Range
         CursorIterator<R> begin()   {return CursorIterator<R>{*rangeData, cursorhasData()};}
         CursorIterator<R> end()     {return CursorIterator<R>{*rangeData, false};}
 
+        bool isOk()                     const   {return static_cast<bool>(*rangeData);}
+        std::string getHRErrorMessage() const   {return rangeData->getHRErrorMessage();}
+
+        operator bool()                 const   {return isOk();}
+        friend std::ostream& operator<<(std::ostream& str, Range<R> const& data)    {return str << data.getHRErrorMessage();}
+
     private:
         friend class TestFindResult<R>;
         R& getResult() const {return *rangeData;}

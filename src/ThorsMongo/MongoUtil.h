@@ -130,8 +130,11 @@ struct CmdReplyBase
     std::string                 codeName;
     int                         code            = 0;
 
-    bool isOk() const;
-    std::string getHRErrorMessage() const;
+    bool isOk()                     const   {return ok != 0.0;}
+    std::string getHRErrorMessage() const   {return errmsg;}
+
+    operator bool()                 const   {return isOk();}
+    friend std::ostream& operator<<(std::ostream& str, CmdReplyBase const& data)    {return str << data.getHRErrorMessage();}
 };
 
 

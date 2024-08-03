@@ -12,6 +12,7 @@ using ThorsAnvil::DB::Mongo::Action::Remover;
 using ThorsAnvil::DB::Mongo::RemoveConfig;
 using ThorsAnvil::DB::Mongo::Query;
 using ThorsAnvil::DB::Mongo::Collation;
+using ThorsAnvil::DB::Mongo::Remove;
 
 
 TEST(ThorsMongRemoveTest, Construct)
@@ -117,7 +118,7 @@ TEST(ThorsMongRemoveTest, RemoveTuple)
     // This test Assumes
     std::string                         collection("col");
     std::string                         db("db");
-    auto                                documents{std::make_tuple(Query<NameField<std::string>>{"Sam",1}, Query<AgeField<int>>{45}, Query<Funky>{"twin"})};
+    auto                                documents{std::make_tuple(Query<NameField<std::string>>{"Sam", Remove::One}, Query<AgeField<int>>{45}, Query<Funky>{"twin"})};
 
     Remover<decltype(documents)>        remover(collection, db, RemoveConfig{}, documents);
     EXPECT_EQ(0xA6, remover.getSizeBson());
@@ -166,7 +167,7 @@ TEST(ThorsMongRemoveTest, RemoveBasic)
 {
     std::string                         collection("col");
     std::string                         db("db");
-    std::vector<Query<NameField<std::string>>>      documents{{"Sam",1}};
+    std::vector<Query<NameField<std::string>>>      documents{{"Sam", Remove::One}};
 
     Remover<std::vector<Query<NameField<std::string>>>>    remover(collection, db, RemoveConfig{}, documents);
     EXPECT_EQ(0x58, remover.getSizeBson());
@@ -199,7 +200,7 @@ TEST(ThorsMongRemoveTest, RemoveWithComment)
 {
     std::string                         collection("col");
     std::string                         db("db");
-    std::vector<Query<NameField<std::string>>>      documents{{"Sam",1}};
+    std::vector<Query<NameField<std::string>>>      documents{{"Sam", Remove::One}};
 
     Remover<std::vector<Query<NameField<std::string>>>>    remover(collection, db, RemoveConfig{}.setComment("A famous delete"), documents);
     EXPECT_EQ(0x75, remover.getSizeBson());
@@ -233,7 +234,7 @@ TEST(ThorsMongRemoveTest, RemoveWithLet)
 {
     std::string                         collection("col");
     std::string                         db("db");
-    std::vector<Query<NameField<std::string>>>      documents{{"Sam",1}};
+    std::vector<Query<NameField<std::string>>>      documents{{"Sam", Remove::One}};
 
     Remover<std::vector<Query<NameField<std::string>>>>    remover(collection, db, RemoveConfig{}.setLet({{"x", "12"}}), documents);
     EXPECT_EQ(0x6C, remover.getSizeBson());
@@ -270,7 +271,7 @@ TEST(ThorsMongRemoveTest, RemoveWithOrdered)
 {
     std::string                         collection("col");
     std::string                         db("db");
-    std::vector<Query<NameField<std::string>>>      documents{{"Sam",1}};
+    std::vector<Query<NameField<std::string>>>      documents{{"Sam", Remove::One}};
 
     Remover<std::vector<Query<NameField<std::string>>>>    remover(collection, db, RemoveConfig{}.setOrdered(false), documents);
     EXPECT_EQ(0x62, remover.getSizeBson());
@@ -304,7 +305,7 @@ TEST(ThorsMongRemoveTest, RemoveWithWriteConcern)
 {
     std::string                         collection("col");
     std::string                         db("db");
-    std::vector<Query<NameField<std::string>>>      documents{{"Sam",1}};
+    std::vector<Query<NameField<std::string>>>      documents{{"Sam", Remove::One}};
 
     Remover<std::vector<Query<NameField<std::string>>>>    remover(collection, db, RemoveConfig{}.setWriteConcern({13, true, 12}), documents);
     EXPECT_EQ(0x84, remover.getSizeBson());
@@ -343,7 +344,7 @@ TEST(ThorsMongRemoveTest, RemoveWithMaxTimeMS)
 {
     std::string                         collection("col");
     std::string                         db("db");
-    std::vector<Query<NameField<std::string>>>      documents{{"Sam",1}};
+    std::vector<Query<NameField<std::string>>>      documents{{"Sam", Remove::One}};
 
     Remover<std::vector<Query<NameField<std::string>>>>    remover(collection, db, RemoveConfig{}.setMaxTimeMS(18), documents);
     EXPECT_EQ(0x67, remover.getSizeBson());
@@ -410,7 +411,7 @@ TEST(ThorsMongRemoveTest, RemoveQueryHint)
 {
     std::string                         collection("col");
     std::string                         db("db");
-    std::vector<Query<NameField<std::string>>>      documents{{"Sam",1, {}, "Hint"}};
+    std::vector<Query<NameField<std::string>>>      documents{{"Sam", Remove::One, {}, "Hint"}};
 
     Remover<std::vector<Query<NameField<std::string>>>>    remover(collection, db, RemoveConfig{}, documents);
     EXPECT_EQ(0x67, remover.getSizeBson());
@@ -444,7 +445,7 @@ TEST(ThorsMongRemoveTest, RemoveDeleteWithCollation)
 {
     std::string                         collection("col");
     std::string                         db("db");
-    std::vector<Query<NameField<std::string>>>      documents{{"Sam",5, Collation{"Bob", true, {}, 32}}};
+    std::vector<Query<NameField<std::string>>>      documents{{"Sam", Remove::One, Collation{"Bob", true, {}, 32}}};
 
     Remover<std::vector<Query<NameField<std::string>>>>    remover(collection, db, RemoveConfig{}, documents);
     EXPECT_EQ(0x92, remover.getSizeBson());
@@ -465,7 +466,7 @@ TEST(ThorsMongRemoveTest, RemoveDeleteWithCollation)
                                         "\x13\x00\x00\x00"                                      //  4   59      18      11      4
                                             "\x02"  "name\x00"  "\x04\x00\x00\x00"  "Sam\x00"   //  14  73      32      25      18
                                             "\x00"                                              //  1   74      33      26      19
-                                    "\x10"  "limit\x00" "\x05\x00\x00\x00"                      //  11  85      44      37
+                                    "\x10"  "limit\x00" "\x01\x00\x00\x00"                      //  11  85      44      37
                                     "\x03"  "collation\x00"                                     //  11  96      55      48
                                         "\x2F\x00\x00\x00"                                      //  4   100     59      52      4
                                             "\x02" "locale\x00"    "\x04\x00\x00\x00" "Bob\x00" //  16  116     75      68      20

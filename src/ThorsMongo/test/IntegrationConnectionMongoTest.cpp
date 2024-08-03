@@ -23,6 +23,7 @@ using ThorsAnvil::DB::Mongo::Query;
 using ThorsAnvil::DB::Mongo::Projection;
 using ThorsAnvil::DB::Mongo::SortOrder;
 using ThorsAnvil::DB::Mongo::CollectionInfo;
+using ThorsAnvil::DB::Mongo::Remove;
 
 using ThorsAnvil::DB::Mongo::FindConfig;
 using ThorsAnvil::DB::Mongo::FAModifyConfig;
@@ -109,8 +110,8 @@ TEST(IntegrationConnectionMongoTest, removeData)
     std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}}, {"Sam", 23, {"Jester", "FW", 23}}, {"Sam", 45, {"Limbo", "FG", 56}}};
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
-    RemoveResult        r1Result = mongo["test"]["People"].remove(std::make_tuple(Query<NameField<std::string>>{"Sam", 1}));
-    RemoveResult        r2Result = mongo["test"]["People"].remove(std::vector<Query<NameField<std::string>>>{{"Sam", 0}});
+    RemoveResult        r1Result = mongo["test"]["People"].remove(std::make_tuple(Query<NameField<std::string>>{"Sam", Remove::One}));
+    RemoveResult        r2Result = mongo["test"]["People"].remove(std::vector<Query<NameField<std::string>>>{{"Sam", Remove::All}});
 
     EXPECT_EQ(1, iResult.ok);
     EXPECT_EQ(3, iResult.n);
@@ -748,7 +749,6 @@ TEST(IntegrationConnectionMongoTest, CreateDropCollection)
 
     AdminResult         r1Result = mongo["test"].createCollection("CreateTest");
     EXPECT_EQ(1, r1Result.ok);
-    std::cerr << ThorsAnvil::Serialize::jsonExporter(r1Result) << "\n\n";
 
     // Check
     LCRange             collections2 = mongo["test"].listCollections();
@@ -757,8 +757,6 @@ TEST(IntegrationConnectionMongoTest, CreateDropCollection)
 
     AdminResult         r2Result = mongo["test"]["CreateTest"].drop();
     EXPECT_EQ(1, r2Result.ok);
-    std::cerr << ThorsAnvil::Serialize::jsonExporter(r1Result) << "\n\n";
-    std::cerr << ThorsAnvil::Serialize::jsonExporter(r2Result) << "\n\n";
 
     LCRange             collections3 = mongo["test"].listCollections();
     auto find3 = std::find_if(std::begin(collections3), std::end(collections3), [](CollectionInfo const& v) {return v.name == "CreateTest";});
