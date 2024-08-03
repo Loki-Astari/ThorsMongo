@@ -50,8 +50,10 @@ using namespace ThorsAnvil::DB::Mongo::QueryOp;
 namespace ThorsAnvil::DB::Mongo
 {
 template<typename R>
-struct TestFindResult
+class TestFindResult
 {
+    public:
+
     using T = typename R::ValueType;
 
     ThorsAnvil::DB::Mongo::CursorFirst<T>&              cursor;
@@ -68,9 +70,17 @@ struct TestFindResult
 }
 using ThorsAnvil::DB::Mongo::TestFindResult;
 
+#if defined(THOR_DISABLE_TEST_WITH_MONGO_QUERY) && (THOR_DISABLE_TEST_WITH_MONGO_QUERY == 1)
+#define SKIP_INTEGRATION_TEST()   GTEST_SKIP()
+#else
+#define SKIP_INTEGRATION_TEST()
+#endif
+
 
 TEST(IntegrationConnectionMongoTest, connectToMongoWithAuthenticator)
 {
+    SKIP_INTEGRATION_TEST();
+
     ConnectionMongo     mongo({"localhost", 27017});
     MongoMessageHandler sender(mongo);
     Authenticate        authenticate;
@@ -81,6 +91,8 @@ TEST(IntegrationConnectionMongoTest, connectToMongoWithAuthenticator)
 
 TEST(IntegrationConnectionMongoTest, connectToMongoWithAuthenticatorUsingSnappy)
 {
+    SKIP_INTEGRATION_TEST();
+
     ConnectionMongo     mongo({"localhost", 27017});
     MongoMessageHandler sender(mongo);
     Authenticate        authenticate;
@@ -91,8 +103,10 @@ TEST(IntegrationConnectionMongoTest, connectToMongoWithAuthenticatorUsingSnappy)
 
 TEST(IntegrationConnectionMongoTest, insertData)
 {
+    SKIP_INTEGRATION_TEST();
+
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}}, {"Sam", 23, {"Jester", "FW", 23}}};
+    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}};
 
     InsertResult        result = mongo["test"]["People"].insert(people);
 
@@ -106,8 +120,10 @@ TEST(IntegrationConnectionMongoTest, insertData)
 
 TEST(IntegrationConnectionMongoTest, removeData)
 {
+    SKIP_INTEGRATION_TEST();
+
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}}, {"Sam", 23, {"Jester", "FW", 23}}, {"Sam", 45, {"Limbo", "FG", 56}}};
+    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     RemoveResult        r1Result = mongo["test"]["People"].remove(std::make_tuple(Query<NameField<std::string>>{"Sam", Remove::One}));
@@ -126,8 +142,10 @@ TEST(IntegrationConnectionMongoTest, removeData)
 
 TEST(IntegrationConnectionMongoTest, insertRemoveTuple)
 {
+    SKIP_INTEGRATION_TEST();
+
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    auto                add{std::make_tuple(People{"Pam", 46, {"Lane", "WA", 65}}, Funky{"time"}, Splotch{1,2,3})};
+    auto                add{std::make_tuple(People{"Pam", 46, {"Lane", "WA", 65}, {}}, Funky{"time"}, Splotch{1,2,3})};
     auto                rem{std::make_tuple(Query<NameField<std::string>>{"Pam"}, Query<Funky>{"time"}, Query<LengthField<int>>{1})};
 
     InsertResult        iResult = mongo["test"]["People"].insert(add);
@@ -143,8 +161,10 @@ TEST(IntegrationConnectionMongoTest, insertRemoveTuple)
 
 TEST(IntegrationConnectionMongoTest, removeQueryEq)
 {
+    SKIP_INTEGRATION_TEST();
+
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}}, {"Sam", 23, {"Jester", "FW", 23}}, {"Sam", 45, {"Limbo", "FG", 56}}};
+    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
     using QNameEQ       = Query<NameField<Eq<std::string>>>;
     using VEQ           = std::vector<QNameEQ>;
 
@@ -164,9 +184,11 @@ TEST(IntegrationConnectionMongoTest, removeQueryEq)
 
 TEST(IntegrationConnectionMongoTest, removeQueryNe)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}}, {"Sam", 23, {"Jester", "FW", 23}}, {"Sam", 45, {"Limbo", "FG", 56}}};
+    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
     using QNameNE       = Query<NameField<Ne<std::string>>>;
     using VNE           = std::vector<QNameNE>;
 
@@ -186,8 +208,10 @@ TEST(IntegrationConnectionMongoTest, removeQueryNe)
 
 TEST(IntegrationConnectionMongoTest, removeQueryGt)
 {
+    SKIP_INTEGRATION_TEST();
+
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}}, {"Sam", 23, {"Jester", "FW", 23}}, {"Sam", 45, {"Limbo", "FG", 56}}};
+    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
     using QNameGT       = Query<AgeField<Gt<int>>>;
     using VGT           = std::vector<QNameGT>;
 
@@ -207,8 +231,10 @@ TEST(IntegrationConnectionMongoTest, removeQueryGt)
 
 TEST(IntegrationConnectionMongoTest, removeQueryGte)
 {
+    SKIP_INTEGRATION_TEST();
+
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}}, {"Sam", 23, {"Jester", "FW", 23}}, {"Sam", 45, {"Limbo", "FG", 56}}};
+    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
     using QNameGTE      = Query<AgeField<Gte<int>>>;
     using VGTE          = std::vector<QNameGTE>;
 
@@ -228,8 +254,10 @@ TEST(IntegrationConnectionMongoTest, removeQueryGte)
 
 TEST(IntegrationConnectionMongoTest, removeQueryLt)
 {
+    SKIP_INTEGRATION_TEST();
+
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}}, {"Sam", 23, {"Jester", "FW", 23}}, {"Sam", 45, {"Limbo", "FG", 56}}};
+    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
     using QNameLT       = Query<AgeField<Lt<int>>>;
     using VLT           = std::vector<QNameLT>;
 
@@ -249,8 +277,10 @@ TEST(IntegrationConnectionMongoTest, removeQueryLt)
 
 TEST(IntegrationConnectionMongoTest, removeQueryLte)
 {
+    SKIP_INTEGRATION_TEST();
+
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}}, {"Sam", 23, {"Jester", "FW", 23}}, {"Sam", 45, {"Limbo", "FG", 56}}};
+    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
     using QNameLTE      = Query<AgeField<Lte<int>>>;
     using VLTE          = std::vector<QNameLTE>;
 
@@ -270,8 +300,10 @@ TEST(IntegrationConnectionMongoTest, removeQueryLte)
 
 TEST(IntegrationConnectionMongoTest, removeQueryIn)
 {
+    SKIP_INTEGRATION_TEST();
+
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}}, {"Sam", 23, {"Jester", "FW", 23}}, {"Sam", 45, {"Limbo", "FG", 56}}};
+    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
     using QNameIN       = Query<AgeField<In<int>>>;
     using VIN           = std::vector<QNameIN>;
 
@@ -291,8 +323,10 @@ TEST(IntegrationConnectionMongoTest, removeQueryIn)
 
 TEST(IntegrationConnectionMongoTest, removeQueryNin)
 {
+    SKIP_INTEGRATION_TEST();
+
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}}, {"Sam", 23, {"Jester", "FW", 23}}, {"Sam", 45, {"Limbo", "FG", 56}}};
+    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
     using QNameNIN      = Query<AgeField<Nin<int>>>;
     using VNIN          = std::vector<QNameNIN>;
 
@@ -312,10 +346,12 @@ TEST(IntegrationConnectionMongoTest, removeQueryNin)
 
 TEST(IntegrationConnectionMongoTest, removeQueryAnd)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}}, {"Sam", 23, {"Jester", "FW", 23}}, {"Sam", 45, {"Limbo", "FG", 56}}};
+    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
     using QNameAND      = Query<And<NameField<std::string>, AgeField<Lt<int>>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -334,10 +370,12 @@ TEST(IntegrationConnectionMongoTest, removeQueryAnd)
 
 TEST(IntegrationConnectionMongoTest, removeQueryOr)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}}, {"Sam", 23, {"Jester", "FW", 23}}, {"Sam", 45, {"Limbo", "FG", 56}}};
+    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
     using QNameOR       = Query<Or<NameField<std::string>, AgeField<Lt<int>>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -356,10 +394,12 @@ TEST(IntegrationConnectionMongoTest, removeQueryOr)
 
 TEST(IntegrationConnectionMongoTest, removeQueryNor)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}}, {"Sam", 23, {"Jester", "FW", 23}}, {"Sam", 45, {"Limbo", "FG", 56}}};
+    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
     using QNameNOR      = Query<Nor<NameField<std::string>, AgeField<Lt<int>>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -381,10 +421,12 @@ TEST(IntegrationConnectionMongoTest, removeQueryNor)
 
 TEST(IntegrationConnectionMongoTest, removeQueryNot)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}}, {"Sam", 23, {"Jester", "FW", 23}}, {"Sam", 45, {"Limbo", "FG", 56}}};
+    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
     using QNameNOT       = Query<NameField<Not<Eq<std::string>>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -403,10 +445,12 @@ TEST(IntegrationConnectionMongoTest, removeQueryNot)
 
 TEST(IntegrationConnectionMongoTest, removeQueryExists)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}}, {"Sam", 23, {"Jester", "FW", 23}}, {"Sam", 45, {"Limbo", "FG", 56}}};
+    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
     using QNameEXISTS   = Query<NameField<Exists>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -425,10 +469,12 @@ TEST(IntegrationConnectionMongoTest, removeQueryExists)
 
 TEST(IntegrationConnectionMongoTest, removeQueryType)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}}, {"Sam", 23, {"Jester", "FW", 23}}, {"Sam", 45, {"Limbo", "FG", 56}}};
+    std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
     using QNameEXISTS   = Query<NameField<Type>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -447,10 +493,12 @@ TEST(IntegrationConnectionMongoTest, removeQueryType)
 
 TEST(IntegrationConnectionMongoTest, removeQueryMod)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"Sam", 25, {"Court", "NY", 12}}, {"Sam", 37, {"Jester", "FW", 23}}, {"Sam", 49, {"Limbo", "FG", 56}}};
+    std::vector<People> people{{"Sam", 25, {"Court", "NY", 12}, {}}, {"Sam", 37, {"Jester", "FW", 23}, {}}, {"Sam", 49, {"Limbo", "FG", 56}, {}}};
     using QNameMod      = Query<AgeField<Mod>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -469,10 +517,12 @@ TEST(IntegrationConnectionMongoTest, removeQueryMod)
 
 TEST(IntegrationConnectionMongoTest, removeQueryRegEx)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"Samual", 25, {"Court", "NY", 12}}, {"Samantha", 37, {"Jester", "FW", 23}}, {"Samtra", 49, {"Limbo", "FG", 56}}};
+    std::vector<People> people{{"Samual", 25, {"Court", "NY", 12}, {}}, {"Samantha", 37, {"Jester", "FW", 23}, {}}, {"Samtra", 49, {"Limbo", "FG", 56}, {}}};
     using QNameRegEx    = Query<NameField<RegEx>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -497,6 +547,8 @@ TEST(IntegrationConnectionMongoTest, removeQueryText)
 
 TEST(IntegrationConnectionMongoTest, removeQueryAll)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
@@ -523,6 +575,8 @@ TEST(IntegrationConnectionMongoTest, removeQueryAll)
 
 TEST(IntegrationConnectionMongoTest, removeQueryElemMatch)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
@@ -549,6 +603,8 @@ TEST(IntegrationConnectionMongoTest, removeQueryElemMatch)
 
 TEST(IntegrationConnectionMongoTest, removeQueryElemSize)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
@@ -575,10 +631,12 @@ TEST(IntegrationConnectionMongoTest, removeQueryElemSize)
 
 TEST(IntegrationConnectionMongoTest, removeQueryAllClear)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"Sam", 17, {"Cour terror",  "NY", 12}}, {"Sam", 25, {"Jes terror",   "FW", 23}}, {"Sam", 33, {"Limbo terror", "FG", 56}}};
+    std::vector<People> people{{"Sam", 17, {"Cour terror",  "NY", 12}, {}}, {"Sam", 25, {"Jes terror",   "FW", 23}, {}}, {"Sam", 33, {"Limbo terror", "FG", 56}, {}}};
     using QAgeAllClear  = Query<AgeField<AllClear>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -597,10 +655,12 @@ TEST(IntegrationConnectionMongoTest, removeQueryAllClear)
 
 TEST(IntegrationConnectionMongoTest, removeQueryAllSet)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"Sam", 17, {"Cour terror",  "NY", 12}}, {"Sam", 25, {"Jes terror",   "FW", 23}}, {"Sam", 33, {"Limbo terror", "FG", 56}}};
+    std::vector<People> people{{"Sam", 17, {"Cour terror",  "NY", 12}, {}}, {"Sam", 25, {"Jes terror",   "FW", 23}, {}}, {"Sam", 33, {"Limbo terror", "FG", 56}, {}}};
     using QAgeAllSet    = Query<AgeField<AllSet>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -621,10 +681,12 @@ TEST(IntegrationConnectionMongoTest, removeQueryAllSet)
 
 TEST(IntegrationConnectionMongoTest, removeQueryAnyClear)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"Sam", 17, {"Cour terror",  "NY", 12}}, {"Sam", 25, {"Jes terror",   "FW", 23}}, {"Sam", 33, {"Limbo terror", "FG", 56}}};
+    std::vector<People> people{{"Sam", 17, {"Cour terror",  "NY", 12}, {}}, {"Sam", 25, {"Jes terror",   "FW", 23}, {}}, {"Sam", 33, {"Limbo terror", "FG", 56}, {}}};
     using QAgeAnyClear  = Query<AgeField<AnyClear>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -643,10 +705,12 @@ TEST(IntegrationConnectionMongoTest, removeQueryAnyClear)
 
 TEST(IntegrationConnectionMongoTest, removeQueryAnySet)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"Sam", 17, {"Cour terror",  "NY", 12}}, {"Sam", 25, {"Jes terror",   "FW", 23}}, {"Sam", 33, {"Limbo terror", "FG", 56}}};
+    std::vector<People> people{{"Sam", 17, {"Cour terror",  "NY", 12}, {}}, {"Sam", 25, {"Jes terror",   "FW", 23}, {}}, {"Sam", 33, {"Limbo terror", "FG", 56}, {}}};
     using QAgeAnySet    = Query<AgeField<AnySet>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -665,10 +729,12 @@ TEST(IntegrationConnectionMongoTest, removeQueryAnySet)
 
 TEST(IntegrationConnectionMongoTest, findQueryEq)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"Sam", 45, {"Cour terror",  "NY", 12}}, {"John", 45, {"Jes terror",   "FW", 23}}, {"John", 45, {"Limbo terror", "FG", 56}}};
+    std::vector<People> people{{"Sam", 45, {"Cour terror",  "NY", 12}, {}}, {"John", 45, {"Jes terror",   "FW", 23}, {}}, {"John", 45, {"Limbo terror", "FG", 56}, {}}};
     using FindName      = NameField<Eq<std::string>>;
     using FindAge       = AgeField<Eq<std::uint32_t>>;
 
@@ -690,6 +756,8 @@ TEST(IntegrationConnectionMongoTest, findQueryEq)
 
 TEST(IntegrationConnectionMongoTest, ListCollections)
 {
+    SKIP_INTEGRATION_TEST();
+
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
 
     LCRange                   r1Result = mongo["test"].listCollections();
@@ -699,6 +767,7 @@ TEST(IntegrationConnectionMongoTest, ListCollections)
 
     int count = 0;
     for (auto const& v: r1Result) {
+        ((void)v);
         ++count;
     }
     EXPECT_NE(0, count);
@@ -706,6 +775,8 @@ TEST(IntegrationConnectionMongoTest, ListCollections)
 
 TEST(IntegrationConnectionMongoTest, ListDatabases)
 {
+    SKIP_INTEGRATION_TEST();
+
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
 
     DBRange                   r1Result = mongo.listDatabases();
@@ -713,6 +784,7 @@ TEST(IntegrationConnectionMongoTest, ListDatabases)
 
     int count = 0;
     for (auto const& v: r1Result) {
+        ((void)v);
         ++count;
     }
     EXPECT_NE(0, count);
@@ -720,6 +792,8 @@ TEST(IntegrationConnectionMongoTest, ListDatabases)
 
 TEST(IntegrationConnectionMongoTest, RenameCollection)
 {
+    SKIP_INTEGRATION_TEST();
+
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
 
     LCRange             collections1 = mongo["test"].listCollections();
@@ -741,6 +815,8 @@ TEST(IntegrationConnectionMongoTest, RenameCollection)
 
 TEST(IntegrationConnectionMongoTest, CreateDropCollection)
 {
+    SKIP_INTEGRATION_TEST();
+
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
 
     LCRange             collections1 = mongo["test"].listCollections();
@@ -765,10 +841,12 @@ TEST(IntegrationConnectionMongoTest, CreateDropCollection)
 
 TEST(IntegrationConnectionMongoTest, SerializeFindAddSort)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}},{"Sam", 45, {"Cour terror",  "NY", 12}}, {"John", 38, {"Limbo terror", "FG", 56}}};
+    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}, {}},{"Sam", 45, {"Cour terror",  "NY", 12}, {}}, {"John", 38, {"Limbo terror", "FG", 56}, {}}};
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -796,10 +874,12 @@ TEST(IntegrationConnectionMongoTest, SerializeFindAddSort)
 
 TEST(IntegrationConnectionMongoTest, SerializeFindAddProjection)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}},{"John", 45, {"Cour terror",  "NY", 12}}, {"John", 38, {"Limbo terror", "FG", 56}}};
+    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}, {}},{"John", 45, {"Cour terror",  "NY", 12}, {}}, {"John", 38, {"Limbo terror", "FG", 56}, {}}};
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -841,10 +921,12 @@ TEST(IntegrationConnectionMongoTest, SerializeFindAddProjection)
 
 TEST(IntegrationConnectionMongoTest, SerializeFindSetSkip)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}},{"Sam", 45, {"Cour terror",  "NY", 12}}, {"John", 38, {"Limbo terror", "FG", 56}}};
+    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}, {}},{"Sam", 45, {"Cour terror",  "NY", 12}, {}}, {"John", 38, {"Limbo terror", "FG", 56}, {}}};
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -871,10 +953,12 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetSkip)
 
 TEST(IntegrationConnectionMongoTest, SerializeFindSetLimit)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}},{"Sam", 45, {"Cour terror",  "NY", 12}}, {"John", 38, {"Limbo terror", "FG", 56}}};
+    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}, {}},{"Sam", 45, {"Cour terror",  "NY", 12}, {}}, {"John", 38, {"Limbo terror", "FG", 56}, {}}};
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -902,10 +986,12 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetLimit)
 
 TEST(IntegrationConnectionMongoTest, SerializeFindSetBatchSize)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}},{"Sam", 45, {"Cour terror",  "NY", 12}}, {"John", 38, {"Limbo terror", "FG", 56}}};
+    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}, {}},{"Sam", 45, {"Cour terror",  "NY", 12}, {}}, {"John", 38, {"Limbo terror", "FG", 56}, {}}};
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -927,10 +1013,12 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetBatchSize)
 
 TEST(IntegrationConnectionMongoTest, SerializeFindSetSingleBatch)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}},{"Sam", 45, {"Cour terror",  "NY", 12}}, {"John", 38, {"Limbo terror", "FG", 56}}};
+    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}, {}},{"Sam", 45, {"Cour terror",  "NY", 12}, {}}, {"John", 38, {"Limbo terror", "FG", 56}, {}}};
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -953,10 +1041,12 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetSingleBatch)
 
 TEST(IntegrationConnectionMongoTest, SerializeFindSetComment)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}},{"Sam", 45, {"Cour terror",  "NY", 12}}, {"John", 38, {"Limbo terror", "FG", 56}}};
+    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}, {}},{"Sam", 45, {"Cour terror",  "NY", 12}, {}}, {"John", 38, {"Limbo terror", "FG", 56}, {}}};
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -977,10 +1067,12 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetComment)
 
 TEST(IntegrationConnectionMongoTest, SerializeFindSetMaxTimeMS)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}},{"Sam", 45, {"Cour terror",  "NY", 12}}, {"John", 38, {"Limbo terror", "FG", 56}}};
+    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}, {}},{"Sam", 45, {"Cour terror",  "NY", 12}, {}}, {"John", 38, {"Limbo terror", "FG", 56}, {}}};
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -1019,10 +1111,12 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetMin)
 
 TEST(IntegrationConnectionMongoTest, SerializeFindSetReturnKey)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}},{"Sam", 45, {"Cour terror",  "NY", 12}}, {"John", 38, {"Limbo terror", "FG", 56}}};
+    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}, {}},{"Sam", 45, {"Cour terror",  "NY", 12}, {}}, {"John", 38, {"Limbo terror", "FG", 56}, {}}};
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -1047,10 +1141,12 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetReturnKey)
 
 TEST(IntegrationConnectionMongoTest, SerializeFindSetShowRecordId)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
-    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}},{"Sam", 45, {"Cour terror",  "NY", 12}}, {"John", 38, {"Limbo terror", "FG", 56}}};
+    std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}, {}},{"Sam", 45, {"Cour terror",  "NY", 12}, {}}, {"John", 38, {"Limbo terror", "FG", 56}, {}}};
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
     InsertResult                iResult = mongo["test"]["People"].insert(people);
@@ -1111,19 +1207,21 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetLet)
 
 TEST(IntegrationConnectionMongoTest, SerializeFindAndIterate)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"John", 45, {"Jes terror",   "FW", 48}},
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},
-                                {"Lam",  38, {"Limbo terror", "FG", 41}},
-                                {"Ted",  36, {"Line Flog",    "TW", 39}},
-                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
-                                {"Blond",23, {"Glome Blob",   "FV", 26}},
-                                {"Litle",25, {"Time Bob",     "HB", 28}},
-                                {"Klin", 49, {"Court Film",   "PL", 52}},
-                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                                {"John", 45, {"Jes terror",   "FW", 48}, {}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}, {}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}, {}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}, {}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}, {}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}, {}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}, {}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}, {}}
                               };
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
@@ -1157,19 +1255,21 @@ TEST(IntegrationConnectionMongoTest, SerializeFindAndIterate)
 
 TEST(IntegrationConnectionMongoTest, FindAndReplace)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"John", 45, {"Jes terror",   "FW", 48}},
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},
-                                {"Lam",  38, {"Limbo terror", "FG", 41}},
-                                {"Ted",  36, {"Line Flog",    "TW", 39}},
-                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
-                                {"Blond",23, {"Glome Blob",   "FV", 26}},
-                                {"Litle",25, {"Time Bob",     "HB", 28}},
-                                {"Klin", 49, {"Court Film",   "PL", 52}},
-                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                                {"John", 45, {"Jes terror",   "FW", 48}, {}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}, {}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}, {}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}, {}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}, {}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}, {}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}, {}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}, {}}
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
@@ -1179,7 +1279,7 @@ TEST(IntegrationConnectionMongoTest, FindAndReplace)
     EXPECT_EQ(9, iResult.n);
     EXPECT_EQ(9, iResult.inserted.size());
 
-    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndReplaceOne<People>(FindAgeEq{32}, People{"Tom", 128, {}});
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndReplaceOne<People>(FindAgeEq{32}, People{"Tom", 128, {}, {}});
     EXPECT_EQ(1, r1Result.ok);
     ASSERT_NE(nullptr,       r1Result.value.get());
     EXPECT_EQ("Sam",         r1Result.value->name);
@@ -1198,19 +1298,21 @@ TEST(IntegrationConnectionMongoTest, FindAndReplace)
 
 TEST(IntegrationConnectionMongoTest, FindAndReplaceUsingSortAscending)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"John", 45, {"Jes terror",   "FW", 48}},
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},   // Two people aged 32
-                                {"Lam",  32, {"Limbo terror", "FG", 41}},
-                                {"Ted",  36, {"Line Flog",    "TW", 39}},
-                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
-                                {"Blond",23, {"Glome Blob",   "FV", 26}},
-                                {"Litle",25, {"Time Bob",     "HB", 28}},
-                                {"Klin", 49, {"Court Film",   "PL", 52}},
-                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                                {"John", 45, {"Jes terror",   "FW", 48}, {}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},   // Two people aged 32
+                                {"Lam",  32, {"Limbo terror", "FG", 41}, {}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}, {}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}, {}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}, {}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}, {}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}, {}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}, {}}
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
@@ -1220,7 +1322,7 @@ TEST(IntegrationConnectionMongoTest, FindAndReplaceUsingSortAscending)
     EXPECT_EQ(9, iResult.n);
     EXPECT_EQ(9, iResult.inserted.size());
 
-    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndReplaceOne<People>(FindAgeEq{32}, People{"Tom", 128, {}}, FAModifyConfig{}.setSort({{"name",SortOrder::Ascending}}));
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndReplaceOne<People>(FindAgeEq{32}, People{"Tom", 128, {}, {}}, FAModifyConfig{}.setSort({{"name",SortOrder::Ascending}}));
     EXPECT_EQ(1, r1Result.ok);
     ASSERT_NE(nullptr,       r1Result.value.get());
     EXPECT_EQ("Lam",         r1Result.value->name);
@@ -1239,19 +1341,21 @@ TEST(IntegrationConnectionMongoTest, FindAndReplaceUsingSortAscending)
 
 TEST(IntegrationConnectionMongoTest, FindAndReplaceUsingSortDescending)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"John", 45, {"Jes terror",   "FW", 48}},
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},   // Two people aged 32
-                                {"Lam",  38, {"Limbo terror", "FG", 41}},
-                                {"Ted",  32, {"Line Flog",    "TW", 39}},
-                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
-                                {"Blond",23, {"Glome Blob",   "FV", 26}},
-                                {"Litle",25, {"Time Bob",     "HB", 28}},
-                                {"Klin", 49, {"Court Film",   "PL", 52}},
-                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                                {"John", 45, {"Jes terror",   "FW", 48}, {}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},   // Two people aged 32
+                                {"Lam",  38, {"Limbo terror", "FG", 41}, {}},
+                                {"Ted",  32, {"Line Flog",    "TW", 39}, {}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}, {}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}, {}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}, {}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}, {}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}, {}}
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
@@ -1261,7 +1365,7 @@ TEST(IntegrationConnectionMongoTest, FindAndReplaceUsingSortDescending)
     EXPECT_EQ(9, iResult.n);
     EXPECT_EQ(9, iResult.inserted.size());
 
-    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndReplaceOne<People>(FindAgeEq{32}, People{"Tom", 128, {}}, FAModifyConfig{}.setSort({{"name",SortOrder::Descending}}));
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndReplaceOne<People>(FindAgeEq{32}, People{"Tom", 128, {}, {}}, FAModifyConfig{}.setSort({{"name",SortOrder::Descending}}));
     EXPECT_EQ(1, r1Result.ok);
     ASSERT_NE(nullptr,       r1Result.value.get());
     EXPECT_EQ("Ted",         r1Result.value->name);
@@ -1280,19 +1384,21 @@ TEST(IntegrationConnectionMongoTest, FindAndReplaceUsingSortDescending)
 
 TEST(IntegrationConnectionMongoTest, FindAndReplaceUsingNew)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"John", 45, {"Jes terror",   "FW", 48}},
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},
-                                {"Lam",  38, {"Limbo terror", "FG", 41}},
-                                {"Ted",  36, {"Line Flog",    "TW", 39}},
-                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
-                                {"Blond",23, {"Glome Blob",   "FV", 26}},
-                                {"Litle",25, {"Time Bob",     "HB", 28}},
-                                {"Klin", 49, {"Court Film",   "PL", 52}},
-                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                                {"John", 45, {"Jes terror",   "FW", 48}, {}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}, {}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}, {}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}, {}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}, {}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}, {}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}, {}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}, {}}
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
@@ -1302,7 +1408,7 @@ TEST(IntegrationConnectionMongoTest, FindAndReplaceUsingNew)
     EXPECT_EQ(9, iResult.n);
     EXPECT_EQ(9, iResult.inserted.size());
 
-    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndReplaceOne<People>(FindAgeEq{32}, People{"Tom", 128, {}}, FAModifyConfig{}.setReturnNew(true));
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndReplaceOne<People>(FindAgeEq{32}, People{"Tom", 128, {}, {}}, FAModifyConfig{}.setReturnNew(true));
     EXPECT_EQ(1, r1Result.ok);
     ASSERT_NE(nullptr,       r1Result.value.get());
     EXPECT_EQ("Tom",         r1Result.value->name);
@@ -1321,19 +1427,21 @@ TEST(IntegrationConnectionMongoTest, FindAndReplaceUsingNew)
 
 TEST(IntegrationConnectionMongoTest, FindAndReplaceUsingFields)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"John", 45, {"Jes terror",   "FW", 48}},
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},
-                                {"Lam",  38, {"Limbo terror", "FG", 41}},
-                                {"Ted",  36, {"Line Flog",    "TW", 39}},
-                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
-                                {"Blond",23, {"Glome Blob",   "FV", 26}},
-                                {"Litle",25, {"Time Bob",     "HB", 28}},
-                                {"Klin", 49, {"Court Film",   "PL", 52}},
-                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                                {"John", 45, {"Jes terror",   "FW", 48}, {}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}, {}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}, {}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}, {}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}, {}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}, {}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}, {}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}, {}}
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
@@ -1343,7 +1451,7 @@ TEST(IntegrationConnectionMongoTest, FindAndReplaceUsingFields)
     EXPECT_EQ(9, iResult.n);
     EXPECT_EQ(9, iResult.inserted.size());
 
-    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndReplaceOne<People>(FindAgeEq{32}, People{"Tom", 128, {}}, FAModifyConfig{}.setFields(Projection::create<PeopleWithAddressCode>()));
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndReplaceOne<People>(FindAgeEq{32}, People{"Tom", 128, {}, {}}, FAModifyConfig{}.setFields(Projection::create<PeopleWithAddressCode>()));
     EXPECT_EQ(1, r1Result.ok);
     ASSERT_NE(nullptr,       r1Result.value.get());
     EXPECT_EQ("Sam",         r1Result.value->name);
@@ -1362,19 +1470,21 @@ TEST(IntegrationConnectionMongoTest, FindAndReplaceUsingFields)
 
 TEST(IntegrationConnectionMongoTest, FindAndReplaceUpsertFalse)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"John", 45, {"Jes terror",   "FW", 48}},
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},
-                                {"Lam",  38, {"Limbo terror", "FG", 41}},
-                                {"Ted",  36, {"Line Flog",    "TW", 39}},
-                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
-                                {"Blond",23, {"Glome Blob",   "FV", 26}},
-                                {"Litle",25, {"Time Bob",     "HB", 28}},
-                                {"Klin", 49, {"Court Film",   "PL", 52}},
-                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                                {"John", 45, {"Jes terror",   "FW", 48}, {}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}, {}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}, {}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}, {}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}, {}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}, {}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}, {}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}, {}}
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
@@ -1384,7 +1494,7 @@ TEST(IntegrationConnectionMongoTest, FindAndReplaceUpsertFalse)
     EXPECT_EQ(9, iResult.n);
     EXPECT_EQ(9, iResult.inserted.size());
 
-    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndReplaceOne<People>(FindAgeEq{128}, People{"Tom", 128, {}}, FAModifyConfig{}.setUpsert(false));
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndReplaceOne<People>(FindAgeEq{128}, People{"Tom", 128, {}, {}}, FAModifyConfig{}.setUpsert(false));
     EXPECT_EQ(1, r1Result.ok);
     ASSERT_EQ(nullptr,       r1Result.value.get());
     RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
@@ -1393,19 +1503,21 @@ TEST(IntegrationConnectionMongoTest, FindAndReplaceUpsertFalse)
 
 TEST(IntegrationConnectionMongoTest, FindAndReplaceUpsertTrue)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"John", 45, {"Jes terror",   "FW", 48}},
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},
-                                {"Lam",  38, {"Limbo terror", "FG", 41}},
-                                {"Ted",  36, {"Line Flog",    "TW", 39}},
-                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
-                                {"Blond",23, {"Glome Blob",   "FV", 26}},
-                                {"Litle",25, {"Time Bob",     "HB", 28}},
-                                {"Klin", 49, {"Court Film",   "PL", 52}},
-                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                                {"John", 45, {"Jes terror",   "FW", 48}, {}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}, {}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}, {}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}, {}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}, {}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}, {}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}, {}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}, {}}
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
@@ -1415,7 +1527,7 @@ TEST(IntegrationConnectionMongoTest, FindAndReplaceUpsertTrue)
     EXPECT_EQ(9, iResult.n);
     EXPECT_EQ(9, iResult.inserted.size());
 
-    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndReplaceOne<People>(FindAgeEq{128}, People{"Tom", 128, {}}, FAModifyConfig{}
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndReplaceOne<People>(FindAgeEq{128}, People{"Tom", 128, {}, {}}, FAModifyConfig{}
         .setUpsert(true)
     );
 
@@ -1432,19 +1544,21 @@ TEST(IntegrationConnectionMongoTest, FindAndReplaceUpsertTrue)
 
 TEST(IntegrationConnectionMongoTest, FindAndReplaceUpsertTrueMatch)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"John", 45, {"Jes terror",   "FW", 48}},
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},
-                                {"Lam",  38, {"Limbo terror", "FG", 41}},
-                                {"Ted",  36, {"Line Flog",    "TW", 39}},
-                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
-                                {"Blond",23, {"Glome Blob",   "FV", 26}},
-                                {"Litle",25, {"Time Bob",     "HB", 28}},
-                                {"Klin", 49, {"Court Film",   "PL", 52}},
-                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                                {"John", 45, {"Jes terror",   "FW", 48}, {}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}, {}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}, {}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}, {}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}, {}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}, {}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}, {}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}, {}}
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
@@ -1454,7 +1568,7 @@ TEST(IntegrationConnectionMongoTest, FindAndReplaceUpsertTrueMatch)
     EXPECT_EQ(9, iResult.n);
     EXPECT_EQ(9, iResult.inserted.size());
 
-    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndReplaceOne<People>(FindAgeEq{32}, People{"Tom", 128, {}}, FAModifyConfig{}.setUpsert(true));
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndReplaceOne<People>(FindAgeEq{32}, People{"Tom", 128, {}, {}}, FAModifyConfig{}.setUpsert(true));
     EXPECT_EQ(1, r1Result.ok);
     ASSERT_NE(nullptr,       r1Result.value.get());
     EXPECT_EQ("Sam",         r1Result.value->name);
@@ -1514,19 +1628,21 @@ TEST(IntegrationConnectionMongoTest, FindAndReplaceLet)
 
 TEST(IntegrationConnectionMongoTest, FindAndRemove)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"John", 45, {"Jes terror",   "FW", 48}},
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},
-                                {"Lam",  38, {"Limbo terror", "FG", 41}},
-                                {"Ted",  36, {"Line Flog",    "TW", 39}},
-                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
-                                {"Blond",23, {"Glome Blob",   "FV", 26}},
-                                {"Litle",25, {"Time Bob",     "HB", 28}},
-                                {"Klin", 49, {"Court Film",   "PL", 52}},
-                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                                {"John", 45, {"Jes terror",   "FW", 48}, {}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}, {}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}, {}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}, {}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}, {}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}, {}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}, {}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}, {}}
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
@@ -1553,19 +1669,21 @@ TEST(IntegrationConnectionMongoTest, FindAndRemove)
 
 TEST(IntegrationConnectionMongoTest, FindAndRemoveSortAsc)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"John", 45, {"Jes terror",   "FW", 48}},
-                                {"Sam",  32, {"Cour terror",  "NY", 35}}, // Two people are 32
-                                {"Lam",  32, {"Limbo terror", "FG", 41}},
-                                {"Ted",  36, {"Line Flog",    "TW", 39}},
-                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
-                                {"Blond",23, {"Glome Blob",   "FV", 26}},
-                                {"Litle",25, {"Time Bob",     "HB", 28}},
-                                {"Klin", 49, {"Court Film",   "PL", 52}},
-                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                                {"John", 45, {"Jes terror",   "FW", 48}, {}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}}, // Two people are 32
+                                {"Lam",  32, {"Limbo terror", "FG", 41}, {}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}, {}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}, {}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}, {}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}, {}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}, {}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}, {}}
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
@@ -1591,19 +1709,21 @@ TEST(IntegrationConnectionMongoTest, FindAndRemoveSortAsc)
 }
 TEST(IntegrationConnectionMongoTest, FindAndRemoveSortDec)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"John", 45, {"Jes terror",   "FW", 48}},
-                                {"Sam",  32, {"Cour terror",  "NY", 35}}, // Two people aged 32
-                                {"Lam",  38, {"Limbo terror", "FG", 41}},
-                                {"Ted",  32, {"Line Flog",    "TW", 39}},
-                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
-                                {"Blond",23, {"Glome Blob",   "FV", 26}},
-                                {"Litle",25, {"Time Bob",     "HB", 28}},
-                                {"Klin", 49, {"Court Film",   "PL", 52}},
-                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                                {"John", 45, {"Jes terror",   "FW", 48}, {}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}}, // Two people aged 32
+                                {"Lam",  38, {"Limbo terror", "FG", 41}, {}},
+                                {"Ted",  32, {"Line Flog",    "TW", 39}, {}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}, {}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}, {}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}, {}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}, {}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}, {}}
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
@@ -1630,19 +1750,21 @@ TEST(IntegrationConnectionMongoTest, FindAndRemoveSortDec)
 
 TEST(IntegrationConnectionMongoTest, FindAndRemoveMiss)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"John", 45, {"Jes terror",   "FW", 48}},
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},
-                                {"Lam",  38, {"Limbo terror", "FG", 41}},
-                                {"Ted",  36, {"Line Flog",    "TW", 39}},
-                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
-                                {"Blond",23, {"Glome Blob",   "FV", 26}},
-                                {"Litle",25, {"Time Bob",     "HB", 28}},
-                                {"Klin", 49, {"Court Film",   "PL", 52}},
-                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                                {"John", 45, {"Jes terror",   "FW", 48}, {}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}, {}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}, {}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}, {}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}, {}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}, {}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}, {}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}, {}}
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
@@ -1664,19 +1786,21 @@ TEST(IntegrationConnectionMongoTest, FindAndRemoveMiss)
 
 TEST(IntegrationConnectionMongoTest, FindAndRemoveFields)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"John", 45, {"Jes terror",   "FW", 48}},
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},
-                                {"Lam",  38, {"Limbo terror", "FG", 41}},
-                                {"Ted",  36, {"Line Flog",    "TW", 39}},
-                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
-                                {"Blond",23, {"Glome Blob",   "FV", 26}},
-                                {"Litle",25, {"Time Bob",     "HB", 28}},
-                                {"Klin", 49, {"Court Film",   "PL", 52}},
-                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                                {"John", 45, {"Jes terror",   "FW", 48}, {}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}, {}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}, {}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}, {}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}, {}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}, {}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}, {}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}, {}}
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
@@ -1739,11 +1863,13 @@ TEST(IntegrationConnectionMongoTest, FindAndRemoveLet)
 
 TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingSet)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
@@ -1770,11 +1896,13 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingSet)
 
 TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingCurrentDateDateTime)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
@@ -1810,11 +1938,13 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingCurrentDateDateTime)
 
 TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingCurrentDateTimeStamp)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
@@ -1844,8 +1974,8 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingCurrentDateTimeStamp)
     //       See: ThorsAnvil::Serialize::MongoUtility::BsonTimeStamp
     //       for details about reading from the MongoDB.
     //       it could be done incorrectly there.
-    std::uint32_t   sec   = r1Result.value->timeStamp.getSecSinceEpoch();
-    std::uint64_t   inc   = r1Result.value->timeStamp.getIncrement();
+    /*std::uint32_t   sec   =*/ r1Result.value->timeStamp.getSecSinceEpoch();
+    /*std::uint64_t   inc   =*/ r1Result.value->timeStamp.getIncrement();
 
     RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeLt>{100});
     EXPECT_EQ(1, r2Result.n);
@@ -1853,11 +1983,13 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingCurrentDateTimeStamp)
 
 TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingIncrement)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
@@ -1884,11 +2016,13 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingIncrement)
 
 TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMinFail)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
@@ -1915,11 +2049,13 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMinFail)
 
 TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMinWork)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
@@ -1946,11 +2082,13 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMinWork)
 
 TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMaxFail)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
@@ -1977,11 +2115,13 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMaxFail)
 
 TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMaxWork)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
@@ -2008,11 +2148,13 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMaxWork)
 
 TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMul)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
@@ -2039,11 +2181,13 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMul)
 
 TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingRename)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
@@ -2076,11 +2220,13 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingRename)
 
 TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingUnset)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
@@ -2112,17 +2258,18 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingUnset)
 
 TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingAddToSet)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<PeopleWithFood> people
                                 {
-                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}}
+                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}, {}}
                                 };
     people[0].food = {"Beacon", "Eggs"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using FindName      = NameField<Eq<std::string>>;
     using Update        = AddToSet<FoodField<std::string>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -2148,17 +2295,18 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingAddToSet)
 
 TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPopFront)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<PeopleWithFood> people
                                 {
-                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}}
+                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}, {}}
                                 };
     people[0].food = {"Beacon", "Eggs", "Ham"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using FindName      = NameField<Eq<std::string>>;
     using Update        = PopFront<FoodField>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -2184,17 +2332,18 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPopFront)
 
 TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPopBack)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<PeopleWithFood> people
                                 {
-                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}}
+                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}, {}}
                                 };
     people[0].food = {"Beacon", "Eggs", "Ham"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using FindName      = NameField<Eq<std::string>>;
     using Update        = PopBack<FoodField>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -2220,17 +2369,18 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPopBack)
 
 TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPull)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<PeopleWithFood> people
                                 {
-                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}}
+                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}, {}}
                                 };
     people[0].food = {"Beacon", "Eggs", "Ham"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using FindName      = NameField<Eq<std::string>>;
     using Update        = Pull<FoodField<std::string>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -2256,17 +2406,18 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPull)
 
 TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPullWithTest)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<PeopleWithFood> people
                                 {
-                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}}
+                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}, {}}
                                 };
     people[0].food = {"Beacon", "Eggs", "Ham"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using FindName      = NameField<Eq<std::string>>;
     using Update        = Pull<FoodField<Lt<std::string>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -2292,17 +2443,18 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPullWithTest)
 
 TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPush)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<PeopleWithFood> people
                                 {
-                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}}
+                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}, {}}
                                 };
     people[0].food = {"Beacon", "Eggs", "Ham"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using FindName      = NameField<Eq<std::string>>;
     using Update        = Push<FoodField<std::string>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -2328,17 +2480,18 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPush)
 
 TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPullAll)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<PeopleWithFood> people
                                 {
-                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}}
+                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}, {}}
                                 };
     people[0].food = {"Beacon", "Eggs", "Ham"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using FindName      = NameField<Eq<std::string>>;
     using Update        = PullAll<FoodField, std::string>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -2364,17 +2517,18 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPullAll)
 
 TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingEachAddToSet)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<PeopleWithFood> people
                                 {
-                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}}
+                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}, {}}
                                 };
     people[0].food = {"Beacon", "Eggs", "Ham"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using FindName      = NameField<Eq<std::string>>;
     using Update        = AddToSet<FoodField<Each<std::string>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -2400,17 +2554,18 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingEachAddToSet)
 
 TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingEachPush)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<PeopleWithFood> people
                                 {
-                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}}
+                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}, {}}
                                 };
     people[0].food = {"Beacon", "Eggs", "Ham"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using FindName      = NameField<Eq<std::string>>;
     using Update        = Push<FoodField<Each<std::string>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -2436,17 +2591,18 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingEachPush)
 
 TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPosition)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<PeopleWithFood> people
                                 {
-                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}}
+                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}, {}}
                                 };
     people[0].food = {"Beacon", "Eggs", "Ham"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using FindName      = NameField<Eq<std::string>>;
     using Update        = Push<FoodField<Position<std::string>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -2472,17 +2628,18 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPosition)
 
 TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingSlice)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<PeopleWithFood> people
                                 {
-                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}}
+                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}, {}}
                                 };
     people[0].food = {"Beacon", "Eggs", "Ham"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using FindName      = NameField<Eq<std::string>>;
     using Update        = Push<FoodField<Slice<std::string>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -2508,17 +2665,18 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingSlice)
 
 TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingSort)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<PeopleWithFood> people
                                 {
-                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}}
+                                    {"Sam",  32, {"Cour terror",  "NY", 35}, {}, {}}
                                 };
     people[0].food = {"Beacon", "Ham", "Eggs"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using FindName      = NameField<Eq<std::string>>;
     using Update        = Push<FoodField<Sort<std::string>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -2544,11 +2702,13 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingSort)
 
 TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMultipleExpressions)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
@@ -2576,19 +2736,21 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMultipleExpressions)
 
 TEST(IntegrationConnectionMongoTest, Count)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"John", 45, {"Jes terror",   "FW", 48}},
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},
-                                {"Lam",  38, {"Limbo terror", "FG", 41}},
-                                {"Ted",  36, {"Line Flog",    "TW", 39}},
-                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
-                                {"Blond",23, {"Glome Blob",   "FV", 26}},
-                                {"Litle",25, {"Time Bob",     "HB", 28}},
-                                {"Klin", 49, {"Court Film",   "PL", 52}},
-                                {"Blow", 32, {"Court Port",   "PL", 31}}
+                                {"John", 45, {"Jes terror",   "FW", 48}, {}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}, {}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}, {}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}, {}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}, {}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}, {}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}, {}},
+                                {"Blow", 32, {"Court Port",   "PL", 31}, {}}
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
@@ -2608,19 +2770,21 @@ TEST(IntegrationConnectionMongoTest, Count)
 
 TEST(IntegrationConnectionMongoTest, CountWithLimit)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"John", 45, {"Jes terror",   "FW", 48}},
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},
-                                {"Lam",  38, {"Limbo terror", "FG", 41}},
-                                {"Ted",  36, {"Line Flog",    "TW", 39}},
-                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
-                                {"Blond",32, {"Glome Blob",   "FV", 26}},
-                                {"Litle",32, {"Time Bob",     "HB", 28}},
-                                {"Klin", 32, {"Court Film",   "PL", 52}},
-                                {"Blow", 32, {"Court Port",   "PL", 31}}
+                                {"John", 45, {"Jes terror",   "FW", 48}, {}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}, {}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}, {}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}, {}},
+                                {"Blond",32, {"Glome Blob",   "FV", 26}, {}},
+                                {"Litle",32, {"Time Bob",     "HB", 28}, {}},
+                                {"Klin", 32, {"Court Film",   "PL", 52}, {}},
+                                {"Blow", 32, {"Court Port",   "PL", 31}, {}}
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
@@ -2640,19 +2804,21 @@ TEST(IntegrationConnectionMongoTest, CountWithLimit)
 
 TEST(IntegrationConnectionMongoTest, CountWithSkip)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"John", 45, {"Jes terror",   "FW", 48}},
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},
-                                {"Lam",  32, {"Limbo terror", "FG", 41}},
-                                {"Ted",  32, {"Line Flog",    "TW", 39}},
-                                {"Rose", 32, {"Twine Forge",  "GB", 25}},
-                                {"Blond",32, {"Glome Blob",   "FV", 26}},
-                                {"Litle",32, {"Time Bob",     "HB", 28}},
-                                {"Klin", 49, {"Court Film",   "PL", 52}},
-                                {"Blow", 32, {"Court Port",   "PL", 31}}
+                                {"John", 45, {"Jes terror",   "FW", 48}, {}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
+                                {"Lam",  32, {"Limbo terror", "FG", 41}, {}},
+                                {"Ted",  32, {"Line Flog",    "TW", 39}, {}},
+                                {"Rose", 32, {"Twine Forge",  "GB", 25}, {}},
+                                {"Blond",32, {"Glome Blob",   "FV", 26}, {}},
+                                {"Litle",32, {"Time Bob",     "HB", 28}, {}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}, {}},
+                                {"Blow", 32, {"Court Port",   "PL", 31}, {}}
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
@@ -2697,22 +2863,23 @@ TEST(IntegrationConnectionMongoTest, CountWithComment)
 
 TEST(IntegrationConnectionMongoTest, CountAll)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"John", 45, {"Jes terror",   "FW", 48}},
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},
-                                {"Lam",  38, {"Limbo terror", "FG", 41}},
-                                {"Ted",  36, {"Line Flog",    "TW", 39}},
-                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
-                                {"Blond",23, {"Glome Blob",   "FV", 26}},
-                                {"Litle",25, {"Time Bob",     "HB", 28}},
-                                {"Klin", 49, {"Court Film",   "PL", 52}},
-                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                                {"John", 45, {"Jes terror",   "FW", 48}, {}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}, {}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}, {}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}, {}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}, {}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}, {}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}, {}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}, {}}
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
-    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
@@ -2729,22 +2896,23 @@ TEST(IntegrationConnectionMongoTest, CountAll)
 
 TEST(IntegrationConnectionMongoTest, Distinct)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"John", 45, {"Jes terror",   "FW", 48}},
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},
-                                {"Lam",  38, {"Limbo terror", "FG", 41}},
-                                {"Ted",  36, {"Line Flog",    "TW", 39}},
-                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
-                                {"Blond",23, {"Glome Blob",   "FV", 26}},
-                                {"Litle",25, {"Time Bob",     "HB", 28}},
-                                {"Klin", 49, {"Court Film",   "PL", 52}},
-                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                                {"John", 45, {"Jes terror",   "FW", 48}, {}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}, {}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}, {}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}, {}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}, {}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}, {}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}, {}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}, {}}
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
-    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
@@ -2779,22 +2947,23 @@ TEST(IntegrationConnectionMongoTest, DistinctWithComment)
 
 TEST(IntegrationConnectionMongoTest, DistinctAll)
 {
+    SKIP_INTEGRATION_TEST();
+
     using namespace std::string_literals;
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{
-                                {"John", 45, {"Jes terror",   "FW", 48}},
-                                {"Sam",  32, {"Cour terror",  "NY", 35}},
-                                {"Lam",  38, {"Limbo terror", "FG", 41}},
-                                {"Ted",  36, {"Line Flog",    "TW", 39}},
-                                {"Rose", 22, {"Twine Forge",  "GB", 25}},
-                                {"Blond",23, {"Glome Blob",   "FV", 26}},
-                                {"Litle",25, {"Time Bob",     "HB", 28}},
-                                {"Klin", 49, {"Court Film",   "PL", 52}},
-                                {"Blow", 28, {"Court Port",   "PL", 31}}
+                                {"John", 45, {"Jes terror",   "FW", 48}, {}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}, {}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}, {}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}, {}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}, {}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}, {}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}, {}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}, {}}
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
-    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);

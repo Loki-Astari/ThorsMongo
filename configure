@@ -801,6 +801,7 @@ with_crypto_root
 with_magicenum_header_only_root
 with_thorserialize_header_only_root
 with_thorserialize_root
+enable_test_with_mongo_query
 with_TestMongoHost
 with_TestMongoUser
 with_TestMongoPass
@@ -1463,6 +1464,13 @@ Optional Features:
 
   --enable-dark-mode      If your background is black some text that was grey
                           is turned yellow
+
+  --disable-test-with-mongo-query
+                          There are three versions of the mongo wire protocol.
+                          Newer versions of Mongo do not support the older
+                          protocols. This flags disables tests that use the
+                          older wire protocol and only performs tests that use
+                          the now standard OP_MSG protocol.
 
   --enable-shared[=PKGS]  build shared libraries [default=yes]
   --enable-static[=PKGS]  build static libraries [default=yes]
@@ -4765,6 +4773,14 @@ test -n "$UNZIP" || UNZIP=":"
 
 
 
+
+printf "%s\n" "#define THORS_MONGO_HEADER_ONLY 0" >>confdefs.h
+
+
+printf "%s\n" "#define THORS_MONGO_HEADER_ONLY_INCLUDE /**/" >>confdefs.h
+
+
+
 #
 # Add extra configuration here
 #
@@ -5353,6 +5369,34 @@ fi
 
 fi
 
+
+
+
+
+    # Check whether --enable-test-with-mongo-query was given.
+if test ${enable_test_with_mongo_query+y}
+then :
+  enableval=$enable_test_with_mongo_query;
+fi
+
+
+    if test "x${enable_test_with_mongo_query}" == "xno"
+then :
+
+
+printf "%s\n" "#define THOR_DISABLE_TEST_WITH_MONGO_QUERY 1" >>confdefs.h
+
+            subconfigure="${subconfigure} --disable-test-with-mongo-query";
+
+else case e in #(
+  e)
+
+printf "%s\n" "#define THOR_DISABLE_TEST_WITH_MONGO_QUERY 0" >>confdefs.h
+
+
+     ;;
+esac
+fi
 
 
 
@@ -18515,14 +18559,7 @@ fi
             echo "================ DONE ================="
             echo
             popd
-
-    export BUILDING_${third}=1
-
-printf "%s\n" "#define THOR_PACKAGE_NAME \${third}" >>confdefs.h
-
-    THOR_PACKAGE_NAME=${third}
-
-
+            ## AX_THOR_BUILDING(${third})
         done
         popd
     fi
@@ -18912,7 +18949,7 @@ fi
 
 
 
-    ac_config_headers="$ac_config_headers config.h src/ThorsMongo/ThorsMongoConfig.h"
+    ac_config_headers="$ac_config_headers config.h src/ThorsMongo/ThorsMongoConfig.h:config.h.in"
 
     ac_config_files="$ac_config_files Makefile.extra Makefile.config:build/autotools/build/Makefile.config.in:Makefile.config.in"
 
@@ -20031,7 +20068,7 @@ do
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "config.h") CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
-    "src/ThorsMongo/ThorsMongoConfig.h") CONFIG_HEADERS="$CONFIG_HEADERS src/ThorsMongo/ThorsMongoConfig.h" ;;
+    "src/ThorsMongo/ThorsMongoConfig.h") CONFIG_HEADERS="$CONFIG_HEADERS src/ThorsMongo/ThorsMongoConfig.h:config.h.in" ;;
     "Makefile.extra") CONFIG_FILES="$CONFIG_FILES Makefile.extra" ;;
     "Makefile.config") CONFIG_FILES="$CONFIG_FILES Makefile.config:build/autotools/build/Makefile.config.in:Makefile.config.in" ;;
 

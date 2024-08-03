@@ -223,4 +223,8 @@ inline Collection  DB::operator[](std::string&& collectionName)     {return Coll
 #include "ThorsMongoAdmin.tpp"
 #undef THORSANVIL_DB_MONGO_THORSMONGO_H_TEMPLATE
 
+#if defined(THORS_SERIALIZER_HEADER_ONLY) && THORS_SERIALIZER_HEADER_ONLY == 1
+#include "ThorsMongo.source"
+#endif
+
 #endif

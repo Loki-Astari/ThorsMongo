@@ -445,7 +445,7 @@ TEST(ThorsMongRemoveTest, RemoveDeleteWithCollation)
 {
     std::string                         collection("col");
     std::string                         db("db");
-    std::vector<Query<NameField<std::string>>>      documents{{"Sam", Remove::One, Collation{"Bob", true, {}, 32}}};
+    std::vector<Query<NameField<std::string>>>      documents{{"Sam", Remove::One, Collation{"Bob", true, {}, 32, {}, {}, {}, {}}}};
 
     Remover<std::vector<Query<NameField<std::string>>>>    remover(collection, db, RemoveConfig{}, documents);
     EXPECT_EQ(0x92, remover.getSizeBson());

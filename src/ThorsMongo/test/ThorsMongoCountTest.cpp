@@ -110,7 +110,7 @@ TEST(ThorsMongoCountTest, ConstructCountConfigSetCollation)
     EXPECT_FALSE(countConfig.getHint().has_value());
     EXPECT_FALSE(countConfig.getReadConcern().has_value());
     EXPECT_FALSE(countConfig.getMaxTimeMS().has_value());
-    countConfig.setCollation(Collation{"gb"});
+    countConfig.setCollation(Collation{"gb", {}, {}, {}, {}, {}, {}, {}});
     EXPECT_TRUE(countConfig.getCollation().has_value());
 
     EXPECT_FALSE(countConfig.getComment().has_value());

@@ -34,6 +34,7 @@ TEST(ConnectionBufferMongoTest, ReadHeader)
     EXPECT_EQ(15,               data.messageId);
     EXPECT_EQ(32,               data.messageResponseId);
     EXPECT_EQ(OpCode::OP_MSG,   data.opCode);
+    EXPECT_EQ(sizeof(data),     val);
 }
 
 TEST(ConnectionBufferMongoTestTest, BadMessageHeader)
@@ -142,7 +143,7 @@ struct LocalOpMsg: public OpMsgHeader
 };
 TEST(ConnectionBufferMongoTest, WriteMessageMoreThanBuffer)
 {
-    LocalOpMsg data{26, 15, 32, OpCode::OP_MSG};
+    LocalOpMsg data{26, 15, 32, OpCode::OP_MSG, {}};
     ConnectionBufferMongo   buffer({"/tmp/WriteMessage", ThorsAnvil::ThorsSocket::Open::Truncate});
 
     auto val = buffer.sputn(reinterpret_cast<char*>(&data), sizeof(data));
@@ -151,13 +152,14 @@ TEST(ConnectionBufferMongoTest, WriteMessageMoreThanBuffer)
 
 TEST(ConnectionBufferMongoTest, CheckThatMoveWorks)
 {
-    LocalOpMsg data{26, 15, 32, OpCode::OP_MSG};
+    LocalOpMsg data{26, 15, 32, OpCode::OP_MSG, {}};
     ConnectionBufferMongo   buffer({"/tmp/WriteMessage", ThorsAnvil::ThorsSocket::Open::Truncate});
-    auto val = buffer.sputn(reinterpret_cast<char*>(&data), sizeof(data));
+    auto val = buffer.sputn(reinterpret_cast<char*>(&data), 26);   // Note: Message size is set to 26 above
     auto tel = buffer.pubseekoff(0, std::ios::cur,std::ios::in);
 
     ConnectionBufferMongo   buffer2(std::move(buffer));
     EXPECT_EQ(tel, buffer2.pubseekoff(0, std::ios::cur,std::ios::in));
+    EXPECT_EQ(26, val);
 }
 
 /*

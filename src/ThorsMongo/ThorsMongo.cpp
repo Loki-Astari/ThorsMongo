@@ -4,6 +4,7 @@
 
 using namespace ThorsAnvil::DB::Mongo;
 
+THORS_MONGO_HEADER_ONLY_INCLUDE
 ThorsMongo::ThorsMongo(MongoURL const&                  url,
                        Auth::UserNamePassword const&    authInfo,
                        Compression                      compression,
@@ -18,6 +19,7 @@ ThorsMongo::ThorsMongo(MongoURL const&                  url,
     authenticator.handShake(messageHandler, authInfo, compression, clientInfo);
 }
 
+THORS_MONGO_HEADER_ONLY_INCLUDE
 ThorsMongo::ThorsMongo(MongoURL const&                  url,
                        Auth::Certificate const&         /*authInfo*/,
                        Compression                      /*compression*/,

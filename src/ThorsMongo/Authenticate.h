@@ -87,4 +87,9 @@ class Authenticate
 ThorsAnvil_MakeTrait(ThorsAnvil::DB::Mongo::Auth::HandShake,          hello, saslSupportedMechs, $db, hostInfo, client, compression);
 ThorsAnvil_ExpandTrait(ThorsAnvil::DB::Mongo::CmdReplyBase,
                      ThorsAnvil::DB::Mongo::Auth::HandShakeReply,     topologyVersion, localTime, maxBsonObjectSize, maxMessageSizeBytes, maxWriteBatchSize, logicalSessionTimeoutMinutes, connectionId, minWireVersion, maxWireVersion, ismaster, readOnly, isWritablePrimary, saslSupportedMechs, compression);
+
+#if defined(THORS_SERIALIZER_HEADER_ONLY) && THORS_SERIALIZER_HEADER_ONLY == 1
+#include "Authenticate.source"
+#endif
+
 #endif

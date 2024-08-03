@@ -4,12 +4,14 @@
 namespace ThorsAnvil::DB::Mongo::Internal
 {
 
+THORS_MONGO_HEADER_ONLY_INCLUDE
 MessageId& getMessageId()
 {
     static MessageId nextMessageId = 0;
     return nextMessageId;
 }
 
+THORS_MONGO_HEADER_ONLY_INCLUDE
 MessageId getNextMessageId()
 {
     return getMessageId()++;
@@ -19,6 +21,7 @@ MessageId getNextMessageId()
 
 using namespace ThorsAnvil::DB::Mongo;
 
+THORS_MONGO_HEADER_ONLY_INCLUDE
 std::uint32_t MessageHandler::calcSize(MongoActionWriteInterface const& mongoAction, bool hasCheckSum) const
 {
     return kSizeOpMsgBlock
@@ -28,6 +31,7 @@ std::uint32_t MessageHandler::calcSize(MongoActionWriteInterface const& mongoAct
            + (hasCheckSum ? sizeof(std::int32_t) : 0);
 }
 
+THORS_MONGO_HEADER_ONLY_INCLUDE
 bool MessageHandler::sendMessage(MongoActionWriteInterface const& mongoAction, MessageId& messageId, OP_MsgFlag flags, PrinterConfig const& config, bool handleChecksum)
 {
     OpMsgBlock      wireMessage;
@@ -69,6 +73,7 @@ bool MessageHandler::sendMessage(MongoActionWriteInterface const& mongoAction, M
     return static_cast<bool>(stream);
 }
 
+THORS_MONGO_HEADER_ONLY_INCLUDE
 bool MessageHandler::recvMessage(MongoActionReadInterface& mongoAction, MessageId messageId, ParserConfig const& config, bool handleChecksum)
 {
     OpMsgBlock          wireMessage;
@@ -118,11 +123,13 @@ bool MessageHandler::recvMessage(MongoActionReadInterface& mongoAction, MessageI
     return static_cast<bool>(stream);
 }
 
+THORS_MONGO_HEADER_ONLY_INCLUDE
 void MessageHandler::setStreamBad()
 {
     getStream().setstate(std::ios::failbit);
 }
 
+THORS_MONGO_HEADER_ONLY_INCLUDE
 void MessageHandler::setCompression(Compression compression)
 {
     ConnectionBufferMongo* buffer = dynamic_cast<ConnectionBufferMongo*>(getStream().rdbuf());

@@ -96,4 +96,8 @@ ThorsAnvil_MakeTrait(ThorsAnvil::DB::Mongo::Auth::Application,        name);
 ThorsAnvil_MakeTrait(ThorsAnvil::DB::Mongo::Auth::Client,             application, driver, os);
 ThorsAnvil_MakeTrait(ThorsAnvil::DB::Mongo::Auth::Version,            processId, counter);
 
+#if defined(THORS_SERIALIZER_HEADER_ONLY) && THORS_SERIALIZER_HEADER_ONLY == 1
+#include "AuthClient.source"
+#endif
+
 #endif

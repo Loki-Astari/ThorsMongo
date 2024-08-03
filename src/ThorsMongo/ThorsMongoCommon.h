@@ -317,4 +317,8 @@ ThorsAnvil_MakeTraitCustomSerialize(ThorsAnvil::DB::Mongo::Sort,        ThorsAnv
 ThorsAnvil_MakeTraitCustomSerialize(ThorsAnvil::DB::Mongo::Projection,  ThorsAnvil::DB::Mongo::SerializeProjection);
 ThorsAnvil_MakeTrait(   ThorsAnvil::DB::Mongo::All);
 
+#if defined(THORS_SERIALIZER_HEADER_ONLY) && THORS_SERIALIZER_HEADER_ONLY == 1
+#include "ThorsMongoCommon.source"
+#endif
+
 #endif

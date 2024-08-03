@@ -576,7 +576,7 @@ TEST(ThorsMongFindTest, ConstructFindAddCollation)
     EXPECT_FALSE(findConfig.getAwaitData().has_value());
     EXPECT_FALSE(findConfig.getNoCursorTimeout().has_value());
     EXPECT_FALSE(findConfig.getAllowPartialResults().has_value());
-    findConfig.setCollation({});
+    findConfig.setCollation({"gb", {}, {}, {}, {}, {}, {}, {}});
     EXPECT_TRUE(findConfig.getCollation().has_value());
 
     EXPECT_FALSE(findConfig.getAllowDiskUse().has_value());
@@ -1275,7 +1275,7 @@ TEST(ThorsMongFindTest, SerializeFindAddCollation)
     std::string             collection("col");
     std::string             db("db");
     Search                  find{"John"};
-    Finder<People, Search>  finder{collection, db, FindConfig{}.setCollation({"C", true}), find};
+    Finder<People, Search>  finder{collection, db, FindConfig{}.setCollation({"C", true, {}, {}, {}, {}, {}, {}}), find};
 
     EXPECT_EQ(0x6F, finder.getSizeBson());
 
