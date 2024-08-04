@@ -10,22 +10,23 @@ using ThorsAnvil::DB::Mongo::OptReadConcern;
 using ThorsAnvil::DB::Mongo::OptWriteConcern;
 using ThorsAnvil::DB::Mongo::Level;
 using ThorsAnvil::DB::Mongo::W;
+using ThorsAnvil::DB::Mongo::ThorUT;
 
 TEST(ThorsMongoDBTest, CreateNormal)
 {
-    ThorsMongo      server({"localhost"}, {"test", "testPassword", "test"});
+    ThorsMongo      server({"localhost"}, {ThorUT::Build});
     DB              db(server, "test");
 }
 
 TEST(ThorsMongoDBTest, CreateWithSquareBracket)
 {
-    ThorsMongo      server({"localhost"}, {"test", "testPassword", "test"});
+    ThorsMongo      server({"localhost"}, {ThorUT::Build});
     DB              db  = server["test"];
 }
 
 TEST(ThorsMongoDBTest, GetReadConcern)
 {
-    ThorsMongo      server({"localhost"}, {"test", "testPassword", "test"});
+    ThorsMongo      server({"localhost"}, {ThorUT::Build});
     DB              db(server, "test");
 
     OptReadConcern  r = db.getReadConcern();
@@ -33,7 +34,7 @@ TEST(ThorsMongoDBTest, GetReadConcern)
 }
 TEST(ThorsMongoDBTest, SetReadConcernWithLevelMajor)
 {
-    ThorsMongo      server({"localhost"}, {"test", "testPassword", "test"});
+    ThorsMongo      server({"localhost"}, {ThorUT::Build});
     DB              db(server, "test");
 
     ReadConcern     newRead{Level::Majority};
@@ -43,7 +44,7 @@ TEST(ThorsMongoDBTest, SetReadConcernWithLevelMajor)
 }
 TEST(ThorsMongoDBTest, SetReadConcernWithLevelSnapshot)
 {
-    ThorsMongo      server({"localhost"}, {"test", "testPassword", "test"});
+    ThorsMongo      server({"localhost"}, {ThorUT::Build});
     DB              db(server, "test");
 
     ReadConcern     newRead{Level::Snapshot};
@@ -53,7 +54,7 @@ TEST(ThorsMongoDBTest, SetReadConcernWithLevelSnapshot)
 }
 TEST(ThorsMongoDBTest, ReadConcernPersist)
 {
-    ThorsMongo      server({"localhost"}, {"test", "testPassword", "test"});
+    ThorsMongo      server({"localhost"}, {ThorUT::Build});
     ReadConcern     newRead{Level::Snapshot};
 
     // DB Object 1
@@ -69,7 +70,7 @@ TEST(ThorsMongoDBTest, ReadConcernPersist)
 
 TEST(ThorsMongoDBTest, GetWriteConcern)
 {
-    ThorsMongo      server({"localhost"}, {"test", "testPassword", "test"});
+    ThorsMongo      server({"localhost"}, {ThorUT::Build});
     DB              db(server, "test");
 
     OptWriteConcern r = db.getWriteConcern();
@@ -77,7 +78,7 @@ TEST(ThorsMongoDBTest, GetWriteConcern)
 }
 TEST(ThorsMongoDBTest, SetWriteConcernWithJFalse)
 {
-    ThorsMongo      server({"localhost"}, {"test", "testPassword", "test"});
+    ThorsMongo      server({"localhost"}, {ThorUT::Build});
     DB              db(server, "test");
 
     WriteConcern    newWrite{{}, false, {}};
@@ -87,7 +88,7 @@ TEST(ThorsMongoDBTest, SetWriteConcernWithJFalse)
 }
 TEST(ThorsMongoDBTest, SetWriteConcernWithJTrue)
 {
-    ThorsMongo      server({"localhost"}, {"test", "testPassword", "test"});
+    ThorsMongo      server({"localhost"}, {ThorUT::Build});
     DB              db(server, "test");
 
     WriteConcern    newWrite{{}, true, {}};
@@ -97,7 +98,7 @@ TEST(ThorsMongoDBTest, SetWriteConcernWithJTrue)
 }
 TEST(ThorsMongoDBTest, SetWriteConcernWithMajoritySet)
 {
-    ThorsMongo      server({"localhost"}, {"test", "testPassword", "test"});
+    ThorsMongo      server({"localhost"}, {ThorUT::Build});
     DB              db(server, "test");
 
     WriteConcern    newWrite{W::Majority, true, {}};
@@ -107,7 +108,7 @@ TEST(ThorsMongoDBTest, SetWriteConcernWithMajoritySet)
 }
 TEST(ThorsMongoDBTest, SetWriteConcernWithW1AndTimeout)
 {
-    ThorsMongo      server({"localhost"}, {"test", "testPassword", "test"});
+    ThorsMongo      server({"localhost"}, {ThorUT::Build});
     DB              db(server, "test");
 
     WriteConcern    newWrite{1, true, 12};
@@ -117,7 +118,7 @@ TEST(ThorsMongoDBTest, SetWriteConcernWithW1AndTimeout)
 }
 TEST(ThorsMongoDBTest, WriteConcernPersist)
 {
-    ThorsMongo      server({"localhost"}, {"test", "testPassword", "test"});
+    ThorsMongo      server({"localhost"}, {ThorUT::Build});
     WriteConcern    newWrite{1, true, 12};
 
     // DB Object 1

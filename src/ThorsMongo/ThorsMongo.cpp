@@ -29,3 +29,15 @@ ThorsMongo::ThorsMongo(MongoURL const&                  url,
 {
     throw std::runtime_error("TODO: Certificate authentication has not been done");
 }
+
+THORS_MONGO_HEADER_ONLY_INCLUDE
+ThorsMongo::ThorsMongo(MongoURL const&                  /*url*/,
+                   TestAuthenticator const&             /*authInfo*/,
+                   Compression                          /*compression*/,
+                   Auth::Client const&                  /*clientInfo*/)
+    : mongoStream({"google.com", 80})
+    , messageHandler(mongoStream)
+{
+    // No authentication done.
+    // Just used for testing.
+}

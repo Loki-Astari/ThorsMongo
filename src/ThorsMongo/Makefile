@@ -10,5 +10,6 @@ LDLIBS						+= -lsnappy
 LINK_LIBS					+= ThorsSocket
 
 FILE_WARNING_FLAGS			+= -Wno-dollar-in-identifier-extension -Wno-deprecated-declarations -Wno-missing-braces
+FILE_WARNING_FLAGS          += -Wno-type-limits
 
 include $(THORSANVIL_ROOT)/build/tools/Makefile

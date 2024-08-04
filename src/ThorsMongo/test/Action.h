@@ -2,6 +2,13 @@
 #include "../MongoUtil.h"
 #include "../MongoQuery.h"
 
+#if defined(THOR_DISABLE_TEST_WITH_MONGO_QUERY) && (THOR_DISABLE_TEST_WITH_MONGO_QUERY == 1)
+#define SKIP_INTEGRATION_TEST()   GTEST_SKIP()
+#else
+#define SKIP_INTEGRATION_TEST()
+#endif
+
+
 struct PersonNoId
 {
     std::string     name;

@@ -1,5 +1,7 @@
 #include "gtest/gtest.h"
 
+#include "test/Action.h"
+
 #include "ThorsMongo.h"
 
 using ThorsAnvil::DB::Mongo::ThorsMongo;
@@ -11,23 +13,24 @@ using ThorsAnvil::DB::Mongo::OptReadConcern;
 using ThorsAnvil::DB::Mongo::OptWriteConcern;
 using ThorsAnvil::DB::Mongo::Level;
 using ThorsAnvil::DB::Mongo::W;
+using ThorsAnvil::DB::Mongo::ThorUT;
 
 TEST(ThorsMongoCollectionTest, CreateNormal)
 {
-    ThorsMongo      server({"localhost"}, {"test", "testPassword", "test"});
+    ThorsMongo      server({"localhost"}, {ThorUT::Build});
     DB              db(server, "test");
     Collection      c(db, "People");
 }
 
 TEST(ThorsMongoCollectionTest, CreateWithSquareBracket)
 {
-    ThorsMongo      server({"localhost"}, {"test", "testPassword", "test"});
+    ThorsMongo      server({"localhost"}, {ThorUT::Build});
     Collection      c  = server["test"]["People"];
 }
 
 TEST(ThorsMongoCollectionTest, GetReadConcern)
 {
-    ThorsMongo      server({"localhost"}, {"test", "testPassword", "test"});
+    ThorsMongo      server({"localhost"}, {ThorUT::Build});
     Collection      c  = server["test"]["People"];
 
     OptReadConcern  r = c.getReadConcern();
@@ -35,7 +38,7 @@ TEST(ThorsMongoCollectionTest, GetReadConcern)
 }
 TEST(ThorsMongoCollectionTest, SetReadConcernWithLevelMajor)
 {
-    ThorsMongo      server({"localhost"}, {"test", "testPassword", "test"});
+    ThorsMongo      server({"localhost"}, {ThorUT::Build});
     Collection      c  = server["test"]["People"];
 
     ReadConcern     newRead{Level::Majority};
@@ -45,7 +48,7 @@ TEST(ThorsMongoCollectionTest, SetReadConcernWithLevelMajor)
 }
 TEST(ThorsMongoCollectionTest, SetReadConcernWithLevelSnapshot)
 {
-    ThorsMongo      server({"localhost"}, {"test", "testPassword", "test"});
+    ThorsMongo      server({"localhost"}, {ThorUT::Build});
     Collection      c  = server["test"]["People"];
 
     ReadConcern     newRead{Level::Snapshot};
@@ -55,7 +58,7 @@ TEST(ThorsMongoCollectionTest, SetReadConcernWithLevelSnapshot)
 }
 TEST(ThorsMongoCollectionTest, ReadConcernPersist)
 {
-    ThorsMongo      server({"localhost"}, {"test", "testPassword", "test"});
+    ThorsMongo      server({"localhost"}, {ThorUT::Build});
     ReadConcern     newRead{Level::Snapshot};
 
     // DB Object 1
@@ -71,7 +74,7 @@ TEST(ThorsMongoCollectionTest, ReadConcernPersist)
 
 TEST(ThorsMongoCollectionTest, GetWriteConcern)
 {
-    ThorsMongo      server({"localhost"}, {"test", "testPassword", "test"});
+    ThorsMongo      server({"localhost"}, {ThorUT::Build});
     Collection      c  = server["test"]["People"];
 
     OptWriteConcern r = c.getWriteConcern();
@@ -79,7 +82,7 @@ TEST(ThorsMongoCollectionTest, GetWriteConcern)
 }
 TEST(ThorsMongoCollectionTest, SetWriteConcernWithJFalse)
 {
-    ThorsMongo      server({"localhost"}, {"test", "testPassword", "test"});
+    ThorsMongo      server({"localhost"}, {ThorUT::Build});
     Collection      c  = server["test"]["People"];
 
     WriteConcern    newWrite{{}, false, {}};
@@ -89,7 +92,7 @@ TEST(ThorsMongoCollectionTest, SetWriteConcernWithJFalse)
 }
 TEST(ThorsMongoCollectionTest, SetWriteConcernWithJTrue)
 {
-    ThorsMongo      server({"localhost"}, {"test", "testPassword", "test"});
+    ThorsMongo      server({"localhost"}, {ThorUT::Build});
     Collection      c  = server["test"]["People"];
 
     WriteConcern    newWrite{{}, true, {}};
@@ -99,7 +102,7 @@ TEST(ThorsMongoCollectionTest, SetWriteConcernWithJTrue)
 }
 TEST(ThorsMongoCollectionTest, SetWriteConcernWithMajoritySet)
 {
-    ThorsMongo      server({"localhost"}, {"test", "testPassword", "test"});
+    ThorsMongo      server({"localhost"}, {ThorUT::Build});
     Collection      c  = server["test"]["People"];
 
     WriteConcern    newWrite{W::Majority, true, {}};
@@ -109,7 +112,7 @@ TEST(ThorsMongoCollectionTest, SetWriteConcernWithMajoritySet)
 }
 TEST(ThorsMongoCollectionTest, SetWriteConcernWithW1AndTimeout)
 {
-    ThorsMongo      server({"localhost"}, {"test", "testPassword", "test"});
+    ThorsMongo      server({"localhost"}, {ThorUT::Build});
     Collection      c  = server["test"]["People"];
 
     WriteConcern    newWrite{1, true, 12};
@@ -119,7 +122,7 @@ TEST(ThorsMongoCollectionTest, SetWriteConcernWithW1AndTimeout)
 }
 TEST(ThorsMongoCollectionTest, WriteConcernPersist)
 {
-    ThorsMongo      server({"localhost"}, {"test", "testPassword", "test"});
+    ThorsMongo      server({"localhost"}, {ThorUT::Build});
     WriteConcern    newWrite{1, true, 12};
 
     // DB Object 1
