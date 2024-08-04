@@ -802,6 +802,7 @@ with_magicenum_header_only_root
 with_thorserialize_header_only_root
 with_thorserialize_root
 enable_test_with_mongo_query
+enable_Mongo_Service
 with_TestMongoHost
 with_TestMongoUser
 with_TestMongoPass
@@ -1471,6 +1472,8 @@ Optional Features:
                           protocols. This flags disables tests that use the
                           older wire protocol and only performs tests that use
                           the now standard OP_MSG protocol.
+
+  --disable-Mongo-Service Disable Mongo Service Test
 
   --enable-shared[=PKGS]  build shared libraries [default=yes]
   --enable-static[=PKGS]  build static libraries [default=yes]
@@ -5403,6 +5406,14 @@ fi
 
 
 
+    # Check whether --enable-Mongo_Service was given.
+if test ${enable_Mongo_Service+y}
+then :
+  enableval=$enable_Mongo_Service;
+fi
+
+
+
 # Check whether --with-TestMongoHost was given.
 if test ${with_TestMongoHost+y}
 then :
@@ -5482,6 +5493,16 @@ then :
 
 fi
 
+    if test "x$enable_Mongo_Service" == "xno"
+then :
+
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: \"You have disabled the check for Mongo Service\"" >&5
+printf "%s\n" "$as_me: WARNING: \"You have disabled the check for Mongo Service\"" >&2;}
+            subconfigure="${subconfigure} --disable-Mongo-Service"
+
+else case e in #(
+  e)
+
     echo "COMMAND: >db.Blob.stats().nindexes<"
     echo "DB LINK: >${cli_tool} --host $mongosh_test_host --username $mongosh_test_user --password $mongosh_test_pw $mongosh_test_db<" | sed -e 's/Ppass/aasp/g'
     echo "db.Blob.stats().nindexes" |  ${cli_tool} --host $mongosh_test_host --username $mongosh_test_user --password $mongosh_test_pw $mongosh_test_db
@@ -5510,6 +5531,10 @@ fi
 
 printf "%s\n" "#define MONGO_MAJOR_VERSION ${version}" >>confdefs.h
 
+
+     ;;
+esac
+fi
 
 
 
