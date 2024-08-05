@@ -11,7 +11,6 @@ AX_THOR_OS_APP_CHECK([LINUX], [lsb-release], [
     Please install:
         apt-get install lsb-release
 ])
-exit 1
 
 AX_THOR_FEATURE_HEADER_ONLY_VARIANT([THORS_MONGO])
 

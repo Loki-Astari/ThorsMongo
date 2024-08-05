@@ -4779,7 +4779,6 @@ test -n "$UNZIP" || UNZIP=":"
 
 
 
-
   # Make sure we can run config.sub.
 $SHELL "${ac_aux_dir}config.sub" sun4 >/dev/null 2>&1 ||
   as_fn_error $? "cannot run $SHELL ${ac_aux_dir}config.sub" "$LINENO" 5
@@ -4935,7 +4934,6 @@ test -n "$TOOLCHECK" || TOOLCHECK=":"
         fi
     fi
 
-exit 1
 
 
 
