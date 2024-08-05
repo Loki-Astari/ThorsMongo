@@ -6,6 +6,13 @@ AC_CONFIG_AUX_DIR([build/autotools/build])
 
 AX_THOR_FUNC_INIT_BUILD([ThorsMongo], [src/ThorsMongo/ThorsMongo.cpp], [20])
 
+AX_THOR_OS_APP_CHECK([LINUX], [lsb-release], [
+    The class "Client" uses lsb-release to detect architecture.
+    Please install:
+        apt-get install lsb-release
+])
+exit 1
+
 AX_THOR_FEATURE_HEADER_ONLY_VARIANT([THORS_MONGO])
 
 #
