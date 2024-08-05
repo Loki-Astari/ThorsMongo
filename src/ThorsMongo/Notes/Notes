@@ -1,0 +1,99 @@
+
+AuthInfo.h         MongoUtil.h                                                                                                       BinaryData.h  ReadConcern.h   WriteConcern.h
+    ^                   ^                                                                                                                ^ ^             ^               ^
+    |                   |                                                                                                                | |             |               |
+    |                   |                                                              ----------------------------------------------------+-------------+---------------+
+    |                   |                                                              |                                                 |
+    |                   +------------------------------+----------------------------+--------------------------------+                   |
+    |                   |                              |                            |  |                             |                   |
+    |                   |                        MessageHandler.h                   |  |                             |                   |
+    |                   |                              ^                            |  |                             |                   |
+    |                   |                              |                            |  |                             |                   |
+    |                   |                              +------------------------    |  |                             |                   |
+    |                   |                              |                       |    |  |                             |                   |
+    |                   |                              |                    ThorsMongoCommon.h              ConnectionBufferMongo.h      |
+    |                   |                              |                            ^                                ^                   |
+    |                   |                              |                            |                                |                   |
+    |                   |                              |                  +---------+-------+                        |                   |
+    |                   |                              |                  |                 |                        |                   |
+    |               AuthClient.h                       |             MongoUpdate.h     MongoQuery.h           ConnectionMongo.h          |
+    |                   ^                              |                  ^                 ^                        ^                   |
+    |                   |                              |                  |                 |                        |                   |
+    |                   |                              |                  +---------+-------+                        |                   |
+    |                   |                              |                            |                                |                   |
+    +-------------------+------------------------------+-------------------------+  |   +----------------------------+                   |
+                        |                              |                         |  |   |                                                |
+                        |                              |                         |  |   |                                                |
+                        |                              |                       ThorsMongo.h                                              |
+                        |                              |                                                                                 |
+                        |                              |                                                                                 |
+                        |                              |                                                                                 |
+                        |                              |  +------------------------------------------------------------------------------+
+                        |                              |  |
+                 Authenticate.h               AuthenticateScramSha.h
+
+
+
+==========================================================================================================================================================================================
+
+
+
+
+
+                                                                            ThorsMongoCommon.h
+
+
+                                            MongoQuery.h                        MongoUpdate.h
+
+
+                                ThorsMongoGetMore.h     ThorsMongoKillCursor.h
+
+
+                                            MongoCursor.h
+
+
+ThorsMongoIndert.h          ThorsMongoRemove.h      ThrosMongoFind.h    ThorsMongoFindAndModify.h   ThorsMongoCount.h   ThorsMongoDistinct.h
+
+
+
+
+
+
+
+
+
+
+                                                                                ThorsMongo.h
+
+
+
+void dump(std::string const& buffer)
+{
+    for (auto c: buffer)
+    {
+        unsigned char x = c;
+        unsigned int  y = x;
+        std::cerr << std::hex << std::setw(2) << std::setfill('0') << y << " ";
+        if (y > 32 && y <= 127) {
+            std::cerr << "(" << c << ") ";
+        }
+        else {
+            std::cerr << "(-) ";
+        }
+    }
+}
+
+
+
+        .setParserConfig(ThorsAnvil::Serialize::ParserInterface::ParserConfig
+            {
+                ThorsAnvil::Serialize::IgnoreCallBack
+                {
+                    /*append*/  [](char const* m, std::size_t s)                {dump(std::string(m, m + s));},
+                    /*read*/    [](std::istream& s, char* d, std::size_t size)  {s.read(d, size);dump(std::string(d, d + size));},
+                    /*ignore*/  [](std::istream& s, std::size_t size)           {std::string data;data.resize(size);s.read(&data[0], size);
+                                                                                 dump(data);
+                                                                                }
+                }
+            })
+
