@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 
 #include "ThorsMongo.h"
+#include "test/Action.h"
 
 using ThorsAnvil::DB::Mongo::ThorsMongo;
 using ThorsAnvil::DB::Mongo::DB;
@@ -14,18 +15,21 @@ using ThorsAnvil::DB::Mongo::ThorUT;
 
 TEST(ThorsMongoDBTest, CreateNormal)
 {
+    SocketSetUp     winSocketInit;
     ThorsMongo      server({"localhost"}, {ThorUT::Build});
     DB              db(server, "test");
 }
 
 TEST(ThorsMongoDBTest, CreateWithSquareBracket)
 {
+    SocketSetUp     winSocketInit;
     ThorsMongo      server({"localhost"}, {ThorUT::Build});
     DB              db  = server["test"];
 }
 
 TEST(ThorsMongoDBTest, GetReadConcern)
 {
+    SocketSetUp     winSocketInit;
     ThorsMongo      server({"localhost"}, {ThorUT::Build});
     DB              db(server, "test");
 
@@ -34,6 +38,7 @@ TEST(ThorsMongoDBTest, GetReadConcern)
 }
 TEST(ThorsMongoDBTest, SetReadConcernWithLevelMajor)
 {
+    SocketSetUp     winSocketInit;
     ThorsMongo      server({"localhost"}, {ThorUT::Build});
     DB              db(server, "test");
 
@@ -44,6 +49,7 @@ TEST(ThorsMongoDBTest, SetReadConcernWithLevelMajor)
 }
 TEST(ThorsMongoDBTest, SetReadConcernWithLevelSnapshot)
 {
+    SocketSetUp     winSocketInit;
     ThorsMongo      server({"localhost"}, {ThorUT::Build});
     DB              db(server, "test");
 
@@ -54,6 +60,7 @@ TEST(ThorsMongoDBTest, SetReadConcernWithLevelSnapshot)
 }
 TEST(ThorsMongoDBTest, ReadConcernPersist)
 {
+    SocketSetUp     winSocketInit;
     ThorsMongo      server({"localhost"}, {ThorUT::Build});
     ReadConcern     newRead{Level::Snapshot};
 
@@ -70,6 +77,7 @@ TEST(ThorsMongoDBTest, ReadConcernPersist)
 
 TEST(ThorsMongoDBTest, GetWriteConcern)
 {
+    SocketSetUp     winSocketInit;
     ThorsMongo      server({"localhost"}, {ThorUT::Build});
     DB              db(server, "test");
 
@@ -78,6 +86,7 @@ TEST(ThorsMongoDBTest, GetWriteConcern)
 }
 TEST(ThorsMongoDBTest, SetWriteConcernWithJFalse)
 {
+    SocketSetUp     winSocketInit;
     ThorsMongo      server({"localhost"}, {ThorUT::Build});
     DB              db(server, "test");
 
@@ -88,6 +97,7 @@ TEST(ThorsMongoDBTest, SetWriteConcernWithJFalse)
 }
 TEST(ThorsMongoDBTest, SetWriteConcernWithJTrue)
 {
+    SocketSetUp     winSocketInit;
     ThorsMongo      server({"localhost"}, {ThorUT::Build});
     DB              db(server, "test");
 
@@ -98,6 +108,7 @@ TEST(ThorsMongoDBTest, SetWriteConcernWithJTrue)
 }
 TEST(ThorsMongoDBTest, SetWriteConcernWithMajoritySet)
 {
+    SocketSetUp     winSocketInit;
     ThorsMongo      server({"localhost"}, {ThorUT::Build});
     DB              db(server, "test");
 
@@ -108,6 +119,7 @@ TEST(ThorsMongoDBTest, SetWriteConcernWithMajoritySet)
 }
 TEST(ThorsMongoDBTest, SetWriteConcernWithW1AndTimeout)
 {
+    SocketSetUp     winSocketInit;
     ThorsMongo      server({"localhost"}, {ThorUT::Build});
     DB              db(server, "test");
 
@@ -118,6 +130,7 @@ TEST(ThorsMongoDBTest, SetWriteConcernWithW1AndTimeout)
 }
 TEST(ThorsMongoDBTest, WriteConcernPersist)
 {
+    SocketSetUp     winSocketInit;
     ThorsMongo      server({"localhost"}, {ThorUT::Build});
     WriteConcern    newWrite{1, true, 12};
 

@@ -2,6 +2,7 @@
 
 #include "ConnectionBufferMongo.h"
 #include "MongoUtil.h"
+#include "test/Action.h"
 
 #include <unistd.h>
 #include <iostream>
@@ -18,6 +19,7 @@ using ThorsAnvil::ThorsSocket::Mode;
 
 TEST(ConnectionBufferMongoTest, Build)
 {
+    SocketSetUp     winSocketInit;
     char data[10000] = {0};
     getcwd(data, 10000);
     ConnectionBufferMongo   buffer({"test/data/emptyMessage", Open::Append});
@@ -26,6 +28,7 @@ TEST(ConnectionBufferMongoTest, Build)
 
 TEST(ConnectionBufferMongoTest, ReadHeader)
 {
+    SocketSetUp     winSocketInit;
     OpMsgHeader data{0, 0, 0, OpCode::OP_NOOP};
     ConnectionBufferMongo   buffer({"test/data/emptyMessage", ThorsAnvil::ThorsSocket::Open::Append});
     auto val = buffer.sgetn(reinterpret_cast<char*>(&data), sizeof(data));
@@ -39,6 +42,7 @@ TEST(ConnectionBufferMongoTest, ReadHeader)
 
 TEST(ConnectionBufferMongoTestTest, BadMessageHeader)
 {
+    SocketSetUp     winSocketInit;
     OpMsgHeader data{0, 0, 0, OpCode::OP_NOOP};
     ConnectionBufferMongo   buffer({"test/data/badMessageSize", ThorsAnvil::ThorsSocket::Open::Append});
     auto val = buffer.sgetn(reinterpret_cast<char*>(&data), sizeof(data));
@@ -48,6 +52,7 @@ TEST(ConnectionBufferMongoTestTest, BadMessageHeader)
 
 TEST(ConnectionBufferMongoTest, ReadMoreMessagesThanIsAvailable)
 {
+    SocketSetUp     winSocketInit;
     char data[50];
     ConnectionBufferMongo   buffer({"test/data/emptyMessages", ThorsAnvil::ThorsSocket::Open::Append});
     auto val = buffer.sgetn(reinterpret_cast<char*>(&data), sizeof(data));
@@ -57,6 +62,7 @@ TEST(ConnectionBufferMongoTest, ReadMoreMessagesThanIsAvailable)
 
 TEST(ConnectionBufferMongoTest, ReadTwoMessagesSoPubSeekIsIncremented)
 {
+    SocketSetUp     winSocketInit;
     char dataIgnore[26];
     ConnectionBufferMongo   buffer({"test/data/twoEmptyMessages", ThorsAnvil::ThorsSocket::Open::Append});
     auto val1 = buffer.sgetn(reinterpret_cast<char*>(&dataIgnore), sizeof(dataIgnore));
@@ -77,6 +83,7 @@ TEST(ConnectionBufferMongoTest, ReadTwoMessagesSoPubSeekIsIncremented)
 
 TEST(ConnectionBufferMongoTest, ReadMoreThanBufferHasButWithinRange)
 {
+    SocketSetUp     winSocketInit;
     OpMsgHeader data{0, 0, 0, OpCode::OP_NOOP};
     ConnectionBufferMongo   buffer({"test/data/messagesHeaderAndFlag", ThorsAnvil::ThorsSocket::Open::Append});
     auto val = buffer.sgetn(reinterpret_cast<char*>(&data), sizeof(data));
@@ -92,27 +99,34 @@ TEST(ConnectionBufferMongoTest, ReadMoreThanBufferHasButWithinRange)
 
 TEST(ConnectionBufferMongoTest, WriteMessage)
 {
+    SocketSetUp     winSocketInit;
     OpMsgHeader data{26, 15, 32, OpCode::OP_MSG};
-    ConnectionBufferMongo   buffer({"/tmp/WriteMessage", ThorsAnvil::ThorsSocket::Open::Truncate});
+    ConnectionBufferMongo   buffer({"test/data/WriteMessage", ThorsAnvil::ThorsSocket::Open::Truncate});
 
     auto val = buffer.sputn(reinterpret_cast<char*>(&data), sizeof(data));
     EXPECT_EQ(16, val);
+
+    unlink("test/data/WriteMessage");
 }
 
 TEST(ConnectionBufferMongoTest, WriteMessageFlushBeforeMessageComplete)
 {
+    SocketSetUp     winSocketInit;
     OpMsgHeader data{26, 15, 32, OpCode::OP_MSG};
-    ConnectionBufferMongo   buffer({"/tmp/WriteMessage", ThorsAnvil::ThorsSocket::Open::Truncate});
+    ConnectionBufferMongo   buffer({"test/data/WriteMessage", ThorsAnvil::ThorsSocket::Open::Truncate});
 
     auto val = buffer.sputn(reinterpret_cast<char*>(&data), sizeof(data));
     EXPECT_EQ(16, val);
     auto s = buffer.pubsync();
     EXPECT_EQ(-1, s);
+
+    unlink("test/data/WriteMessage");
 }
 TEST(ConnectionBufferMongoTest, WriteMessageFlush)
 {
+    SocketSetUp     winSocketInit;
     OpMsgHeader data{26, 15, 32, OpCode::OP_MSG};
-    ConnectionBufferMongo   buffer({"/tmp/WriteMessage", ThorsAnvil::ThorsSocket::Open::Truncate});
+    ConnectionBufferMongo   buffer({"test/data/WriteMessage", ThorsAnvil::ThorsSocket::Open::Truncate});
 
     auto val = buffer.sputn(reinterpret_cast<char*>(&data), sizeof(data));
     EXPECT_EQ(16, val);
@@ -135,6 +149,8 @@ TEST(ConnectionBufferMongoTest, WriteMessageFlush)
 
     auto s = buffer.pubsync();
     EXPECT_EQ(0, s);
+
+    unlink("test/data/WriteMessage");
 }
 
 struct LocalOpMsg: public OpMsgHeader
@@ -143,23 +159,29 @@ struct LocalOpMsg: public OpMsgHeader
 };
 TEST(ConnectionBufferMongoTest, WriteMessageMoreThanBuffer)
 {
+    SocketSetUp     winSocketInit;
     LocalOpMsg data{26, 15, 32, OpCode::OP_MSG, {}};
-    ConnectionBufferMongo   buffer({"/tmp/WriteMessage", ThorsAnvil::ThorsSocket::Open::Truncate});
+    ConnectionBufferMongo   buffer({"test/data/WriteMessage", ThorsAnvil::ThorsSocket::Open::Truncate});
 
     auto val = buffer.sputn(reinterpret_cast<char*>(&data), sizeof(data));
     EXPECT_EQ(0, val);
+
+    unlink("test/data/WriteMessage");
 }
 
 TEST(ConnectionBufferMongoTest, CheckThatMoveWorks)
 {
+    SocketSetUp     winSocketInit;
     LocalOpMsg data{26, 15, 32, OpCode::OP_MSG, {}};
-    ConnectionBufferMongo   buffer({"/tmp/WriteMessage", ThorsAnvil::ThorsSocket::Open::Truncate});
+    ConnectionBufferMongo   buffer({"test/data/WriteMessage", ThorsAnvil::ThorsSocket::Open::Truncate});
     auto val = buffer.sputn(reinterpret_cast<char*>(&data), 26);   // Note: Message size is set to 26 above
     auto tel = buffer.pubseekoff(0, std::ios::cur,std::ios::in);
 
     ConnectionBufferMongo   buffer2(std::move(buffer));
     EXPECT_EQ(tel, buffer2.pubseekoff(0, std::ios::cur,std::ios::in));
     EXPECT_EQ(26, val);
+
+    unlink("test/data/WriteMessage");
 }
 
 /*
@@ -167,8 +189,9 @@ TEST(ConnectionBufferMongoTest, CheckThatMoveWorks)
 */
 TEST(ConnectionBufferMongoTest, WriteCompressData)
 {
+    SocketSetUp     winSocketInit;
     {
-        ConnectionBufferMongo   buffer({"/tmp/compressedData", ThorsAnvil::ThorsSocket::Open::Truncate});
+        ConnectionBufferMongo   buffer({"test/data/compressedData1", ThorsAnvil::ThorsSocket::Open::Truncate});
         buffer.setCompressionOnWrite(Compression::Snappy);
 
         OpMsgHeader data{26, 15, 32, OpCode::OP_MSG};
@@ -188,7 +211,7 @@ TEST(ConnectionBufferMongoTest, WriteCompressData)
 
         buffer.pubsync();
     }
-    std::ifstream       dataFile("/tmp/compressedData", std::ios::binary);
+    std::ifstream       dataFile("test/data/compressedData1", std::ios::binary);
     std::vector<char>   data{std::istreambuf_iterator<char>{dataFile}, std::istreambuf_iterator<char>{}};
 
     std::vector<char>   expected{
@@ -201,10 +224,12 @@ TEST(ConnectionBufferMongoTest, WriteCompressData)
         '\x01',                             // Compression Type (Snappy)
         '\x0a', '\x24', '\x00', '\x00', '\x00', '\x00', '\x00', '\x05', '\x00', '\x00', '\x00', '\x00'};
     EXPECT_EQ(expected, data);
+    unlink("test/data/compressedData1");
 }
 
 TEST(ConnectionBufferMongoTest, ReadCompressData)
 {
+    SocketSetUp     winSocketInit;
     ConnectionBufferMongo   buffer({"test/data/compressedData", ThorsAnvil::ThorsSocket::Open::Append});
 
     OpMsgHeader data{0, 0, 0, OpCode::OP_NOOP};
@@ -239,6 +264,7 @@ TEST(ConnectionBufferMongoTest, ReadCompressData)
 
 TEST(ConnectionBufferMongoTest, ReadDataWithChecksum)
 {
+    SocketSetUp     winSocketInit;
     ConnectionBufferMongo   buffer({"test/data/emptyMessageWithChecksum", ThorsAnvil::ThorsSocket::Open::Append});
 
     OpMsgHeader data{0, 0, 0, OpCode::OP_NOOP};
@@ -281,8 +307,9 @@ TEST(ConnectionBufferMongoTest, ReadDataWithChecksum)
 */
 TEST(ConnectionBufferMongoTest, WriteDataWithChecksum)
 {
+    SocketSetUp     winSocketInit;
     {
-        ConnectionBufferMongo   buffer({"/tmp/checksumData", ThorsAnvil::ThorsSocket::Open::Truncate});
+        ConnectionBufferMongo   buffer({"test/data/checksumData", ThorsAnvil::ThorsSocket::Open::Truncate});
 
         OpMsgHeader data{30, 15, 32, OpCode::OP_MSG};
         buffer.sputn(reinterpret_cast<char*>(&data), sizeof(data));
@@ -304,7 +331,7 @@ TEST(ConnectionBufferMongoTest, WriteDataWithChecksum)
 
         buffer.pubsync();
     }
-    std::ifstream       dataFile("/tmp/checksumData", std::ios::binary);
+    std::ifstream       dataFile("test/data/checksumData", std::ios::binary);
     std::vector<char>   data{std::istreambuf_iterator<char>{dataFile}, std::istreambuf_iterator<char>{}};
 
     std::vector<char>   expected{
@@ -324,5 +351,7 @@ TEST(ConnectionBufferMongoTest, WriteDataWithChecksum)
     // 0x1E 0x00 0x00 0x00 0x0f 0x00 0x00 0x00 0x20 0x00 0x00 0x00 0xdd 0x07 0x00 0x00 0x01 0x00 0x00 0x00 0x00 0x05 0x00 0x00 0x00 0x00
     // Click "Calculate CRC": Result => 0xB8371144
     EXPECT_EQ(expected, data);
+
+    unlink("test/data/checksumData");
 }
 

@@ -4856,7 +4856,7 @@ case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
 
 
     os="LINUX"
-    tool="lsb-release"
+    tool="lsb_release"
 
     for ac_prog in ${tool}
 do
@@ -4929,7 +4929,7 @@ test -n "$TOOLCHECK" || TOOLCHECK=":"
             as_fn_error $? "
     The class \"Client\" uses lsb-release to detect architecture.
     Please install:
-        apt-get install lsb-release
+        apt-get install lsb_release
 " "$LINENO" 5
         fi
     fi
