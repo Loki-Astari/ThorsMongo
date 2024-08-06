@@ -18,6 +18,8 @@ using ThorsAnvil::DB::Mongo::ThorUT;
 TEST(ThorsMongoCollectionTest, CreateNormal)
 {
     SocketSetUp     winSocketInit;
+    ((void)winSocketInit);
+
     ThorsMongo      server({"localhost"}, {ThorUT::Build});
     DB              db(server, "test");
     Collection      c(db, "People");
@@ -26,6 +28,8 @@ TEST(ThorsMongoCollectionTest, CreateNormal)
 TEST(ThorsMongoCollectionTest, CreateWithSquareBracket)
 {
     SocketSetUp     winSocketInit;
+    ((void)winSocketInit);
+
     ThorsMongo      server({"localhost"}, {ThorUT::Build});
     Collection      c  = server["test"]["People"];
 }
@@ -33,6 +37,8 @@ TEST(ThorsMongoCollectionTest, CreateWithSquareBracket)
 TEST(ThorsMongoCollectionTest, GetReadConcern)
 {
     SocketSetUp     winSocketInit;
+    ((void)winSocketInit);
+
     ThorsMongo      server({"localhost"}, {ThorUT::Build});
     Collection      c  = server["test"]["People"];
 
@@ -42,6 +48,8 @@ TEST(ThorsMongoCollectionTest, GetReadConcern)
 TEST(ThorsMongoCollectionTest, SetReadConcernWithLevelMajor)
 {
     SocketSetUp     winSocketInit;
+    ((void)winSocketInit);
+
     ThorsMongo      server({"localhost"}, {ThorUT::Build});
     Collection      c  = server["test"]["People"];
 
@@ -53,6 +61,8 @@ TEST(ThorsMongoCollectionTest, SetReadConcernWithLevelMajor)
 TEST(ThorsMongoCollectionTest, SetReadConcernWithLevelSnapshot)
 {
     SocketSetUp     winSocketInit;
+    ((void)winSocketInit);
+
     ThorsMongo      server({"localhost"}, {ThorUT::Build});
     Collection      c  = server["test"]["People"];
 
@@ -64,6 +74,8 @@ TEST(ThorsMongoCollectionTest, SetReadConcernWithLevelSnapshot)
 TEST(ThorsMongoCollectionTest, ReadConcernPersist)
 {
     SocketSetUp     winSocketInit;
+    ((void)winSocketInit);
+
     ThorsMongo      server({"localhost"}, {ThorUT::Build});
     ReadConcern     newRead{Level::Snapshot};
 
@@ -81,6 +93,8 @@ TEST(ThorsMongoCollectionTest, ReadConcernPersist)
 TEST(ThorsMongoCollectionTest, GetWriteConcern)
 {
     SocketSetUp     winSocketInit;
+    ((void)winSocketInit);
+
     ThorsMongo      server({"localhost"}, {ThorUT::Build});
     Collection      c  = server["test"]["People"];
 
@@ -90,6 +104,8 @@ TEST(ThorsMongoCollectionTest, GetWriteConcern)
 TEST(ThorsMongoCollectionTest, SetWriteConcernWithJFalse)
 {
     SocketSetUp     winSocketInit;
+    ((void)winSocketInit);
+
     ThorsMongo      server({"localhost"}, {ThorUT::Build});
     Collection      c  = server["test"]["People"];
 
@@ -101,6 +117,8 @@ TEST(ThorsMongoCollectionTest, SetWriteConcernWithJFalse)
 TEST(ThorsMongoCollectionTest, SetWriteConcernWithJTrue)
 {
     SocketSetUp     winSocketInit;
+    ((void)winSocketInit);
+
     ThorsMongo      server({"localhost"}, {ThorUT::Build});
     Collection      c  = server["test"]["People"];
 
@@ -112,6 +130,8 @@ TEST(ThorsMongoCollectionTest, SetWriteConcernWithJTrue)
 TEST(ThorsMongoCollectionTest, SetWriteConcernWithMajoritySet)
 {
     SocketSetUp     winSocketInit;
+    ((void)winSocketInit);
+
     ThorsMongo      server({"localhost"}, {ThorUT::Build});
     Collection      c  = server["test"]["People"];
 
@@ -123,6 +143,8 @@ TEST(ThorsMongoCollectionTest, SetWriteConcernWithMajoritySet)
 TEST(ThorsMongoCollectionTest, SetWriteConcernWithW1AndTimeout)
 {
     SocketSetUp     winSocketInit;
+    ((void)winSocketInit);
+
     ThorsMongo      server({"localhost"}, {ThorUT::Build});
     Collection      c  = server["test"]["People"];
 
@@ -134,6 +156,8 @@ TEST(ThorsMongoCollectionTest, SetWriteConcernWithW1AndTimeout)
 TEST(ThorsMongoCollectionTest, WriteConcernPersist)
 {
     SocketSetUp     winSocketInit;
+    ((void)winSocketInit);
+
     ThorsMongo      server({"localhost"}, {ThorUT::Build});
     WriteConcern    newWrite{1, true, 12};
 
