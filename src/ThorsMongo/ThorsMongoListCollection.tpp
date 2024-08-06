@@ -11,6 +11,8 @@ namespace Action
 template<typename F>
 class ListCollection: public MongoActionWriteInterfaceTrivialImpl<ListCollection<F>>
 {
+    // See: https://www.mongodb.com/docs/manual/reference/command/listDatabases/
+
     friend class ThorsAnvil::Serialize::Traits<ListCollection<F>>;
 
     std::uint32_t                   listCollections;

@@ -208,7 +208,7 @@ If you only want to insert a single item you can invisibly create a vector by wr
 
 ## Find Data:
 
-To find data you must specify a "Filter".  
+To find data you must specify a "[Filter](Documentation/Filter.md)".  
 This requires some boilerplate to allow you to match against specific fields in your data. I will provide a simple examples here. Details will be provided below in the Query documentation.  
 
 The `find()` method takes a filter and returns a C++ range.  
@@ -244,7 +244,7 @@ The `find()` method takes a filter and returns a C++ range.
 
 ## Delete Data:
 
-The remove method operates on a `Query`. This is basically a "Filter" with an extra parameter indicating if the remove should apply to the first or all matches. The example below shows remove using a single `Query` object, but this method can take any number of `Query` objects that are all applied in parallel.  
+The remove method operates on a `Query`. This is basically a "[Filter](Documentation/Filter.md)" with an extra parameter indicating if the remove should apply to the first or all matches. The example below shows remove using a single `Query` object, but this method can take any number of `Query` objects that are all applied in parallel.  
 Note: If you are only deleting one and the filter matches multiple records in the collection then you are effectively deleting a random matching record. Please read the full documentation to understand how to control the filter to get an exact match or use findAndRemoveOne() method for more control.  
 
 
@@ -276,11 +276,11 @@ There is a family of functions to find and modify a single record.
 * findAndRemoveOne();
 * findAndUpdateOne();
 
-All these functions use a "Filter" to select a single record. If your filter matches multiple records you can add a sort order (the first item in the sorted results is modified. See full documentation for details).  
+All these functions use a "[Filter](Documentation/Filter.md)" to select a single record. If your filter matches multiple records you can add a sort order (the first item in the sorted results is modified. See full documentation for details).  
 
 ### Find and Replace:
 
-The `findAndReplaceOne()` methods find and update a single record using a "Filter" and replaces the record with a new record. This is useful if all the updates are done in the application side.  
+The `findAndReplaceOne()` methods find and update a single record using a "[Filter](Documentation/Filter.md)" and replaces the record with a new record. This is useful if all the updates are done in the application side.  
 
 ````
     void replacePerson(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, std::string const& name, Person const& p)
@@ -306,7 +306,7 @@ The `findAndReplaceOne()` methods find and update a single record using a "Filte
 
 ### Find and Remove:
 
-The `findAndRemoveOne()` methods find and removes a single record using a "Filter".
+The `findAndRemoveOne()` methods find and removes a single record using a "[Filter](Documentation/Filter.md)".
 
 ````
     void removePerson(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, std::string const& name)
@@ -332,9 +332,9 @@ The `findAndRemoveOne()` methods find and removes a single record using a "Filte
 
 ### Find and Update:
 
-The `findAndUpdateOne()` methods find a single record using a "Filter" and then applies a custom update operation on the server side. This can simplify the client code and allow updates to parts of the document on the server without having to download the data onto the client.
+The `findAndUpdateOne()` methods find a single record using a "[Filter](Documentation/Filter.md)" and then applies a custom update operation on the server side. This can simplify the client code and allow updates to parts of the document on the server without having to download the data onto the client.
 
-The update is expressed as an "Expression" that requires some boilerplate. I will provide a simple example here. Details will be provided below in the Update documentation.  
+The update is expressed as an "[Expression](Documentation/Update.md)" that requires some boilerplate. I will provide a simple example here. Details will be provided below in the Update documentation.  
 
 ````
     // This macro creates a type called "SetAge"
@@ -368,14 +368,16 @@ The update is expressed as an "Expression" that requires some boilerplate. I wil
 
 ## Documentation:
 
-* [Connection](Documentation/Connection.md)
 * [Serializing C++ classes](https://github.com/Loki-Astari/ThorsSerializer/blob/master/README.md)
-* [Inserting Data](Documentation/Insert.md)
-* [Find Data](Documentation/Find.md)
-* [Delete Data](Documentation/Delete.md)
-* [Find And Modify One](Documentation/FindAndModifyOne.md)
-* [Distinct](Documentation/Distinct.md)
-* [Count](Documentation/Count.md)
+* [`ThorsMongo`: Connection to the Mongo Server](Documentation/ThorsMongo.md)
+* [`DB`: The DB object](Documentation/DB.md)
+* [`Collection`: The Collection object](Documentation/Collection.md)
+  * [Inserting Data](Documentation/Insert.md)
+  * [Find Data](Documentation/Find.md)
+  * [Delete Data](Documentation/Delete.md)
+  * [Find And Modify One](Documentation/FindAndModifyOne.md)
+  * [Distinct](Documentation/Distinct.md)
+  * [Count](Documentation/Count.md)
 * [Filter Creation](Documentation/Filter.md)
-* [Update Expressions](Documentation/Update.md)
+* [Update Expression](Documentation/Update.md)
 

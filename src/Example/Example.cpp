@@ -207,8 +207,14 @@ int main()
 {
     std::cout << "Mongo - HWorld\n";
 
-using ThorsAnvil::DB::Mongo::ThorsMongo;
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    using ThorsAnvil::DB::Mongo::ThorsMongo;
+    using ThorsAnvil::DB::Mongo::Compression;
+    using ThorsAnvil::DB::Mongo::Auth::Client;
+    ThorsMongo          mongo({"localhost"},
+                              {"test", "testPassword", "test"},
+                              Compression::Snappy | Compression::ZStd,
+                              Client{"ExampleApp", {}}
+                             );
 
     addPeopleToMongo(mongo, {
                                 Person{"John",  32, {"32 Ridge Street", "Fullwright", "Nottingham", "UK", "AB34 5HG"}},
