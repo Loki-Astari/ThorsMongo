@@ -1,13 +1,19 @@
-THORSANVIL_ROOT             ?= $(realpath ../../)
 
-TARGET                      = Example.prog
+CC				= $(CXX)
+SRC				= $(wildcard *.cpp)
+OBJ				= $(subst %.cpp, %.o, $(SRC))
 
-LDLIBS_EXTERN_BUILD			= MagicEnum snappy crypto ThorSerialize
+SNAPPY_ROOT		= /opt/homebrew
+MAGIC_ENUM_ROOT	= /opt/homebrew
+THORS_ROOT		= ../../../../build
 
-UNITTEST_LDLIBS				+= $(LDLIBS_$(PLATFORM))
-LDLIBS						+= $(LDLIBS_$(PLATFORM))
-LINK_LIBS					+= ThorsMongo
+CXXFLAGS		+= -Wall -Wextra
+CXXFLAGS		+= -std=c++20
+CXXFLAGS		+= -I $(THORS_ROOT)/include -I $(SNAPPY_ROOT)/include -I$(MAGIC_ENUM_ROOT)/include
+LDFLAGS			+= -L $(THORS_ROOT)/lib -L $(SNAPPY_ROOT)/lib
+LDLIBS			+= -lThorsMongo -lThorSerialize -lThorsSocket -lThorsLogging -lsnappy
 
-FILE_WARNING_FLAGS			+= -Wno-dollar-in-identifier-extension -Wno-deprecated-declarations -Wno-missing-braces
+all:			Example
 
-include $(THORSANVIL_ROOT)/build/tools/Makefile
+Example:		$(OBJ)
+
