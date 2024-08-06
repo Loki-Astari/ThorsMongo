@@ -1,3 +1,5 @@
+[![Brew package](https://img.shields.io/badge/Brew-package-blueviolet)](https://formulae.brew.sh/formula/thors-serializer)
+
 ![ThorsMongo](img/thorsmongo.jpg)
 
 # ThorsMongo:
