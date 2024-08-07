@@ -13,11 +13,13 @@ Note 3: I want to support SSH soon after that, but will depend on requests.
 
 The constructor for [`ThorsMongo`](../src/ThorsMongo/ThorsMongo.h#L86-L90) looks like this:
 
+```C++
         ThorsMongo(MongoURL const&                  url,
                    Auth::UserNamePassword const&    authInfo,
                    Compression                      compression = Compression::Snappy,
                    Auth::Client const&              clientInfo = Auth::Client{"", {}}
         );
+```
 
 ### Parameters:
 
@@ -41,6 +43,7 @@ The most commonly overridden values in this are the application name and platfor
 
 ### Example:
 
+```C++
     using ThorsAnvil::DB::Mongo::ThorsMongo;
     using ThorsAnvil::DB::Mongo::Compression;
     using ThorsAnvil::DB::Mongo::Auth::Client;
@@ -50,55 +53,59 @@ The most commonly overridden values in this are the application name and platfor
                               Compression::Snappy | Compression::ZStd,      // Requested Compression.
                               Auth::Client{"MyApplication", "Platform"}     // Client Information for the Server.
                              );
-
+```
 
 ## ThorsMongo Interface:
 
 This class has the following interface:
 
-* listDatabases()
-* operator[<DB-Name>]
+* [listDatabases()](#listdatabases)
+* [operator[<DB-Name>]](#operator)
 
 
 ### listDatabases:
 
-This method uses the Mongo API [`listDatabases`](https://www.mongodb.com/docs/manual/reference/command/listDatabases/).
+This method uses the Mongo API [**listDatabases**](https://www.mongodb.com/docs/manual/reference/command/listDatabases/). Please read the Mongo documentation for details.
 
-There are no required parameters but (I suspect) that a filter is often used. So this method takes an optional [filter](Filter.md) followed by an optional [config](../src/ThorsMongo/ThorsMongoCommandConfig.h#L10-L24) object. The config object is used to pass any optional parameters that the Mongo API can take. If a parameter is not explicitly set then it will not be sent to the MongoServer.
-
+```C++
         template<typename F>
         DBRange                 listDatabases(F const& filter, CommandConfig const& config = CommandConfig{});
         DBRange                 listDatabases(CommandConfig const& config = CommandConfig{});
+```
 
-#### Example:
+#### Parameters:
+There are no required parameters but (I suspect) that a filter is often used. So this method takes an optional "[filter](Filter.md)" followed by an optional [config](../src/ThorsMongo/ThorsMongoCommandConfig.h#L10-L24) object. The config object is used to pass any optional parameters that the Mongo API can take. If a parameter is not explicitly set then it will not be sent to the MongoServer.
 
-Normal usage would be:
+| Parameter | Description |
+| --------- | ----------- |
+| filter | A "filter" on the `DBInfo` type. |
+| config.nameOnly | A flag to indicate whether the command should return just the database names, or return both database names and size information. |
+| config.authorizedDatabases | A flag that determines which databases are returned based on the user privileges when access control is enabled. |
+| config.comment | A user-provided comment to attach to this command. |
 
+#### Returns:
+
+The returned value is usable in a boolean expression that indicates if the Mogo operation failed. If it did fail then sending the object to a stream will print an error message:
+
+```C++
     auto databases = mongo.listDatabases();
-
-The returned value is also usable in a boolean expression that indicates if the Mogo operation failed. If it did fail then sending the object to a stream will print an error message:
-
     if (databases) {                                    // Same as databases.isOk()
         // It worked.
     }
     else {
         std::cerr << "Error: " << databases << "\n";    // Same as databases.getHRErrorMessage()
     }
+```
 
-The return value is a [C++ range](https://en.cppreference.com/w/cpp/ranges) where each value you iterate over is a [`DBInfo`](../src/ThorsMongo/ThorsMongoListDatabase.h#L13-L18) object.
+The return value is also [C++ range](https://en.cppreference.com/w/cpp/ranges) where each value you iterate over is a [`DBInfo`](../src/ThorsMongo/ThorsMongoListDatabase.h#L13-L18) object.
 
+```C++
     for (auto const& v: databases) {
         std::cerr << v.name << "\n";
     }
-
+```
 
 ### operator[]:
 
-This simply returns an object of `DB`. This is a lightweight object. You can create any number of these objects and they all refer to the same entity. Please see document about the [DB](DB.md).
-
-
-
-
-
-
+This simply returns an object of type `DB`. This is a lightweight object. You can create any number of these objects and they all refer to the same entity. Please see document about the [DB](DB.md).
 

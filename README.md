@@ -24,7 +24,7 @@ Mongo API for C++
 * [Documentation](#documentation)  
 
 # Description:
-This is an attempt to have a simple to use TypeSafe API to connect and manipulate data on a Mongo Server.  
+This is an attempt to have a simple to use Type-Safe API to connect and manipulate data on a Mongo Server.  
 
 This API does not currently implement the full Mongo API, but rather the subset of the API around data manipulation and storage.  
 
@@ -36,17 +36,21 @@ This library makes heavy use of ThorsSerialize API to automate the generation of
 
 These libraries are available via [brew](https://brew.sh/)
 
+```Shell
     > brew install thors-serializer
+```
 
 ## Medium Build:
 
 Build and install the libraries manually:
 
+```Shell
     > git clone git@github.com:Loki-Astari/ThorsSerializer.git
     > cd ThorsSerializer
     > ./configure
     > make
     > make install
+```
 
 Note: The configuration script should check for all dependencies and give instructions on how to fix any issues.
 
@@ -55,10 +59,12 @@ Note: The configuration script should check for all dependencies and give instru
 
 There is a header only version. You will need to install it and a couple of other libraries manually.
 
+```Shell
     > git clone --single-branch --branch header-only git@github.com:Loki-Astari/ThorsSerializer.git
     > git clone git@github.com:Neargye/magic_enum
     > # or brew install magic_enum
     > brew install snappy
+```
 
 # Usage:
 
@@ -68,19 +74,19 @@ Look at the [Example](./src/Example) folder for example of how to build against 
 ## Connecting:
 All communication done with the Mongo Server id done via the `ThorsMongo` class.  
 
-````
+```C++
     #include "ThorsMongo/ThorsMongo.h"
 
     // Connecting to Mongo
 
     using ThorsAnvil::DB::Mongo::ThorsMongo;
     ThorsMongo          mongo({"localhost", 27017}, {"usernmae", "password", "DB"});
-````
+```
 
 
 Note: I have currently only implemented SCRAM-SHA-256 authentication mechanism. So the user must have this enabled.  
 
-````
+```Shell
    // Mongo Shell
    DB> show users
     [
@@ -96,14 +102,14 @@ Note: I have currently only implemented SCRAM-SHA-256 authentication mechanism. 
                     ^^^^^^^^^^^^^^^^^^ Please check your user has this enabled.
       }
     ]
-````
+```
 
 On a Mongo Server there are multiple Databases. Each Database can have multiple Collections. There are appropriate class for these types of object.  
 
 * `ThorsAnvil::DB::Mongo::DB`
 * `ThorsAnvil::DB::Mongo::Collection`
 
-````
+```C++
     using ThorsAnvil::DB::Mongo::DB;
     using ThorsAnvil::DB::Mogno::Collection;
 
@@ -115,14 +121,14 @@ On a Mongo Server there are multiple Databases. Each Database can have multiple 
     mongo["DB"].method();               // Has same affect as: db.method();
     mongo["DB"]["People"].method();     // Has same effect as: db["People"].method()
                                         //                and: collection.method();
-````
+```
 
 ## Serializing Data:
 
 You can insert any data you like into a collection.  
-To serialize the data you must declare the class you are sending to Mongo as serializable (using [ThorsSerialize](https://github.com/Loki-Astari/ThorsSerializer/) ). This has a tiny bit of boilerplate declaration per class. I provide a simple example here. More detailed examples and documentation can be found [here](https://github.com/Loki-Astari/ThorsSerializer/blob/master/README.md).  
+To serialize the data you must declare the class you are sending to Mongo as serializeable (using [ThorsSerialize](https://github.com/Loki-Astari/ThorsSerializer/) ). This has a tiny bit of boilerplate declaration per class. I provide a simple example here. More detailed examples and documentation can be found [here](https://github.com/Loki-Astari/ThorsSerializer/blob/master/README.md).  
 
-````
+```C++
     // The structure I want to store.
     // C++ class declarations.
     class Address
@@ -170,13 +176,13 @@ To serialize the data you must declare the class you are sending to Mongo as ser
 
     ThorsAnvil_MakeTrait(Address, street1, street2, city, country, postCode);
     ThorsAnvil_MakeTrait(Person, name, age, alergies, address);
-````
+```
 
 ## Inserting Data:
 
-To insert data into a collection call the `insert()` method passing either a vector or a tuple of objects. Note: The types of all the objects have to be serializable.  
+To insert data into a collection call the `insert()` method passing either a vector or a tuple of objects. Note: The types of all the objects have to be serializeable.  
 
-````
+```C++
     void addPeopleToMongo(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, std::vector<Person> const& people)
     {
         // The insert() method takes either
@@ -199,13 +205,13 @@ To insert data into a collection call the `insert()` method passing either a vec
             std::cout << "Error: " << result << "\n";
         }
     }
-````
+```
 
 If you only want to insert a single item you can invisibly create a vector by wrapping the object in curly braces.        
 
-````
+```C++
         auto result = mongo["DB"]["Collection"].insert({ aSinglePersonObject });
-````
+```
 
 
 ## Find Data:
@@ -216,17 +222,17 @@ This requires some boilerplate to allow you to match against specific fields in 
 The `find()` method takes a filter and returns a C++ range.  
 
 
-````
+```C++
     // This macro creates a type called "FindEqName"
-    // It can be used to filter recors by Person.name on the server using "Eq" (Equality)
+    // It can be used to filter records by Person.name on the server using "Eq" (Equality)
 
     ThorsMongo_CreateFilter(FindEqName, Person, name, Eq);
 
     void findPeopleInMongoByName(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, std::string const& name)
     {
-        // Retuns a C++ range of all the objects that match the query.
-        // Note:  The range hides a Mongo cursor so as you you iterate across the query
-        //        this may result in more calls to Mongo to retrieve more data automatically.
+        // Returns a C++ range of all the objects that match the query.
+        // Note:   The range hides a Mongo cursor so as you you iterate across the query
+        //         this may result in more calls to Mongo to retrieve more data automatically.
 
         auto range = mongo["DB"]["Collection"].find<Person>(FindEqName{name});
 
@@ -242,7 +248,7 @@ The `find()` method takes a filter and returns a C++ range.
             std::cout << "Error: " << range << "\n";
         }
     }
-````
+```
 
 ## Delete Data:
 
@@ -250,7 +256,7 @@ The remove method operates on a `Query`. This is basically a "[Filter](Documenta
 Note: If you are only deleting one and the filter matches multiple records in the collection then you are effectively deleting a random matching record. Please read the full documentation to understand how to control the filter to get an exact match or use findAndRemoveOne() method for more control.  
 
 
-````
+```C++
     // Create a filter on Person.age using the "Gt" (Greater than) operator
     ThorsMongo_CreateFilter(FindGtAge, Person, age, Gt);
 
@@ -268,7 +274,7 @@ Note: If you are only deleting one and the filter matches multiple records in th
             std::cerr << "Error: " << result << "\n";
         }
     };
-````
+```
 
 ## Find And Modify One:
 
@@ -284,7 +290,7 @@ All these functions use a "[Filter](Documentation/Filter.md)" to select a single
 
 The `findAndReplaceOne()` methods find and update a single record using a "[Filter](Documentation/Filter.md)" and replaces the record with a new record. This is useful if all the updates are done in the application side.  
 
-````
+```C++
     void replacePerson(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, std::string const& name, Person const& p)
     {
         auto result = mongo["test"]["People"].findAndReplaceOne(FindEqName{name}, p);
@@ -304,13 +310,13 @@ The `findAndReplaceOne()` methods find and update a single record using a "[Filt
             std::cerr << "Error: " << result << "\n";
         }
     }
-````
+```
 
 ### Find and Remove:
 
 The `findAndRemoveOne()` methods find and removes a single record using a "[Filter](Documentation/Filter.md)".
 
-````
+```C++
     void removePerson(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, std::string const& name)
     {
         auto result = mongo["test"]["People"].findAndRemoveOne<Person>(FindEqName{name});
@@ -330,7 +336,7 @@ The `findAndRemoveOne()` methods find and removes a single record using a "[Filt
             std::cerr << "Error: " << result << "\n";
         }
     }
-````
+```
 
 ### Find and Update:
 
@@ -338,7 +344,7 @@ The `findAndUpdateOne()` methods find a single record using a "[Filter](Document
 
 The update is expressed as an "[Expression](Documentation/Update.md)" that requires some boilerplate. I will provide a simple example here. Details will be provided below in the Update documentation.  
 
-````
+```C++
     // This macro creates a type called "SetAge"
     // It will "Set" the value of Person.age on the server.
 
@@ -366,7 +372,7 @@ The update is expressed as an "[Expression](Documentation/Update.md)" that requi
             std::cerr << "Error: " << result << "\n";
         }
     };
-````
+```
 
 ## Documentation:
 
