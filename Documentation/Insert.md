@@ -1,6 +1,6 @@
 ![ThorsMongo](../img/thorsmongo.jpg)
 
-# Delete:
+# Insert:
 
 This method uses the Mongo API [**insert**](https://www.mongodb.com/docs/manual/reference/command/insert/). Please read the Mongo documentation for details.
 
@@ -8,6 +8,8 @@ This method uses the Mongo API [**insert**](https://www.mongodb.com/docs/manual/
         template<typename T>        InsertResult    insert(std::vector<T> const& data, InsertConfig const& config = InsertConfig{});
         template<typename... T>     InsertResult    insert(std::tuple<T...> const& data, InsertConfig const& config = InsertConfig{});
 ```
+
+The `insert()` method inserts a container of individual records into a collection.
 
 Note: All objects in the vector or tuple must be a type that has been marked as serializeable via [ThorsSerialize](https://github.com/Loki-Astari/ThorsSerializer).
 

@@ -10,7 +10,7 @@ This method uses the Mongo API [**delete**](https://www.mongodb.com/docs/manual/
         template<typename T>        RemoveResult    remove(Query<T, std::string> const& search, RemoveConfig const& config = RemoveConfig{});
 ```
 
-The remove method takes one or more `Query<Filter>` objects. A "[Filter](Filter.md)" object defines a search criteria that is used to match records on the server. Please see the filter section on how to write them.
+The `remove()` method takes one or more `Query<Filter>` objects. A "[Filter](Filter.md)" object defines a search criteria that is used to match records on the server. Please see the filter section on how to write them.
 
 Note: A record is matched if any query object matches the record.
 
