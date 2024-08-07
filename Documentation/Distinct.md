@@ -30,7 +30,7 @@ The [`RDistinctResult<T>`](../src/ThorsMongo/ThorsMongoDistinct.h#L26-L30) conta
 #### Example:
 
 ```C++
-        // Note: See "Filter" documentations on how to define `FindPeopleOver`
+        // Note: See "Filter" documentation on how to define `FindPeopleOver`
         auto result = mongo["People"]["Home"].distinct<std::string>("name", FindPeopleOver(90));
         if (result) {
             for (auto const& name: result.values) {

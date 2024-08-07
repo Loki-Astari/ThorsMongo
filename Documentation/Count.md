@@ -32,7 +32,7 @@ The [`CountResult`](../src/ThorsMongo/ThorsMongoCount.h#L39-L42) contains `n` to
 #### Example:
 
 ```C++
-        // Note: See "Filter" documentations on how to define `FindPeopleOver`
+        // Note: See "Filter" documentation on how to define `FindPeopleOver`
         auto result = mongo["People"]["Home"].countDocuments(FindPeopleOver(21));
         if (result) {                                           // Same as !result.isOk()
             std::cerr << "There are " << result.n << " people over 21\n";

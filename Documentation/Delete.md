@@ -36,7 +36,7 @@ The [`RemoveResult`](../src/ThorsMongo/ThorsMongoRemove.h#L32-L33) type contains
 #### Example:
 
 ```C++
-        // Note: See "Filter" documentations on how to define `FindByAccountId`
+        // Note: See "Filter" documentation on how to define `FindByAccountId`
         auto result = mongo["People"]["Home"].remove(Query<FindByAccountId>(12));
         if (!result) {                                          // Same as !result.isOk()
             std::cerr << "Remove Failed: " << result << "\n";   // Same as result.getHRErrorMessage()
