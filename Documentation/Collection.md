@@ -77,7 +77,7 @@ The only required parameter is `name`, but there are multiple optional parameter
 
 #### Returns:
 
-The [`AdminResult`](../src/ThorsMongo/ThorsMongoAdmin.h#L71) type contains no data, but can used to check the operation succeeded and of failure to get the error information.
+The [`AdminResult`](../src/ThorsMongo/ThorsMongoAdmin.h#L71) type contains no data, but can used to check the operation succeeded and on failure to get the error information.
 
 #### Example:
 
@@ -106,7 +106,7 @@ There are no required parameters. The optional parameter that can be passed usin
 
 #### Returns:
 
-The [`AdminResult`](../src/ThorsMongo/ThorsMongoAdmin.h#L71) type contains no data, but can used to check the operation succeeded and of failure to get the error information.
+The [`AdminResult`](../src/ThorsMongo/ThorsMongoAdmin.h#L71) type contains no data, but can used to check the operation succeeded and on failure to get the error information.
 
 #### Example:
 
