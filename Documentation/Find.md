@@ -27,7 +27,7 @@ The optional parameter `search` is a "[Filter](Filter.md)". Other optional param
 | config.singleBatch | Determines whether to close the cursor after the first batch. Defaults to false. |
 | config.comment | A user-provided comment to attach to this command. |
 | config.maxTimeMS | Specifies a time limit in milliseconds. If you do not specify a value for maxTimeMS, operations will not time out. A value of 0 explicitly specifies the default unbounded behavior.<br><br>MongoDB terminates operations that exceed their allotted time limit using the same mechanism as db.killOp(). MongoDB only terminates an operation at one of its designated interrupt points. |
-| config.readConcern | Defines the read concerns used.
+| config.readConcern | Defines the read concerns used. |
 | config.max | The exclusive upper bound for a specific index. See cursor.max() for details. |
 | config.min | The inclusive lower bound for a specific index. See cursor.min() for details. |
 | config.returnKey | If true, returns only the index keys in the resulting documents.<br>Default value is false.<br>If returnKey is true and the find command does not use an index, the returned documents will be empty. |
@@ -49,7 +49,7 @@ The [`FindRange<T>`](../src/ThorsMongo/ThorsMongoFind.h#L83-L132) is a C++ `rang
 
 ```C++
         // Note: See "Filter" documentations on how to define `FindByBalanceOver`
-        auto result = mongo["People"]["Home"].find<BankAccount>(Query<FindByBalanceOver>(1'000'000'00));
+        auto result = mongo["People"]["Home"].find<BankAccount>(FindByBalanceOver(1'000'000'00));
         if (result) {                                           // Same as !result.isOk()
             for (auto const& f: result)
             {
