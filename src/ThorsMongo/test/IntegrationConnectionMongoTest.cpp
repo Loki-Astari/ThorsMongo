@@ -134,9 +134,10 @@ TEST(IntegrationConnectionMongoTest, removeData)
 
 }
 
-#include "MongoQuery.h"
-ThorsMongo_CreateFilter(MotherAddressCode, Eq, Family, mother, address, code);
-ThorsMongo_CreateFilter(FatherAddressCode, Eq, Family, father, address, code);
+ThorsMongo_CreateFieldAccess(Family, mother, address, code);
+using MotherAddressCode = ThorsMongo_FilterFromAccess(Eq, Family, mother, address, code);
+ThorsMongo_CreateFieldAccess(Family, father, address, code);
+using FatherAddressCode = ThorsMongo_FilterFromAccess(Eq, Family, father, address, code);
 TEST(IntegrationConnectionMongoTest, removeUsingMultiLevelFilter)
 {
     SKIP_INTEGRATION_TEST();

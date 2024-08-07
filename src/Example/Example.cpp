@@ -84,7 +84,7 @@ ThorsAnvil_Template_MakeTrait(1, NameField, name);
 using ThorsAnvil::DB::Mongo::QueryOp::Eq;
 using FindEqName    = NameField<Eq<std::string>>;
 #else
-ThorsMongo_CreateFilter(FindEqName, Person, name, Eq);
+ThorsMongo_CreateFilter(FindEqName, Eq, Person, name);
 #endif
 
 void findPeopleInMongoByName(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, std::string const& name)
@@ -121,7 +121,7 @@ void removePeopelFromMongoByName(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, std::
     }
 };
 
-ThorsMongo_CreateFilter(FindGtAge, Person, age, Gt);
+ThorsMongo_CreateFilter(FindGtAge, Gt, Person, age);
 void removePeopelFromMongoOlderThan(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, std::uint32_t minAge, ThorsAnvil::DB::Mongo::Remove rem)
 {
     using ThorsAnvil::DB::Mongo::Query;

@@ -51,44 +51,34 @@ ThorsAnvil_Template_MakeTrait(1,                                                
 );
 
 
-#define ThorsMongo_FilterFromAccess(Name, Operator, TypeName, ...)                                  \
-using Name = ThorsAnvil::FieldAccess:: THORMONGO_NAME(TypeName, 0, __VA_ARGS__) ::Access<           \
-                ThorsAnvil::DB::Mongo::QueryOp::Operator<                                           \
-                    typename ThorsAnvil::FieldAccess:: THORMONGO_NAME(TypeName, 0, __VA_ARGS__) ::TypeOperat \
-                >                                                                                   \
-             >
+#define ThorsMongo_FilterFromAccess(Operator, TypeName, ...)                                        \
+ThorsAnvil::FieldAccess:: THORMONGO_NAME(TypeName, 0, __VA_ARGS__) ::Access<                        \
+    ThorsAnvil::DB::Mongo::QueryOp::Operator<                                                       \
+        typename ThorsAnvil::FieldAccess:: THORMONGO_NAME(TypeName, 0, __VA_ARGS__) ::TypeOperat    \
+    >                                                                                               \
+>
 
-#define ThorsMongo_UpdateFromAccess(Name, Action, TypeName, ...)                                    \
-using Name = ThorsAnvil::DB::Mongo::QueryOp:: Action <                                              \
-                ThorsAnvil::FieldAccess:: THORMONGO_NAME(TypeName, 0, __VA_ARGS__) ::Access<        \
-                    ThorsAnvil::DB::Mongo::QueryOp::Action ## Param<                                \
-                        typename ThorsAnvil::FieldAccess:: THORMONGO_NAME(TypeName, 0, __VA_ARGS__)::TypeOperat \
-                    >                                                                               \
-                >                                                                                   \
-             >
+#define ThorsMongo_UpdateFromAccess(Action, TypeName, ...)                                          \
+ThorsAnvil::DB::Mongo::QueryOp:: Action <                                                           \
+    ThorsAnvil::FieldAccess:: THORMONGO_NAME(TypeName, 0, __VA_ARGS__) ::Access<                    \
+        ThorsAnvil::DB::Mongo::QueryOp::Action ## Param<                                            \
+            typename ThorsAnvil::FieldAccess:: THORMONGO_NAME(TypeName, 0, __VA_ARGS__)::TypeOperat \
+        >                                                                                           \
+    >                                                                                               \
+>
 
 // Used For Push     [Each / Position / Slice / Sort
 //          AddToSet [Each / Position / Slice / Sort ]
-#define ThorsMongo_UpdateExtendFromAccess(Name, Action, Action2, TypeName, ...)                     \
-using Name = ThorsAnvil::DB::Mongo::QueryOp:: Action <                                              \
-                ThorsAnvil::FieldAccess:: THORMONGO_NAME(TypeName, 0, __VA_ARGS__) ::Access<        \
-                    ThorsAnvil::DB::Mongo::QueryOp:: Action2 <                                      \
-                        ThorsAnvil::DB::Mongo::QueryOp::Action2 ## Param<                           \
-                            typename ThorsAnvil::FieldAccess:: THORMONGO_NAME(TypeName, 0, __VA_ARGS__)::TypeOperat \
-                        >                                                                           \
-                    >                                                                               \
-                >                                                                                   \
-             >
-
-#define ThorsMongo_CreateFilter(Name, Operator, TypeName, ...)                                      \
-    ThorsMongo_CreateFieldAccess(TypeName, __VA_ARGS__);                                            \
-    ThorsMongo_FilterFromAccess(Name, Operator, TypeName, __VA_ARGS__)
-
-
-#define ThorsMongo_CreateUpdate(Name, Action, TypeName, ...)                                        \
-    ThorsMongo_CreateFieldAccess(TypeName, __VA_ARGS__);                                            \
-    ThorsMongo_UpdateFromAccess(Name, Action, TypeName, __VA_ARGS__)
-
+#define ThorsMongo_UpdateExtendFromAccess(Action, Action2, TypeName, ...)                           \
+ThorsAnvil::DB::Mongo::QueryOp:: Action <                                                           \
+    ThorsAnvil::FieldAccess:: THORMONGO_NAME(TypeName, 0, __VA_ARGS__) ::Access<                    \
+        ThorsAnvil::DB::Mongo::QueryOp:: Action2 <                                                  \
+            ThorsAnvil::DB::Mongo::QueryOp::Action2 ## Param<                                       \
+                typename ThorsAnvil::FieldAccess:: THORMONGO_NAME(TypeName, 0, __VA_ARGS__)::TypeOperat \
+            >                                                                                       \
+        >                                                                                           \
+    >                                                                                               \
+>
 
 namespace ThorsAnvil::DB::Mongo
 {
