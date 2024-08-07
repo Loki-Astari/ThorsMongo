@@ -354,7 +354,6 @@ The update is expressed as an "[Expression](Documentation/Update.md)" that requi
     {
         using ThorsAnvil::DB::Mongo::Query;
         using ThorsAnvil::DB::Mongo::Remove;
-        std::cerr << "Checking: " <<  ThorsAnvil::Serialize::jsonExporter(SetAge{newAge}) << "\n";
         auto result = mongo["test"]["People"].findAndUpdateOne<Person>(FindEqName{name}, SetAge{newAge});
         if (result)
         {
