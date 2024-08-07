@@ -226,7 +226,7 @@ The `find()` method takes a filter and returns a C++ range.
     // This macro creates a type called "FindEqName"
     // It can be used to filter records by Person.name on the server using "Eq" (Equality)
 
-    ThorsMongo_CreateFilter(FindEqName, Person, name, Eq);
+    ThorsMongo_CreateFilter(FindEqName, Eq, Person, name);
 
     void findPeopleInMongoByName(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, std::string const& name)
     {
@@ -258,7 +258,7 @@ Note: If you are only deleting one and the filter matches multiple records in th
 
 ```C++
     // Create a filter on Person.age using the "Gt" (Greater than) operator
-    ThorsMongo_CreateFilter(FindGtAge, Person, age, Gt);
+    ThorsMongo_CreateFilter(FindGtAge, Gt, Person, age);
 
     void removePeopelFromMongoByName(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, std::uint32_t minAge, bool removeOne)
     {
