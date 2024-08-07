@@ -48,7 +48,7 @@ The [`FindRange<T>`](../src/ThorsMongo/ThorsMongoFind.h#L83-L132) is a C++ `rang
 #### Example:
 
 ```C++
-        // Note: See "Filter" documentations on how to define `FindByBalanceOver`
+        // Note: See "Filter" documentation on how to define `FindByBalanceOver`
         auto result = mongo["People"]["Home"].find<BankAccount>(FindByBalanceOver(1'000'000'00));
         if (result) {                                           // Same as !result.isOk()
             for (auto const& f: result)
