@@ -36,8 +36,6 @@ The [`RemoveResult`](../src/ThorsMongo/ThorsMongoRemove.h#L32-L33) type contains
 #### Example:
 
 ```C++
-        // Insert three bank accounts.
-        // Using C++ ability to create a vector on the fly using {}
         // Note: See "Filter" documentations on how to define `FindByAccountId`
         auto result = mongo["People"]["Home"].remove(Query<FindByAccountId>(12));
         if (!result) {                                          // Same as !result.isOk()
