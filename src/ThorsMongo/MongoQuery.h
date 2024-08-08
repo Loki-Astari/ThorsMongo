@@ -10,7 +10,7 @@
 #define THORMONGO_BUILD_FIELD_NAME(TypeName, ...)                   REP_CMD_N(THORMONGO_BUILD_FIELD_NAME_, 00, TypeName, Ignore, __VA_ARGS__)
 
 #define THORMONGO_BULD_TYPE_INFO_(TC, TypeName, Last, FN)           using Type ## FN = typename ThorsAnvil::Serialize::Traits<Type ## Last>::THOR_BUILD_NAME(Type, FN);
-#define LAST_THORMONGO_BULD_TYPE_INFO_(TC, TypeName, Last, FN)      using TypeOperat = typename ThorsAnvil::Serialize::Traits<Type ## Last>::THOR_BUILD_NAME(Type, FN)
+#define LAST_THORMONGO_BULD_TYPE_INFO_(TC, TypeName, Last, FN)      using TypeBase = typename ThorsAnvil::Serialize::Traits<Type ## Last>::THOR_BUILD_NAME(Type, FN)
 #define THORMONGO_BULD_TYPE_INFO(TypeName, First, TC, ...)          REP_CMD_N(THORMONGO_BULD_TYPE_INFO_, TC, TypeName, First, __VA_ARGS__)
 
 #define THORMONGO_BUILD_USE_FIRST(value, ...)                       value
@@ -24,56 +24,64 @@
  * Creating a filter.
  *      Automate building filters.
  */
-#define ThorsMongo_CreateFieldAccess(Name, Operator, TypeName, ...)                                 \
+#define ThorsMongo_CreateFieldAccess(TypeName, ...)                                                 \
 namespace ThorsAnvil::FieldAccess:: THORMONGO_NAME(TypeName, 0, __VA_ARGS__) {                      \
-    template<template<typename> typename E, typename T>                                             \
+    template<typename T>                                                                            \
     struct Access                                                                                   \
     {                                                                                               \
-        using CType = typename E<ThorsAnvil::DB::Mongo::ConstructorType<T>>::CType;                 \
+        using CType = ThorsAnvil::DB::Mongo::ConstructorType<T>;                                    \
         Access(CType init) : THORMONGO_BUILD_USE_FIRST(__VA_ARGS__, 1)(std::move(init)) {}          \
-        T             THORMONGO_BUILD_USE_FIRST(__VA_ARGS__, 1);                                    \
+        T          THORMONGO_BUILD_USE_FIRST(__VA_ARGS__, 1);                                       \
     };                                                                                              \
     using TypeFirst = ::TypeName;                                                                   \
     THORMONGO_BULD_TYPE_INFO(TypeName, First, 00, __VA_ARGS__);                                     \
-    template<typename T>                                                                            \
-    using AccessNorm = Access<ThorsAnvil::DB::Mongo::QueryOp::NormalExtractor, T>;                  \
-    template<typename T>                                                                            \
-    using AccessValue= Access<ThorsAnvil::DB::Mongo::QueryOp::ValueExtractor, T>;                   \
+    using TypeOperat = ThorsAnvil::DB::Mongo::RemoveOptional<TypeBase>;                             \
 }                                                                                                   \
-ThorsAnvil_TTemplate_MakeOverride(2,                                                                \
+ThorsAnvil_Template_MakeOverride(1,                                                                 \
     ThorsAnvil::FieldAccess:: THORMONGO_NAME(TypeName, 0, __VA_ARGS__) ::Access,                    \
     {THORMONGO_BUILD_USE_FIRST_Q(__VA_ARGS__, 1), THORMONGO_BUILD_FIELD_NAME(TypeName, __VA_ARGS__)}\
 );                                                                                                  \
-ThorsAnvil_TTemplate_MakeTrait(2,                                                                   \
+ThorsAnvil_Template_MakeTrait(1,                                                                    \
     ThorsAnvil::FieldAccess:: THORMONGO_NAME(TypeName, 0, __VA_ARGS__) ::Access,                    \
     THORMONGO_BUILD_USE_FIRST(__VA_ARGS__, 1)                                                       \
 );
 
 
 #define ThorsMongo_FilterFromAccess(Name, Operator, TypeName, ...)                                  \
-using Name    = ThorsAnvil::FieldAccess:: THORMONGO_NAME(TypeName, 0, __VA_ARGS__)                  \
-                    ::AccessNorm<                                                                   \
-                        ThorsAnvil::DB::Mongo::QueryOp::Operator<                                   \
-                            ThorsAnvil::FieldAccess:: THORMONGO_NAME(TypeName, 0, __VA_ARGS__) ::TypeOperat \
-                        >                                                                           \
-                    >
+using Name = ThorsAnvil::FieldAccess:: THORMONGO_NAME(TypeName, 0, __VA_ARGS__) ::Access<           \
+                ThorsAnvil::DB::Mongo::QueryOp::Operator<                                           \
+                    typename ThorsAnvil::FieldAccess:: THORMONGO_NAME(TypeName, 0, __VA_ARGS__) ::TypeOperat \
+                >                                                                                   \
+             >
+
+#define ThorsMongo_UpdateFromAccessNorm(Name, Action, TypeName, ...)                                \
+using Name = ThorsAnvil::DB::Mongo::QueryOp:: Action <                                              \
+                ThorsAnvil::FieldAccess:: THORMONGO_NAME(TypeName, 0, __VA_ARGS__) ::Access<        \
+                    typename ThorsAnvil::FieldAccess:: THORMONGO_NAME(TypeName, 0, __VA_ARGS__) ::TypeOperat \
+                >                                                                                   \
+             >
+
+#define ThorsMongo_UpdateFromAccessValue(Name, Action, TypeName, ...)                               \
+using Name = ThorsAnvil::DB::Mongo::QueryOp:: Action <                                              \
+                ThorsAnvil::FieldAccess:: THORMONGO_NAME(TypeName, 0, __VA_ARGS__) ::Access<        \
+                    typename ThorsAnvil::FieldAccess:: THORMONGO_NAME(TypeName, 0, __VA_ARGS__)::TypeOperat::value_type \
+                >                                                                                   \
+             >
 
 
 #define ThorsMongo_CreateFilter(Name, Operator, TypeName, ...)                                      \
-    ThorsMongo_CreateFieldAccess(Name, Operator, TypeName, __VA_ARGS__);                            \
+    ThorsMongo_CreateFieldAccess(TypeName, __VA_ARGS__);                                            \
     ThorsMongo_FilterFromAccess(Name, Operator, TypeName, __VA_ARGS__)
 
 
-#define ThorsMongo_CreateUpdate(Name, Action, TypeName, FieldName)                                  \
-template<typename T>                                                                                \
-struct THOR_BUILD_NAME(Name, THOR_FIELD_UPDATE)                                                     \
-{                                                                                                   \
-    using CType = ThorsAnvil::DB::Mongo::ConstructorType<T>;                                        \
-    THOR_BUILD_NAME(Name, THOR_FIELD_UPDATE)(CType init) : FieldName(std::move(init)) {}            \
-    T           FieldName;                                                                          \
-};                                                                                                  \
-ThorsAnvil_Template_MakeTrait(1, THOR_BUILD_NAME(Name, THOR_FIELD_UPDATE), FieldName);              \
-using Name = ThorsAnvil::DB::Mongo::QueryOp:: Action <THOR_BUILD_NAME(Name, THOR_FIELD_UPDATE)<ThorsAnvil::Serialize::Traits<TypeName>::THOR_BUILD_NAME(Type, FieldName)>>
+#define ThorsMongo_CreateUpdateNorm(Name, Action, TypeName, ...)                                    \
+    ThorsMongo_CreateFieldAccess(TypeName, __VA_ARGS__);                                            \
+    ThorsMongo_UpdateFromAccessNorm(Name, Action, TypeName, __VA_ARGS__)
+
+#define ThorsMongo_CreateUpdateValue(Name, Action, TypeName, ...)                                   \
+    ThorsMongo_CreateFieldAccess(TypeName, __VA_ARGS__);                                            \
+    ThorsMongo_UpdateFromAccessValue(Name, Action, TypeName, __VA_ARGS__)
+
 
 namespace ThorsAnvil::DB::Mongo
 {
