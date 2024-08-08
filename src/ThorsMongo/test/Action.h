@@ -104,13 +104,17 @@ struct TimeStampField
     T       timeStamp;
 };
 
-template<typename T>
+template<template<typename> typename E, typename T>
 struct FoodField
 {
-    using CType = ThorsAnvil::DB::Mongo::ConstructorType<T>;
+    using CType = typename E<ThorsAnvil::DB::Mongo::ConstructorType<T>>::CType;
     FoodField(CType init): food(std::move(init)) {}
     T   food;
 };
+template<typename T>
+using FoodFieldNorm    = FoodField<ThorsAnvil::DB::Mongo::QueryOp::NormalExtractor, T>;
+template<typename T>
+using FoodFieldValue   = FoodField<ThorsAnvil::DB::Mongo::QueryOp::ValueExtractor, T>;
 
 
 struct Funky
@@ -188,7 +192,7 @@ ThorsAnvil_Template_MakeTrait(1,
                      LengthField,           length);
 ThorsAnvil_Template_MakeTrait(1,
                      DataField,             data);
-ThorsAnvil_Template_MakeTrait(1,
+ThorsAnvil_TTemplate_MakeTrait(2,
                      FoodField,             food);
 ThorsAnvil_MakeTrait(Funky,                 mark);
 ThorsAnvil_MakeTrait(Splotch,               length, width, color);

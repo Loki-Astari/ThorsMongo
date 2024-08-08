@@ -16,31 +16,53 @@
 #define THORMONGO_BUILD_USE_FIRST(value, ...)                       value
 #define THORMONGO_BUILD_USE_FIRST_Q(value, ...)                     #value
 
+#define THORMONGO_NAME_(TC, TypeName, NS, FN)                       NS ::
+#define LAST_THORMONGO_NAME_(TC, TypeName, NS, FN)                  NS :: FN
+#define THORMONGO_NAME(TypeName, TC, ...)                           REP_CMD_N(THORMONGO_NAME_, TC, TypeName, TypeName, __VA_ARGS__)
+
 /*
  * Creating a filter.
  *      Automate building filters.
  */
-#define ThorsMongo_CreateFilter(Name, Operator, TypeName, ...)                                      \
-namespace ThorsAnvil::FieldAccess::Name {                                                           \
-    template<typename T>                                                                            \
-    struct Name                                                                                     \
+#define ThorsMongo_CreateFieldAccess(Name, Operator, TypeName, ...)                                 \
+namespace ThorsAnvil::FieldAccess:: THORMONGO_NAME(TypeName, 0, __VA_ARGS__) {                      \
+    template<template<typename> typename E, typename T>                                             \
+    struct Access                                                                                   \
     {                                                                                               \
-        using CType = ThorsAnvil::DB::Mongo::ConstructorType<T>;                                    \
-        Name(CType init) : THORMONGO_BUILD_USE_FIRST(__VA_ARGS__, 1)(std::move(init)) {}            \
+        using CType = typename E<ThorsAnvil::DB::Mongo::ConstructorType<T>>::CType;                 \
+        Access(CType init) : THORMONGO_BUILD_USE_FIRST(__VA_ARGS__, 1)(std::move(init)) {}          \
         T             THORMONGO_BUILD_USE_FIRST(__VA_ARGS__, 1);                                    \
     };                                                                                              \
-    using TypeFirst = TypeName;                                                                     \
+    using TypeFirst = ::TypeName;                                                                   \
     THORMONGO_BULD_TYPE_INFO(TypeName, First, 00, __VA_ARGS__);                                     \
+    template<typename T>                                                                            \
+    using AccessNorm = Access<ThorsAnvil::DB::Mongo::QueryOp::NormalExtractor, T>;                  \
+    template<typename T>                                                                            \
+    using AccessValue= Access<ThorsAnvil::DB::Mongo::QueryOp::ValueExtractor, T>;                   \
 }                                                                                                   \
-ThorsAnvil_Template_MakeOverride(1,                                                                 \
-    ThorsAnvil::FieldAccess::Name::Name,                                                            \
+ThorsAnvil_TTemplate_MakeOverride(2,                                                                \
+    ThorsAnvil::FieldAccess:: THORMONGO_NAME(TypeName, 0, __VA_ARGS__) ::Access,                    \
     {THORMONGO_BUILD_USE_FIRST_Q(__VA_ARGS__, 1), THORMONGO_BUILD_FIELD_NAME(TypeName, __VA_ARGS__)}\
 );                                                                                                  \
-ThorsAnvil_Template_MakeTrait(1,                                                                    \
-    ThorsAnvil::FieldAccess::Name::Name,                                                            \
+ThorsAnvil_TTemplate_MakeTrait(2,                                                                   \
+    ThorsAnvil::FieldAccess:: THORMONGO_NAME(TypeName, 0, __VA_ARGS__) ::Access,                    \
     THORMONGO_BUILD_USE_FIRST(__VA_ARGS__, 1)                                                       \
-);                                                                                                  \
-using Name    = ThorsAnvil::FieldAccess::Name::Name<ThorsAnvil::DB::Mongo::QueryOp:: Operator<ThorsAnvil::FieldAccess::Name::TypeOperat>>
+);
+
+
+#define ThorsMongo_FilterFromAccess(Name, Operator, TypeName, ...)                                  \
+using Name    = ThorsAnvil::FieldAccess:: THORMONGO_NAME(TypeName, 0, __VA_ARGS__)                  \
+                    ::AccessNorm<                                                                   \
+                        ThorsAnvil::DB::Mongo::QueryOp::Operator<                                   \
+                            ThorsAnvil::FieldAccess:: THORMONGO_NAME(TypeName, 0, __VA_ARGS__) ::TypeOperat \
+                        >                                                                           \
+                    >
+
+
+#define ThorsMongo_CreateFilter(Name, Operator, TypeName, ...)                                      \
+    ThorsMongo_CreateFieldAccess(Name, Operator, TypeName, __VA_ARGS__);                            \
+    ThorsMongo_FilterFromAccess(Name, Operator, TypeName, __VA_ARGS__)
+
 
 #define ThorsMongo_CreateUpdate(Name, Action, TypeName, FieldName)                                  \
 template<typename T>                                                                                \
@@ -82,6 +104,12 @@ struct Query
 
 namespace QueryOp
 {
+
+/*** Extractos ***/
+template<typename T>
+struct NormalExtractor { using CType = T;};
+template<typename T>
+struct ValueExtractor { using CType = typename T::value_type;};
 
 
 enum class BsonType {   Double = 1,     String = 2,             Object = 3,         Array = 4,
@@ -479,6 +507,41 @@ ThorsAnvil_MakeTrait(            ThorsAnvil::DB::Mongo::QueryOp::AllClear,  $bit
 ThorsAnvil_MakeTrait(            ThorsAnvil::DB::Mongo::QueryOp::AllSet,    $bitsAllSet);
 ThorsAnvil_MakeTrait(            ThorsAnvil::DB::Mongo::QueryOp::AnyClear,  $bitsAnyClear);
 ThorsAnvil_MakeTrait(            ThorsAnvil::DB::Mongo::QueryOp::AnySet,    $bitsAnySet);
+
+
+#endif
+
+#if 0
+#include "test/Action.h"
+
+// ThorsMongo_CreateFieldAccess(MotherAddressCode, Eq, Family, mother, address, code);
+namespace ThorsAnvil::FieldAccess:: THORMONGO_NAME(Family, 0, mother, address, code) {                                                           \
+    template<typename T>                                                                            \
+    struct Access                                                                                   \
+    {                                                                                               \
+        using CType = ThorsAnvil::DB::Mongo::ConstructorType<T>;                                    \
+        Access(CType init) : THORMONGO_BUILD_USE_FIRST(mother, address, code, 1)(std::move(init)) {}          \
+        T             THORMONGO_BUILD_USE_FIRST(mother, address, code, 1);                                    \
+    };                                                                                              \
+    using TypeFirst = ::Family;                                                                     \
+    THORMONGO_BULD_TYPE_INFO(Family, First, 00, mother, address, code);                                     \
+}                                                                                                   \
+ThorsAnvil_Template_MakeOverride(1,                                                                 \
+    ThorsAnvil::FieldAccess:: THORMONGO_NAME(Family, 0, mother, address, code) ::Access,                                                          \
+    {THORMONGO_BUILD_USE_FIRST_Q(mother, address, code, 1), THORMONGO_BUILD_FIELD_NAME(Family, mother, address, code)}\
+);                                                                                                  \
+ThorsAnvil_Template_MakeTrait(1,                                                                    \
+    ThorsAnvil::FieldAccess:: THORMONGO_NAME(Family, 0, mother, address, code) ::Access,                                                          \
+    THORMONGO_BUILD_USE_FIRST(mother, address, code, 1)                                                       \
+);
+// ThorsMongo_FilterFromAccess(MotherAddressCode, Eq, Family, mother, address, code);
+using MotherAddressCode    =
+    ThorsAnvil::FieldAccess::
+        THORMONGO_NAME(Family, 0, mother, address, code)
+            ::Access<ThorsAnvil::DB::Mongo::QueryOp::
+                Eq<ThorsAnvil::FieldAccess::
+                    THORMONGO_NAME(Family, 0, mother, address, code)
+                        ::TypeOperat>>;
 
 
 #endif
