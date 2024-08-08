@@ -134,6 +134,32 @@ TEST(IntegrationConnectionMongoTest, removeData)
 
 }
 
+#include "MongoQuery.h"
+ThorsMongo_CreateFilter(MotherAddressCode, Eq, Family, mother, address, code);
+ThorsMongo_CreateFilter(FatherAddressCode, Eq, Family, father, address, code);
+TEST(IntegrationConnectionMongoTest, removeUsingMultiLevelFilter)
+{
+    SKIP_INTEGRATION_TEST();
+
+    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    std::vector<Family> family{
+                                {{"Mother", 45, {"Court", "NY", 12}, {}}, {"Father", 45, {"Court", "NY", 88}, {}}},
+                                {{"Aunt",   67, {"Suart", "CT", 18}, {}}, {"Uncle",  57, {"Court", "NY", 12}, {}}},
+                                {{"GMa",   102, {"Alina", "NC", 88}, {}}, {"PaPa",  122, {"Alina", "NC", 88}, {}}},
+                              };
+
+    InsertResult        iResult = mongo["test"]["People"].insert(family);
+    RemoveResult        r1Result = mongo["test"]["People"].remove(Query<MotherAddressCode>{18});
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FatherAddressCode>{88});
+
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(3, iResult.n);
+    EXPECT_EQ(1, r1Result.ok);
+    EXPECT_EQ(1, r1Result.n);   // Should only delete one Aunt's Family
+    EXPECT_EQ(1, r2Result.ok);
+    EXPECT_GE(r2Result.n, 2);   // Delete any remaining familys living with address code 77
+}
+
 TEST(IntegrationConnectionMongoTest, insertRemoveTuple)
 {
     SKIP_INTEGRATION_TEST();
