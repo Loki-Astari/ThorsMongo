@@ -275,7 +275,7 @@ struct Each
 /*
  * Usage:
  *  using Update = Push<FoodField<Position<std::string>>>;
- *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{{{"Ham", "Jam"}, 23}}});   // Removed the age field from the object
+ *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{{{"Ham", "Jam"}, 23}});   // Removed the age field from the object
  */
 template<typename T>
 struct Position
@@ -289,7 +289,7 @@ struct Position
 /*
  * Usage:
     using Update = Push<FoodField<Slice<std::string>>>;
- *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{{{"Ham", "Jam"}, 23}}});   // Removed the age field from the object
+ *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{{{"Ham", "Jam"}, 23}});   // Removed the age field from the object
  */
 template<typename T>
 struct Slice
@@ -303,7 +303,7 @@ struct Slice
 /*
  * Usage:
  *  using Update = Push<FoodField<Sort<std::string>>>;
- *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{{{"Ham", "Jam"}, SortOrder::Ascending}}});   // Removed the age field from the object
+ *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{{{"Ham", "Jam"}, SortOrder::Ascending}});   // Removed the age field from the object
  */
 template<typename T>
 struct Sort

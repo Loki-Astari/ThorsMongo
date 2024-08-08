@@ -16,6 +16,10 @@
 #define THORMONGO_BUILD_USE_FIRST(value, ...)                       value
 #define THORMONGO_BUILD_USE_FIRST_Q(value, ...)                     #value
 
+/*
+ * Creating a filter.
+ *      Automate building filters.
+ */
 #define ThorsMongo_CreateFilter(Name, Operator, TypeName, ...)                                      \
 namespace ThorsAnvil::FieldAccess::Name {                                                           \
     template<typename T>                                                                            \
