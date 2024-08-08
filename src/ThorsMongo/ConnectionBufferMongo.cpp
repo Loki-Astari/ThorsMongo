@@ -5,7 +5,7 @@
 using namespace ThorsAnvil::DB::Mongo;
 
 
-THORS_SOCKET_HEADER_ONLY_INCLUDE
+THORS_MONGO_HEADER_ONLY_INCLUDE
 ConnectionBufferMongo::ConnectionBufferMongo(ConnectionBufferMongo&& move) noexcept
     : SocketStreamBuffer(std::move(move))
     , inMessageSize(std::exchange(move.inMessageSize, 0))
@@ -14,7 +14,7 @@ ConnectionBufferMongo::ConnectionBufferMongo(ConnectionBufferMongo&& move) noexc
     , outMessagePlaced(std::exchange(move.outMessagePlaced, 0))
 {}
 
-THORS_SOCKET_HEADER_ONLY_INCLUDE
+THORS_MONGO_HEADER_ONLY_INCLUDE
 ConnectionBufferMongo::int_type ConnectionBufferMongo::underflow()
 {
     /*
@@ -212,7 +212,7 @@ struct UnderflowCountSetter
 };
 
 
-THORS_SOCKET_HEADER_ONLY_INCLUDE
+THORS_MONGO_HEADER_ONLY_INCLUDE
 std::streamsize ConnectionBufferMongo::xsgetn(char_type* dest, std::streamsize count)
 {
     /*
@@ -256,7 +256,7 @@ std::streamsize ConnectionBufferMongo::xsgetn(char_type* dest, std::streamsize c
     return readable;
 }
 
-THORS_SOCKET_HEADER_ONLY_INCLUDE
+THORS_MONGO_HEADER_ONLY_INCLUDE
 ConnectionBufferMongo::int_type ConnectionBufferMongo::overflow(int_type ch)
 {
     if (ch == traits::eof()) {
@@ -291,7 +291,7 @@ ConnectionBufferMongo::int_type ConnectionBufferMongo::overflow(int_type ch)
     return ch;
 }
 
-THORS_SOCKET_HEADER_ONLY_INCLUDE
+THORS_MONGO_HEADER_ONLY_INCLUDE
 std::streamsize ConnectionBufferMongo::xsputn(char_type const* source, std::streamsize count)
 {
     /*
@@ -327,7 +327,7 @@ std::streamsize ConnectionBufferMongo::xsputn(char_type const* source, std::stre
     return count;
 }
 
-THORS_SOCKET_HEADER_ONLY_INCLUDE
+THORS_MONGO_HEADER_ONLY_INCLUDE
 int ConnectionBufferMongo::sync()
 {
     if (pptr() != epptr())

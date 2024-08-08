@@ -53,6 +53,13 @@ class Collection;
 using OptReadConcern    = std::optional<ReadConcern>;
 using OptWriteConcern   = std::optional<WriteConcern>;
 
+enum class ThorUT { Build };
+class TestAuthenticator
+{
+    public:
+        TestAuthenticator(ThorUT const&) {}
+};
+
 class ThorsMongo
 {
     struct DBInfo
@@ -83,6 +90,11 @@ class ThorsMongo
         );
         ThorsMongo(MongoURL const&                  url,
                    Auth::Certificate const&         authInfo,
+                   Compression                      compression= Compression::Snappy,
+                   Auth::Client const&              clientInfo = Auth::Client{"", {}}
+        );
+        ThorsMongo(MongoURL const&                  url,
+                   TestAuthenticator const&         authInfo,
                    Compression                      compression= Compression::Snappy,
                    Auth::Client const&              clientInfo = Auth::Client{"", {}}
         );
@@ -207,6 +219,28 @@ class Collection
 inline DB          ThorsMongo::operator[](std::string&& dbName)     {return DB(*this, std::move(dbName));}
 inline Collection  DB::operator[](std::string&& collectionName)     {return Collection(*this, std::move(collectionName));}
 
+// See MongoCursor.h for declaration.
+template<typename T>
+inline
+CursorData<T>::~CursorData()
+{
+    if (cursor.getId() != 0) {
+        owner.get().killCursor(dbName, colName, cursor.getId(), killCursorConfig);
+    }
+}
+template<typename T>
+inline
+bool CursorData<T>::increment()
+{
+    ++index;
+    if (cursor.data().size() == index)
+    {
+        index = 0;
+        owner.get().getMore(*this, dbName, colName, cursor.getId(), getMoreConfig);
+    }
+    return index != cursor.data().size();
+}
+
 }
 
 #define THORSANVIL_DB_MONGO_THORSMONGO_H_TEMPLATE
@@ -222,5 +256,9 @@ inline Collection  DB::operator[](std::string&& collectionName)     {return Coll
 #include "ThorsMongoListDatabase.tpp"
 #include "ThorsMongoAdmin.tpp"
 #undef THORSANVIL_DB_MONGO_THORSMONGO_H_TEMPLATE
+
+#if defined(THORS_SERIALIZER_HEADER_ONLY) && THORS_SERIALIZER_HEADER_ONLY == 1
+#include "ThorsMongo.source"
+#endif
 
 #endif

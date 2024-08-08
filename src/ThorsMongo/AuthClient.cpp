@@ -11,6 +11,7 @@ using namespace ThorsAnvil::DB::Mongo::Auth;
  * i.e. This library.
  * So set the name and version/
  */
+THORS_MONGO_HEADER_ONLY_INCLUDE
 Driver::Driver()
     : name("ThorsAnvil::Mongo::Driver")
     , version("v2.0")
@@ -26,6 +27,7 @@ Driver::Driver()
  * All other values are optional.
  * Try and use meaningful values (probably used in logging on the Mongo end).
  */
+THORS_MONGO_HEADER_ONLY_INCLUDE
 OS::OS()
 {
 #ifdef __WINNT__
@@ -94,6 +96,7 @@ OS::OS()
  * Can be anything just a string.
  * Passed in via the Client object.
  */
+THORS_MONGO_HEADER_ONLY_INCLUDE
 Application::Application(std::string const& application)
     : name(application)
 {}
@@ -103,6 +106,7 @@ Application::Application(std::string const& application)
  * This info is simply to help Mongo in logging.
  * It has not real meaning.
  */
+THORS_MONGO_HEADER_ONLY_INCLUDE
 Client::Client(std::string const& application, std::optional<std::string> const& platformInfo)
     : application(application)
     , platform(platformInfo)

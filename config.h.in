@@ -2,8 +2,10 @@
 
 
 
-#ifndef  THORS_ThorsMongo_CONFIG_H
-#define  THORS_ThorsMongo_CONFIG_H
+#ifndef  THORS_THORSMONGO_CONFIG_H
+#define  THORS_THORSMONGO_CONFIG_H
+#ifndef  THORS_PACKAGE_INFO_CONFIG_H
+#define  THORS_PACKAGE_INFO_CONFIG_H
 
     
 
@@ -84,6 +86,14 @@
    backward compatibility; new code need not use it. */
 #undef STDC_HEADERS
 
+/* Enable to use header only libraries */
+
+/* For header only convert to inline */
+
+/* Disable test that require the Mongo server to support the OP_QUERY command
+   */
+#undef THOR_DISABLE_TEST_WITH_MONGO_QUERY
+
 /* Name of package for header files */
 #undef THOR_PACKAGE_NAME
 
@@ -104,6 +114,16 @@
 
 
 
-#endif
 
     
+#endif
+
+
+/* Enable to use header only libraries */
+#undef THORS_MONGO_HEADER_ONLY
+
+/* For header only convert to inline */
+#undef THORS_MONGO_HEADER_ONLY_INCLUDE
+
+
+#endif

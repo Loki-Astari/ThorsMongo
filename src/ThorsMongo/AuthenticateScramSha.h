@@ -62,4 +62,8 @@ ThorsAnvil_MakeTrait(ThorsAnvil::DB::Mongo::Auth::ScramSha256::AuthCont,        
 ThorsAnvil_ExpandTrait(ThorsAnvil::DB::Mongo::CmdReplyBase,
                      ThorsAnvil::DB::Mongo::Auth::ScramSha256::AuthReply,           conversationId, done, payload);
 
+#if defined(THORS_SERIALIZER_HEADER_ONLY) && THORS_SERIALIZER_HEADER_ONLY == 1
+#include "AuthenticateScramSha.source"
+#endif
+
 #endif

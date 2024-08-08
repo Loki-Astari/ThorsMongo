@@ -1,5 +1,5 @@
 #ifndef THORSANVIL_DB_MONGO_THORSMONGO_H_TEMPLATE
-#error "This should not be included directly: Include "ThorsMongo.h"
+#error 'This should not be included directly: Include "ThorsMongo.h"'
 #endif
 
 #include <string_view>
@@ -39,7 +39,7 @@ struct FirstType<std::tuple<T...>>
 };
 
 template<typename T>
-using FirstType_T = FirstType<T>::ValueType;
+using FirstType_T = typename FirstType<T>::ValueType;
 
 template<typename Container>
 class Inserter: public MongoActionWriteInterface

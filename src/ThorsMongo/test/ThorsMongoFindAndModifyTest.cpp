@@ -175,7 +175,7 @@ TEST(ThorsMongoFindAndModifyTest, FAModifyConfigSetCollation)
     EXPECT_FALSE(config.getBypassDocumentValidation().has_value());
     EXPECT_FALSE(config.getWriteConcern().has_value());
     EXPECT_FALSE(config.getMaxTimeMS().has_value());
-    config.setCollation({"USA"});
+    config.setCollation({"USA", {}, {}, {}, {}, {}, {}, {}});
     EXPECT_TRUE(config.getCollation().has_value());
 
     EXPECT_FALSE(config.getHint().has_value());
@@ -1080,12 +1080,11 @@ TEST(ThorsMongoFindAndModifyTest, UpdateSort)
 TEST(ThorsMongoFindAndModifyTest, Replace)
 {
     using Search = NameField<Eq<std::string>>;
-    using Update = Set<AgeField<std::uint32_t>>;
 
     std::string                     collection("col");
     std::string                     db("db");
     Search                          find{"John"};
-    People                          mark{"Mark", 24, {}};
+    People                          mark{"Mark", 24, {}, {}};
     FindAndModify<Search, People>   findAndModify(collection, db, FAModifyConfig{}, find, mark);
 
     EXPECT_EQ(0xA2, findAndModify.getSizeBson());
@@ -1125,12 +1124,11 @@ TEST(ThorsMongoFindAndModifyTest, Replace)
 TEST(ThorsMongoFindAndModifyTest, ReplaceSetSortAscending)
 {
     using Search = NameField<Eq<std::string>>;
-    using Update = Set<AgeField<std::uint32_t>>;
 
     std::string                     collection("col");
     std::string                     db("db");
     Search                          find{"John"};
-    People                          mark{"Mark", 24, {}};
+    People                          mark{"Mark", 24, {}, {}};
     FAModifyConfig                  config;
 
     config.setSort({{"name", SortOrder::Ascending}});
@@ -1177,12 +1175,11 @@ TEST(ThorsMongoFindAndModifyTest, ReplaceSetSortAscending)
 TEST(ThorsMongoFindAndModifyTest, ReplaceSetSortDescending)
 {
     using Search = NameField<Eq<std::string>>;
-    using Update = Set<AgeField<std::uint32_t>>;
 
     std::string                     collection("col");
     std::string                     db("db");
     Search                          find{"John"};
-    People                          mark{"Mark", 24, {}};
+    People                          mark{"Mark", 24, {}, {}};
     FAModifyConfig                  config;
 
     config.setSort({{"name", SortOrder::Descending}});
@@ -1228,12 +1225,11 @@ TEST(ThorsMongoFindAndModifyTest, ReplaceSetSortDescending)
 TEST(ThorsMongoFindAndModifyTest, ReplaceSetNew)
 {
     using Search = NameField<Eq<std::string>>;
-    using Update = Set<AgeField<std::uint32_t>>;
 
     std::string                     collection("col");
     std::string                     db("db");
     Search                          find{"John"};
-    People                          mark{"Mark", 24, {}};
+    People                          mark{"Mark", 24, {}, {}};
     FAModifyConfig                  config;
 
     config.setReturnNew(true);
@@ -1276,12 +1272,11 @@ TEST(ThorsMongoFindAndModifyTest, ReplaceSetNew)
 TEST(ThorsMongoFindAndModifyTest, ReplaceSetFields)
 {
     using Search = NameField<Eq<std::string>>;
-    using Update = Set<AgeField<std::uint32_t>>;
 
     std::string                     collection("col");
     std::string                     db("db");
     Search                          find{"John"};
-    People                          mark{"Mark", 24, {}};
+    People                          mark{"Mark", 24, {}, {}};
     FAModifyConfig                  config;
 
     config.setFields(Projection::create<PeopleWithAddressCode>());
@@ -1331,12 +1326,11 @@ TEST(ThorsMongoFindAndModifyTest, ReplaceSetFields)
 TEST(ThorsMongoFindAndModifyTest, ReplaceUpsert)
 {
     using Search = NameField<Eq<std::string>>;
-    using Update = Set<AgeField<std::uint32_t>>;
 
     std::string                     collection("col");
     std::string                     db("db");
     Search                          find{"John"};
-    People                          mark{"Mark", 24, {}};
+    People                          mark{"Mark", 24, {}, {}};
     FAModifyConfig                  config;
 
     config.setUpsert(true);
@@ -1379,12 +1373,11 @@ TEST(ThorsMongoFindAndModifyTest, ReplaceUpsert)
 TEST(ThorsMongoFindAndModifyTest, ReplaceByPassDocumenValidation)
 {
     using Search = NameField<Eq<std::string>>;
-    using Update = Set<AgeField<std::uint32_t>>;
 
     std::string                     collection("col");
     std::string                     db("db");
     Search                          find{"John"};
-    People                          mark{"Mark", 24, {}};
+    People                          mark{"Mark", 24, {}, {}};
     FAModifyConfig                  config;
 
     config.setBypassDocumentValidation(true);
@@ -1427,12 +1420,11 @@ TEST(ThorsMongoFindAndModifyTest, ReplaceByPassDocumenValidation)
 TEST(ThorsMongoFindAndModifyTest, ReplaceWriteConcern)
 {
     using Search = NameField<Eq<std::string>>;
-    using Update = Set<AgeField<std::uint32_t>>;
 
     std::string                     collection("col");
     std::string                     db("db");
     Search                          find{"John"};
-    People                          mark{"Mark", 24, {}};
+    People                          mark{"Mark", 24, {}, {}};
     FAModifyConfig                  config;
 
     config.setWriteConcern({});
@@ -1478,12 +1470,11 @@ TEST(ThorsMongoFindAndModifyTest, ReplaceWriteConcern)
 TEST(ThorsMongoFindAndModifyTest, ReplaceMaxTimeMS)
 {
     using Search = NameField<Eq<std::string>>;
-    using Update = Set<AgeField<std::uint32_t>>;
 
     std::string                     collection("col");
     std::string                     db("db");
     Search                          find{"John"};
-    People                          mark{"Mark", 24, {}};
+    People                          mark{"Mark", 24, {}, {}};
     FAModifyConfig                  config;
 
     config.setMaxTimeMS(255);
@@ -1526,15 +1517,14 @@ TEST(ThorsMongoFindAndModifyTest, ReplaceMaxTimeMS)
 TEST(ThorsMongoFindAndModifyTest, ReplaceCollation)
 {
     using Search = NameField<Eq<std::string>>;
-    using Update = Set<AgeField<std::uint32_t>>;
 
     std::string                     collection("col");
     std::string                     db("db");
     Search                          find{"John"};
-    People                          mark{"Mark", 24, {}};
+    People                          mark{"Mark", 24, {}, {}};
     FAModifyConfig                  config;
 
-    config.setCollation({"US", {}, {}, 48});
+    config.setCollation({"US", {}, {}, 48, {}, {}, {}, {}});
     FindAndModify<Search, People>   findAndModify(collection, db, config, find, mark);
 
     EXPECT_EQ(0xCF, findAndModify.getSizeBson());
@@ -1578,12 +1568,11 @@ TEST(ThorsMongoFindAndModifyTest, ReplaceCollation)
 TEST(ThorsMongoFindAndModifyTest, ReplaceHint)
 {
     using Search = NameField<Eq<std::string>>;
-    using Update = Set<AgeField<std::uint32_t>>;
 
     std::string                     collection("col");
     std::string                     db("db");
     Search                          find{"John"};
-    People                          mark{"Mark", 24, {}};
+    People                          mark{"Mark", 24, {}, {}};
     FAModifyConfig                  config;
 
     config.setHint("North is Good");
@@ -1626,12 +1615,11 @@ TEST(ThorsMongoFindAndModifyTest, ReplaceHint)
 TEST(ThorsMongoFindAndModifyTest, ReplaceComment)
 {
     using Search = NameField<Eq<std::string>>;
-    using Update = Set<AgeField<std::uint32_t>>;
 
     std::string                     collection("col");
     std::string                     db("db");
     Search                          find{"John"};
-    People                          mark{"Mark", 24, {}};
+    People                          mark{"Mark", 24, {}, {}};
     FAModifyConfig                  config;
 
     config.setComment("Commong Code");
@@ -1674,12 +1662,11 @@ TEST(ThorsMongoFindAndModifyTest, ReplaceComment)
 TEST(ThorsMongoFindAndModifyTest, ReplaceLet)
 {
     using Search = NameField<Eq<std::string>>;
-    using Update = Set<AgeField<std::uint32_t>>;
 
     std::string                     collection("col");
     std::string                     db("db");
     Search                          find{"John"};
-    People                          mark{"Mark", 24, {}};
+    People                          mark{"Mark", 24, {}, {}};
     FAModifyConfig                  config;
 
     config.setLet({{"x", "1"}, {"y", "32"}});
@@ -1726,7 +1713,6 @@ TEST(ThorsMongoFindAndModifyTest, ReplaceLet)
 TEST(ThorsMongoFindAndModifyTest, Remove)
 {
     using Search = NameField<Eq<std::string>>;
-    using Update = Set<AgeField<std::uint32_t>>;
 
     std::string                     collection("col");
     std::string                     db("db");

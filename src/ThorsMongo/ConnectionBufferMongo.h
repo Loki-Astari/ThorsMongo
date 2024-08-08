@@ -93,8 +93,8 @@ class ConnectionBufferMongo: public ThorsSocket::SocketStreamBuffer
 
 }
 
-#if THORS_SOCKET_HEADER_ONLY
-#include "SocketStreamBuffer.source"
+#if defined(THORS_SERIALIZER_HEADER_ONLY) && THORS_SERIALIZER_HEADER_ONLY == 1
+#include "ConnectionBufferMongo.source"
 #endif
 
 #endif

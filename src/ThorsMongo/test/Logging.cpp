@@ -65,7 +65,7 @@ class LoggingEnvironment: public ::testing::Environment
 bool initLogging()
 {
     std::cerr << "Logging Init\n";
-    ::testing::Environment* const foo_env = ::testing::AddGlobalTestEnvironment(new LoggingEnvironment);
+    /*::testing::Environment* const foo_env =*/ ::testing::AddGlobalTestEnvironment(new LoggingEnvironment);
     return true;
 }
 

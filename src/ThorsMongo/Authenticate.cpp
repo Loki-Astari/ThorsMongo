@@ -18,6 +18,7 @@ using namespace ThorsAnvil::DB::Mongo;
  * The authentication mechanisms are ordered by preference.
  * Use the first one that you know how to use.
  */
+THORS_MONGO_HEADER_ONLY_INCLUDE
 Auth::HandShake::HandShake(std::string const& username, std::string const& db, Auth::Client const& client, std::vector<std::string> const& compression)
     //: isMaster(true)
     : hello(1)
@@ -29,6 +30,7 @@ Auth::HandShake::HandShake(std::string const& username, std::string const& db, A
     , compression(compression)
 {}
 
+THORS_MONGO_HEADER_ONLY_INCLUDE
 void Authenticate::handShake(MessageHandler& messageHandler,
                        Auth::UserNamePassword const& authInfo,
                        Compression useCompression,
@@ -66,6 +68,7 @@ void Authenticate::handShake(MessageHandler& messageHandler,
     }
 }
 
+THORS_MONGO_HEADER_ONLY_INCLUDE
 void Authenticate::authenticteHandShake(
                                MessageHandler& messageHandler,
                                Auth::UserNamePassword const& authInfo,

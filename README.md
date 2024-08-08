@@ -10,7 +10,8 @@ This library makes heavy use of ThorsSerialize API to automate the generation of
 
 # Usage:
 
-Note: All the code documented here is in file [Example.cpp](./blob/master/src/Example/Example.cpp) code.
+Note: All the code documented here is in file [Example.cpp](./src/Example/Example.cpp) code.
+
 
 ## Connecting:
 All communication done with the Mongo Server id done via the `ThorsMongo` class.  

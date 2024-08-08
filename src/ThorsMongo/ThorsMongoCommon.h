@@ -7,6 +7,8 @@
 #include "BinaryData.h"
 #include "MessageHandler.h"
 
+#include <algorithm>
+
 #if 0
     // Helper rename to make things easier to read.
     using Cref
@@ -316,5 +318,9 @@ ThorsAnvil_MakeTrait(   ThorsAnvil::DB::Mongo::Collation,               locale, 
 ThorsAnvil_MakeTraitCustomSerialize(ThorsAnvil::DB::Mongo::Sort,        ThorsAnvil::DB::Mongo::SerializeSort);
 ThorsAnvil_MakeTraitCustomSerialize(ThorsAnvil::DB::Mongo::Projection,  ThorsAnvil::DB::Mongo::SerializeProjection);
 ThorsAnvil_MakeTrait(   ThorsAnvil::DB::Mongo::All);
+
+#if defined(THORS_SERIALIZER_HEADER_ONLY) && THORS_SERIALIZER_HEADER_ONLY == 1
+#include "ThorsMongoCommon.source"
+#endif
 
 #endif

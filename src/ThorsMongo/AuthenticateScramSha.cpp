@@ -2,37 +2,12 @@
 #include "MessageHandler.h"
 #include "ThorsCrypto/scram.h"
 
-using namespace ThorsAnvil::DB::Mongo::Auth::ScramSha256;
-namespace TC = ThorsAnvil::Crypto;
-
-/*
- * The AuthInit / AuthCont / AuthReply types are simply property bags.
- *
- * They are used to communciate with the Mongo server and are
- * trvial to serialize into BSON (using ThorsSerializer).
- */
-AuthInit::AuthInit(std::string const& db, std::string const& mechanism, std::string&& payload)
-    : saslStart(1)
-    , mechanism(mechanism)
-    , $db(db)
-    , payload(0, std::move(payload))
-{}
-
-AuthCont::AuthCont(std::int32_t convId, std::string const& db, std::string&& payload)
-    : saslContinue(1)
-    , conversationId(convId)
-    , $db(db)
-    , payload(0, std::move(payload))
-{}
-
-AuthReply::AuthReply()
-    : payload(0)
-{}
-
 namespace ThorsAnvil::DB::Mongo::Auth::ScramSha256
 {
+namespace TC = ThorsAnvil::Crypto;
 
 // Implements the SCRAM-SHA-256 authentication mechanism.
+THORS_MONGO_HEADER_ONLY_INCLUDE
 void authenticate(MessageHandler& messageHandler, Auth::UserNamePassword const& authInfo)
 {
     // Create and send the AuthInit object to Mongo.
@@ -143,3 +118,32 @@ void authenticate(MessageHandler& messageHandler, Auth::UserNamePassword const& 
 }
 
 }
+
+using namespace ThorsAnvil::DB::Mongo::Auth::ScramSha256;
+
+/*
+ * The AuthInit / AuthCont / AuthReply types are simply property bags.
+ *
+ * They are used to communciate with the Mongo server and are
+ * trvial to serialize into BSON (using ThorsSerializer).
+ */
+THORS_MONGO_HEADER_ONLY_INCLUDE
+AuthInit::AuthInit(std::string const& db, std::string const& mechanism, std::string&& payload)
+    : saslStart(1)
+    , mechanism(mechanism)
+    , $db(db)
+    , payload(0, std::move(payload))
+{}
+
+THORS_MONGO_HEADER_ONLY_INCLUDE
+AuthCont::AuthCont(std::int32_t convId, std::string const& db, std::string&& payload)
+    : saslContinue(1)
+    , conversationId(convId)
+    , $db(db)
+    , payload(0, std::move(payload))
+{}
+
+THORS_MONGO_HEADER_ONLY_INCLUDE
+AuthReply::AuthReply()
+    : payload(0)
+{}

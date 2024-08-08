@@ -38,7 +38,7 @@ TEST(ThorsMongoDistinctTest, ConstructDistinctConfigSetCollation)
     DistinctConfig      distinctConfig;
 
     EXPECT_FALSE(distinctConfig.getReadConcern().has_value());
-    distinctConfig.setCollation(Collation{"gb"});
+    distinctConfig.setCollation(Collation{"gb", {}, {}, {}, {}, {}, {}, {}});
     EXPECT_TRUE(distinctConfig.getCollation().has_value());
 
     EXPECT_FALSE(distinctConfig.getComment().has_value());
