@@ -83,12 +83,12 @@ struct CurrentDate
  *  using Update    = Inc<AgeField>;
  *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{2});   // Increase age by 2.
  */
-template<template<typename> typename T>
+template<typename T>
 struct Inc
 {
-    using CType = ConstructorType<T<std::uint32_t>>;
+    using CType = ConstructorType<T>;
     Inc(CType init): $inc(init)     {}
-    T<std::uint32_t>    $inc;
+    T                   $inc;
 };
 /*
  * Usage
@@ -320,7 +320,7 @@ struct Sort
 ThorsAnvil_MakeTrait(               ThorsAnvil::DB::Mongo::QueryOp::SetDate,            $type);
 ThorsAnvil_MakeTrait(               ThorsAnvil::DB::Mongo::QueryOp::SetTimeStamp,       $type);
 ThorsAnvil_TTemplate_MakeTrait(2,   ThorsAnvil::DB::Mongo::QueryOp::CurrentDate,        $currentDate);
-ThorsAnvil_TTemplate_MakeTrait(1,   ThorsAnvil::DB::Mongo::QueryOp::Inc,                $inc);
+ThorsAnvil_Template_MakeTrait(1,    ThorsAnvil::DB::Mongo::QueryOp::Inc,                $inc);
 ThorsAnvil_TTemplate_MakeTrait(1,   ThorsAnvil::DB::Mongo::QueryOp::Min,                $min);
 ThorsAnvil_TTemplate_MakeTrait(1,   ThorsAnvil::DB::Mongo::QueryOp::Max,                $max);
 ThorsAnvil_TTemplate_MakeTrait(1,   ThorsAnvil::DB::Mongo::QueryOp::Mul,                $mul);

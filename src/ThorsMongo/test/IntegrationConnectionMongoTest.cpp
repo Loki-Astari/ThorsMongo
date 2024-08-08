@@ -2013,7 +2013,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingIncrement)
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using Update        = Inc<AgeField>;
+    using Update        = Inc<AgeField<int>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);

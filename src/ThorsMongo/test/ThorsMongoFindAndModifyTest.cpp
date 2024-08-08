@@ -285,7 +285,7 @@ TEST(ThorsMongoFindAndModifyTest, UpdateCurrentDateWithDate)
 TEST(ThorsMongoFindAndModifyTest, UpdateIncrement)
 {
     using Search = NameField<Eq<std::string>>;
-    using Update = Inc<AgeField>;
+    using Update = Inc<AgeField<int>>;
 
     std::string                     collection("col");
     std::string                     db("db");
