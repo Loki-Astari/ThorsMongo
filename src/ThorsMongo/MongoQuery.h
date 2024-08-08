@@ -5,24 +5,45 @@
 #include "ThorsMongoCommon.h"
 #include <iterator>
 
-#define ThorsMongo_CreateFilter(Name, TypeName, FieldName, Operator)                                \
-template<typename T>                                                                                \
-struct THOR_BUILD_NAME(Name, THOR_FIELD_ACCESS)                                                     \
-{                                                                                                   \
-    using CType = ThorsAnvil::DB::Mongo::ConstructorType<T>;                                        \
-    THOR_BUILD_NAME(Name, THOR_FIELD_ACCESS)(CType init) : FieldName(std::move(init)) {}            \
-    T             FieldName;                                                                        \
-};                                                                                                  \
-ThorsAnvil_Template_MakeTrait(1, THOR_BUILD_NAME(Name, THOR_FIELD_ACCESS), FieldName);              \
-                                                                                                    \
-using Name    = THOR_BUILD_NAME(Name, THOR_FIELD_ACCESS)<ThorsAnvil::DB::Mongo::QueryOp:: Operator <typename ThorsAnvil::Serialize::Traits<TypeName>::THOR_BUILD_NAME(Type, FieldName)>>
+#define THORMONGO_BUILD_FIELD_NAME_(TC, TypeName, IG, FN)           #FN "."
+#define LAST_THORMONGO_BUILD_FIELD_NAME_(TC, TypeName, IG, FN)      #FN
+#define THORMONGO_BUILD_FIELD_NAME(TypeName, ...)                   REP_CMD_N(THORMONGO_BUILD_FIELD_NAME_, 00, TypeName, Ignore, __VA_ARGS__)
+
+#define THORMONGO_BULD_TYPE_INFO_(TC, TypeName, Last, FN)           using Type ## FN = typename ThorsAnvil::Serialize::Traits<Type ## Last>::THOR_BUILD_NAME(Type, FN);
+#define LAST_THORMONGO_BULD_TYPE_INFO_(TC, TypeName, Last, FN)      using TypeOperat = typename ThorsAnvil::Serialize::Traits<Type ## Last>::THOR_BUILD_NAME(Type, FN)
+#define THORMONGO_BULD_TYPE_INFO(TypeName, First, TC, ...)          REP_CMD_N(THORMONGO_BULD_TYPE_INFO_, TC, TypeName, First, __VA_ARGS__)
+
+#define THORMONGO_BUILD_USE_FIRST(value, ...)                       value
+#define THORMONGO_BUILD_USE_FIRST_Q(value, ...)                     #value
+
+#define ThorsMongo_CreateFilter(Name, Operator, TypeName, ...)                                      \
+namespace ThorsAnvil::FieldAccess::Name {                                                           \
+    template<typename T>                                                                            \
+    struct Name                                                                                     \
+    {                                                                                               \
+        using CType = ThorsAnvil::DB::Mongo::ConstructorType<T>;                                    \
+        Name(CType init) : THORMONGO_BUILD_USE_FIRST(__VA_ARGS__, 1)(std::move(init)) {}            \
+        T             THORMONGO_BUILD_USE_FIRST(__VA_ARGS__, 1);                                    \
+    };                                                                                              \
+    using TypeFirst = TypeName;                                                                     \
+    THORMONGO_BULD_TYPE_INFO(TypeName, First, 00, __VA_ARGS__);                                     \
+}                                                                                                   \
+ThorsAnvil_Template_MakeOverride(1,                                                                 \
+    ThorsAnvil::FieldAccess::Name::Name,                                                            \
+    {THORMONGO_BUILD_USE_FIRST_Q(__VA_ARGS__, 1), THORMONGO_BUILD_FIELD_NAME(TypeName, __VA_ARGS__)}\
+);                                                                                                  \
+ThorsAnvil_Template_MakeTrait(1,                                                                    \
+    ThorsAnvil::FieldAccess::Name::Name,                                                            \
+    THORMONGO_BUILD_USE_FIRST(__VA_ARGS__, 1)                                                       \
+);                                                                                                  \
+using Name    = ThorsAnvil::FieldAccess::Name::Name<ThorsAnvil::DB::Mongo::QueryOp:: Operator<ThorsAnvil::FieldAccess::Name::TypeOperat>>
 
 #define ThorsMongo_CreateUpdate(Name, Action, TypeName, FieldName)                                  \
 template<typename T>                                                                                \
 struct THOR_BUILD_NAME(Name, THOR_FIELD_UPDATE)                                                     \
 {                                                                                                   \
     using CType = ThorsAnvil::DB::Mongo::ConstructorType<T>;                                        \
-    THOR_BUILD_NAME(Name, THOR_FIELD_UPDATE)(CType init) : FieldName(std::move(init)) {}          \
+    THOR_BUILD_NAME(Name, THOR_FIELD_UPDATE)(CType init) : FieldName(std::move(init)) {}            \
     T           FieldName;                                                                          \
 };                                                                                                  \
 ThorsAnvil_Template_MakeTrait(1, THOR_BUILD_NAME(Name, THOR_FIELD_UPDATE), FieldName);              \

@@ -143,6 +143,13 @@ struct People
     Address     address;
     std::optional<std::vector<int>> data;
 };
+
+struct Family
+{
+    People      mother;
+    People      father;
+};
+
 struct PeopleWithTime: public People
 {
     ThorsAnvil::Serialize::MongoUtility::UTCDateTime    dateTime;
@@ -187,6 +194,7 @@ ThorsAnvil_MakeTrait(Funky,                 mark);
 ThorsAnvil_MakeTrait(Splotch,               length, width, color);
 ThorsAnvil_MakeTrait(Address,               street, city, code);
 ThorsAnvil_MakeTrait(People,                name, age, address, data);
+ThorsAnvil_MakeTrait(Family,                mother, father);
 ThorsAnvil_ExpandTrait(People,
                      PeopleWithRecordID,    $recordId);
 ThorsAnvil_ExpandTrait(People,
