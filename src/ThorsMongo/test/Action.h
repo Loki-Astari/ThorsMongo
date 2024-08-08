@@ -108,7 +108,7 @@ template<typename T>
 struct FoodField
 {
     using CType = ThorsAnvil::DB::Mongo::ConstructorType<T>;
-    FoodField(T init): food(std::move(init)) {}
+    FoodField(CType init): food(std::move(init)) {}
     T   food;
 };
 
