@@ -601,7 +601,7 @@ TEST(ThorsMongoFindAndModifyTest, UpdateUnSet)
 TEST(ThorsMongoFindAndModifyTest, UpdateAddToSet)
 {
     using Search = NameField<Eq<std::string>>;
-    using Update = AddToSet<FoodFieldNorm<std::string>>;
+    using Update = AddToSet<FoodField<std::string>>;
 
     std::string                     collection("col");
     std::string                     db("db");
@@ -641,7 +641,7 @@ TEST(ThorsMongoFindAndModifyTest, UpdateAddToSet)
 TEST(ThorsMongoFindAndModifyTest, UpdatePopFront)
 {
     using Search = NameField<Eq<std::string>>;
-    using Update = PopFront<FoodFieldNorm<std::int32_t>>;
+    using Update = PopFront<FoodField<std::int32_t>>;
 
     std::string                     collection("col");
     std::string                     db("db");
@@ -681,7 +681,7 @@ TEST(ThorsMongoFindAndModifyTest, UpdatePopFront)
 TEST(ThorsMongoFindAndModifyTest, UpdatePopBack)
 {
     using Search = NameField<Eq<std::string>>;
-    using Update = PopBack<FoodFieldNorm<std::int32_t>>;
+    using Update = PopBack<FoodField<std::int32_t>>;
 
     std::string                     collection("col");
     std::string                     db("db");
@@ -721,7 +721,7 @@ TEST(ThorsMongoFindAndModifyTest, UpdatePopBack)
 TEST(ThorsMongoFindAndModifyTest, UpdatePull)
 {
     using Search = NameField<Eq<std::string>>;
-    using Update = Pull<FoodFieldNorm<std::string>>;
+    using Update = Pull<FoodField<std::string>>;
 
     std::string                     collection("col");
     std::string                     db("db");
@@ -761,7 +761,7 @@ TEST(ThorsMongoFindAndModifyTest, UpdatePull)
 TEST(ThorsMongoFindAndModifyTest, UpdatePullWithTest)
 {
     using Search = NameField<Eq<std::string>>;
-    using Update = Pull<FoodFieldNorm<Lt<std::string>>>;
+    using Update = Pull<FoodField<Lt<std::string>>>;
 
     std::string                     collection("col");
     std::string                     db("db");
@@ -804,7 +804,7 @@ TEST(ThorsMongoFindAndModifyTest, UpdatePullWithTest)
 TEST(ThorsMongoFindAndModifyTest, UpdatePush)
 {
     using Search = NameField<Eq<std::string>>;
-    using Update = Push<FoodFieldNorm<std::string>>;
+    using Update = Push<FoodField<std::string>>;
 
     std::string                     collection("col");
     std::string                     db("db");
@@ -844,7 +844,7 @@ TEST(ThorsMongoFindAndModifyTest, UpdatePush)
 TEST(ThorsMongoFindAndModifyTest, UpdatePullAll)
 {
     using Search = NameField<Eq<std::string>>;
-    using Update = PullAll<FoodFieldNorm<std::vector<std::string>>>;
+    using Update = PullAll<FoodField<std::vector<std::string>>>;
 
     std::string                     collection("col");
     std::string                     db("db");
@@ -889,7 +889,7 @@ TEST(ThorsMongoFindAndModifyTest, UpdatePullAll)
 TEST(ThorsMongoFindAndModifyTest, UpdateEach)
 {
     using Search = NameField<Eq<std::string>>;
-    using Update = AddToSet<FoodFieldNorm<Each<std::vector<std::string>>>>;
+    using Update = AddToSet<FoodField<Each<std::vector<std::string>>>>;
 
     std::string                     collection("col");
     std::string                     db("db");
@@ -936,7 +936,7 @@ TEST(ThorsMongoFindAndModifyTest, UpdateEach)
 TEST(ThorsMongoFindAndModifyTest, UpdateSlice)
 {
     using Search = NameField<Eq<std::string>>;
-    using Update = Push<FoodFieldNorm<Slice<std::vector<std::string>>>>;
+    using Update = Push<FoodField<Slice<std::vector<std::string>>>>;
 
     std::string                     collection("col");
     std::string                     db("db");
@@ -984,7 +984,7 @@ TEST(ThorsMongoFindAndModifyTest, UpdateSlice)
 TEST(ThorsMongoFindAndModifyTest, UpdatePosition)
 {
     using Search = NameField<Eq<std::string>>;
-    using Update = Push<FoodFieldNorm<Position<std::vector<std::string>>>>;
+    using Update = Push<FoodField<Position<std::vector<std::string>>>>;
 
     std::string                     collection("col");
     std::string                     db("db");
@@ -1032,7 +1032,7 @@ TEST(ThorsMongoFindAndModifyTest, UpdatePosition)
 TEST(ThorsMongoFindAndModifyTest, UpdateSort)
 {
     using Search = NameField<Eq<std::string>>;
-    using Update = Push<FoodFieldNorm<Sort<std::vector<std::string>>>>;
+    using Update = Push<FoodField<Sort<std::vector<std::string>>>>;
 
     std::string                     collection("col");
     std::string                     db("db");

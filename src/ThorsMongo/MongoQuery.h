@@ -167,9 +167,12 @@ template<typename LHS, typename RHS>
 struct And
 {
     using Query = bool;
-    using CType = And<LHS, RHS>;
     using LP = ConstructorType<LHS>;
     using RP = ConstructorType<RHS>;
+    using CType = std::pair<LP, RP>;
+    And(CType init)
+        : $and(std::move(init.first), std::move(init.second))
+    {}
     And(LP lhs, RP rhs)
         : $and(std::move(lhs), std::move(rhs))
     {}
@@ -179,9 +182,12 @@ template<typename LHS, typename RHS>
 struct Or
 {
     using Query = bool;
-    using CType = Or<LHS, RHS>;
     using LP = ConstructorType<LHS>;
     using RP = ConstructorType<RHS>;
+    using CType = std::pair<LP, RP>;
+    Or(CType init)
+        : $or(std::move(init.first), std::move(init.second))
+    {}
     Or(LP lhs, RP rhs)
         : $or(std::move(lhs), std::move(rhs))
     {}
@@ -191,9 +197,12 @@ template<typename LHS, typename RHS>
 struct Nor
 {
     using Query = bool;
-    using CType = Nor<LHS, RHS>;
     using LP = ConstructorType<LHS>;
     using RP = ConstructorType<RHS>;
+    using CType = std::pair<LP, RP>;
+    Nor(CType init)
+        : $nor(std::move(init.first), std::move(init.second))
+    {}
     Nor(LP lhs, RP rhs)
         : $nor(std::move(lhs), std::move(rhs))
     {}
@@ -217,6 +226,7 @@ struct Not
  *      An element has a specific Type      =>      Type
  *          https://www.mongodb.com/docs/manual/reference/operator/query/exists/
  */
+template<typename T>
 struct Exists
 {
     using Query = bool;
@@ -226,6 +236,7 @@ struct Exists
     {}
     bool   $exists;
 };
+template<typename T>
 struct Type
 {
     using Query = bool;
@@ -260,6 +271,7 @@ struct Type
  */
 // Expr         TODO
 // JsonSchema   TODO
+template<typename T>
 struct Mod
 {
     using Query = bool;
@@ -270,6 +282,7 @@ struct Mod
 
     std::array<std::uint32_t, 2>    $mod;
 };
+template<typename T>
 struct RegEx
 {
     using Query = bool;
@@ -314,14 +327,15 @@ struct Text
  *          https://www.mongodb.com/docs/manual/reference/operator/query/size/
  */
 template<typename T>
+// TODO: require T to be a vector/array etc.
 struct All
 {
     using Query = bool;
-    using CType = std::vector<T>;
+    using CType = ConstructorType<T>;
     All(CType init)
         : $all(std::move(init))
     {}
-    std::vector<T>      $all;
+    T       $all;
 };
 template<typename T>
 struct Elements
@@ -334,15 +348,23 @@ struct Elements
     std::optional<T>    $lt;
     std::optional<T>    $lte;
 };
+
+// TODO: Change this needind Elements.
 template<typename T>
+// TODO: require T to be a vector/array etc.
 struct ElemMatch
 {
     using Query = bool;
-    ElemMatch(std::optional<T> eq, std::optional<T> ne, std::optional<T> gt, std::optional<T> gte, std::optional<T> lt, std::optional<T> lte)
-        : $elemMatch{std::move(eq), std::move(ne), std::move(gt), std::move(gte), std::move(lt), std::move(lte)}
+    using FType = ConstructorType<T>;
+    using VType = typename FType::value_type;
+    using CType = Elements<VType>;
+    ElemMatch(CType init)
+        : $elemMatch{std::move(init)}
     {}
-    Elements<T>         $elemMatch;
+    Elements<VType>         $elemMatch;
 };
+template<typename T>
+// TODO: require T to be a vector/array etc.
 struct Size
 {
     using Query = bool;
@@ -367,6 +389,8 @@ struct Size
  *          https://www.mongodb.com/docs/manual/reference/operator/query/bitsAnyClear/
  *          https://www.mongodb.com/docs/manual/reference/operator/query/bitsAnySet/
  */
+template<typename T>
+// TODO require T to be numeric or BinData
 struct AllClear
 {
     using Query = bool;
@@ -376,6 +400,8 @@ struct AllClear
     {}
     std::uint32_t       $bitsAllClear;
 };
+template<typename T>
+// TODO require T to be numeric or BinData
 struct AllSet
 {
     using Query = bool;
@@ -385,6 +411,8 @@ struct AllSet
     {}
     std::uint32_t       $bitsAllSet;
 };
+template<typename T>
+// TODO require T to be numeric or BinData
 struct AnyClear
 {
     using Query = bool;
@@ -394,6 +422,8 @@ struct AnyClear
     {}
     std::uint32_t       $bitsAnyClear;
 };
+template<typename T>
+// TODO require T to be numeric or BinData
 struct AnySet
 {
     using Query = bool;
@@ -421,10 +451,10 @@ ThorsAnvil_Template_MakeTrait(2, ThorsAnvil::DB::Mongo::QueryOp::And,       $and
 ThorsAnvil_Template_MakeTrait(2, ThorsAnvil::DB::Mongo::QueryOp::Or,        $or);
 ThorsAnvil_Template_MakeTrait(2, ThorsAnvil::DB::Mongo::QueryOp::Nor,       $nor);
 ThorsAnvil_Template_MakeTrait(1, ThorsAnvil::DB::Mongo::QueryOp::Not,       $not);
-ThorsAnvil_MakeTrait(            ThorsAnvil::DB::Mongo::QueryOp::Exists,    $exists);
-ThorsAnvil_MakeTrait(            ThorsAnvil::DB::Mongo::QueryOp::Type,      $type);
-ThorsAnvil_MakeTrait(            ThorsAnvil::DB::Mongo::QueryOp::Mod,       $mod);
-ThorsAnvil_MakeTrait(            ThorsAnvil::DB::Mongo::QueryOp::RegEx,     $regex, $options);
+ThorsAnvil_Template_MakeTrait(1, ThorsAnvil::DB::Mongo::QueryOp::Exists,    $exists);
+ThorsAnvil_Template_MakeTrait(1, ThorsAnvil::DB::Mongo::QueryOp::Type,      $type);
+ThorsAnvil_Template_MakeTrait(1, ThorsAnvil::DB::Mongo::QueryOp::Mod,       $mod);
+ThorsAnvil_Template_MakeTrait(1, ThorsAnvil::DB::Mongo::QueryOp::RegEx,     $regex, $options);
 #if 0
 ThorsAnvil_MakeTrait(            ThorsAnvil::DB::Mongo::QueryOp::TextSearch,$search, $language, $caseSensitive, $diacriticSensitive);
 ThorsAnvil_MakeTrait(            ThorsAnvil::DB::Mongo::QueryOp::Text,      $text);
@@ -432,46 +462,11 @@ ThorsAnvil_MakeTrait(            ThorsAnvil::DB::Mongo::QueryOp::Text,      $tex
 ThorsAnvil_Template_MakeTrait(1, ThorsAnvil::DB::Mongo::QueryOp::All,       $all);
 ThorsAnvil_Template_MakeTrait(1, ThorsAnvil::DB::Mongo::QueryOp::Elements,  $eq, $ne, $gt, $gte, $lt, $lte);
 ThorsAnvil_Template_MakeTrait(1, ThorsAnvil::DB::Mongo::QueryOp::ElemMatch, $elemMatch);
-ThorsAnvil_MakeTrait(            ThorsAnvil::DB::Mongo::QueryOp::Size,      $size);
-ThorsAnvil_MakeTrait(            ThorsAnvil::DB::Mongo::QueryOp::AllClear,  $bitsAllClear);
-ThorsAnvil_MakeTrait(            ThorsAnvil::DB::Mongo::QueryOp::AllSet,    $bitsAllSet);
-ThorsAnvil_MakeTrait(            ThorsAnvil::DB::Mongo::QueryOp::AnyClear,  $bitsAnyClear);
-ThorsAnvil_MakeTrait(            ThorsAnvil::DB::Mongo::QueryOp::AnySet,    $bitsAnySet);
-
-
-#endif
-
-#if 0
-#include "test/Action.h"
-
-// ThorsMongo_CreateFieldAccess(MotherAddressCode, Eq, Family, mother, address, code);
-namespace ThorsAnvil::FieldAccess:: THORMONGO_NAME(Family, 0, mother, address, code) {                                                           \
-    template<typename T>                                                                            \
-    struct Access                                                                                   \
-    {                                                                                               \
-        using CType = ThorsAnvil::DB::Mongo::ConstructorType<T>;                                    \
-        Access(CType init) : THORMONGO_BUILD_USE_FIRST(mother, address, code, 1)(std::move(init)) {}          \
-        T             THORMONGO_BUILD_USE_FIRST(mother, address, code, 1);                                    \
-    };                                                                                              \
-    using TypeFirst = ::Family;                                                                     \
-    THORMONGO_BULD_TYPE_INFO(Family, First, 00, mother, address, code);                                     \
-}                                                                                                   \
-ThorsAnvil_Template_MakeOverride(1,                                                                 \
-    ThorsAnvil::FieldAccess:: THORMONGO_NAME(Family, 0, mother, address, code) ::Access,                                                          \
-    {THORMONGO_BUILD_USE_FIRST_Q(mother, address, code, 1), THORMONGO_BUILD_FIELD_NAME(Family, mother, address, code)}\
-);                                                                                                  \
-ThorsAnvil_Template_MakeTrait(1,                                                                    \
-    ThorsAnvil::FieldAccess:: THORMONGO_NAME(Family, 0, mother, address, code) ::Access,                                                          \
-    THORMONGO_BUILD_USE_FIRST(mother, address, code, 1)                                                       \
-);
-// ThorsMongo_FilterFromAccess(MotherAddressCode, Eq, Family, mother, address, code);
-using MotherAddressCode    =
-    ThorsAnvil::FieldAccess::
-        THORMONGO_NAME(Family, 0, mother, address, code)
-            ::Access<ThorsAnvil::DB::Mongo::QueryOp::
-                Eq<ThorsAnvil::FieldAccess::
-                    THORMONGO_NAME(Family, 0, mother, address, code)
-                        ::TypeOperat>>;
+ThorsAnvil_Template_MakeTrait(1, ThorsAnvil::DB::Mongo::QueryOp::Size,      $size);
+ThorsAnvil_Template_MakeTrait(1, ThorsAnvil::DB::Mongo::QueryOp::AllClear,  $bitsAllClear);
+ThorsAnvil_Template_MakeTrait(1, ThorsAnvil::DB::Mongo::QueryOp::AllSet,    $bitsAllSet);
+ThorsAnvil_Template_MakeTrait(1, ThorsAnvil::DB::Mongo::QueryOp::AnyClear,  $bitsAnyClear);
+ThorsAnvil_Template_MakeTrait(1, ThorsAnvil::DB::Mongo::QueryOp::AnySet,    $bitsAnySet);
 
 
 #endif

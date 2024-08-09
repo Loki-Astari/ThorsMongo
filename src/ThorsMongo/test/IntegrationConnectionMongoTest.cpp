@@ -471,7 +471,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryExists)
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
-    using QNameEXISTS   = Query<NameField<Exists>>;
+    using QNameEXISTS   = Query<NameField<Exists<std::string>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     RemoveResult        r1Result = mongo["test"]["People"].remove(std::make_tuple(QNameEXISTS{false}));
@@ -495,7 +495,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryType)
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
-    using QNameEXISTS   = Query<NameField<Type>>;
+    using QNameEXISTS   = Query<NameField<Type<std::string>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     RemoveResult        r1Result = mongo["test"]["People"].remove(std::make_tuple(QNameEXISTS{BsonType::Double}));
@@ -519,7 +519,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryMod)
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{{"Sam", 25, {"Court", "NY", 12}, {}}, {"Sam", 37, {"Jester", "FW", 23}, {}}, {"Sam", 49, {"Limbo", "FG", 56}, {}}};
-    using QNameMod      = Query<AgeField<Mod>>;
+    using QNameMod      = Query<AgeField<Mod<std::int32_t>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     RemoveResult        r1Result = mongo["test"]["People"].remove(std::make_tuple(QNameMod{{12, 0}}));
@@ -543,7 +543,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryRegEx)
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{{"Samual", 25, {"Court", "NY", 12}, {}}, {"Samantha", 37, {"Jester", "FW", 23}, {}}, {"Samtra", 49, {"Limbo", "FG", 56}, {}}};
-    using QNameRegEx    = Query<NameField<RegEx>>;
+    using QNameRegEx    = Query<NameField<RegEx<std::string>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     RemoveResult        r1Result = mongo["test"]["People"].remove(std::make_tuple(QNameRegEx{{"Samp.*", "i"}}));
@@ -577,7 +577,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryAll)
         {"Sam", 37, {"Jes terror",   "FW", 23}, {{13, 14, 15}}},
         {"Sam", 49, {"Limbo terror", "FG", 56}, {{10, 14, 15}}}
     };
-    using QDataAll      = Query<DataField<All<int>>>;
+    using QDataAll      = Query<DataField<All<std::vector<int>>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     RemoveResult        r1Result = mongo["test"]["People"].remove(std::make_tuple(QDataAll{{10, 12, 13, 14}}));
@@ -605,7 +605,9 @@ TEST(IntegrationConnectionMongoTest, removeQueryElemMatch)
         {"Sam", 37, {"Jes terror",   "FW", 23}, {{13, 14, 15}}},
         {"Sam", 49, {"Limbo terror", "FG", 56}, {{10, 14, 15}}}
     };
-    using QDataElemMatch      = Query<DataField<ElemMatch<int>>>;
+    using QDataElemMatch      = Query<DataField<ElemMatch<std::vector<int>>>>;
+
+    using ThorsAnvil::DB::Mongo::QueryOp::Elements;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     RemoveResult        r1Result = mongo["test"]["People"].remove(std::make_tuple(QDataElemMatch{{25, 14, {}, {}, {}, {}}}));
@@ -633,7 +635,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryElemSize)
         {"Sam", 37, {"Jes terror",   "FW", 23}, {{13, 14, 15}}},
         {"Sam", 49, {"Limbo terror", "FG", 56}, {{10, 14, 15}}}
     };
-    using QDataSize      = Query<DataField<Size>>;
+    using QDataSize      = Query<DataField<Size<std::vector<int>>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     RemoveResult        r1Result = mongo["test"]["People"].remove(std::make_tuple(QDataSize{2}));
@@ -657,7 +659,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryAllClear)
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{{"Sam", 17, {"Cour terror",  "NY", 12}, {}}, {"Sam", 25, {"Jes terror",   "FW", 23}, {}}, {"Sam", 33, {"Limbo terror", "FG", 56}, {}}};
-    using QAgeAllClear  = Query<AgeField<AllClear>>;
+    using QAgeAllClear  = Query<AgeField<AllClear<std::uint32_t>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     RemoveResult        r1Result = mongo["test"]["People"].remove(std::make_tuple(QAgeAllClear{0b11000111}));
@@ -681,7 +683,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryAllSet)
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{{"Sam", 17, {"Cour terror",  "NY", 12}, {}}, {"Sam", 25, {"Jes terror",   "FW", 23}, {}}, {"Sam", 33, {"Limbo terror", "FG", 56}, {}}};
-    using QAgeAllSet    = Query<AgeField<AllSet>>;
+    using QAgeAllSet    = Query<AgeField<AllSet<std::uint32_t>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     RemoveResult        r1Result = mongo["test"]["People"].remove(std::make_tuple(QAgeAllSet{0b00111001}));
@@ -707,7 +709,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryAnyClear)
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{{"Sam", 17, {"Cour terror",  "NY", 12}, {}}, {"Sam", 25, {"Jes terror",   "FW", 23}, {}}, {"Sam", 33, {"Limbo terror", "FG", 56}, {}}};
-    using QAgeAnyClear  = Query<AgeField<AnyClear>>;
+    using QAgeAnyClear  = Query<AgeField<AnyClear<std::uint32_t>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     RemoveResult        r1Result = mongo["test"]["People"].remove(std::make_tuple(QAgeAnyClear{0b00000001}));
@@ -731,7 +733,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryAnySet)
 
     ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
     std::vector<People> people{{"Sam", 17, {"Cour terror",  "NY", 12}, {}}, {"Sam", 25, {"Jes terror",   "FW", 23}, {}}, {"Sam", 33, {"Limbo terror", "FG", 56}, {}}};
-    using QAgeAnySet    = Query<AgeField<AnySet>>;
+    using QAgeAnySet    = Query<AgeField<AnySet<std::uint32_t>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     RemoveResult        r1Result = mongo["test"]["People"].remove(std::make_tuple(QAgeAnySet{0b10000110}));
@@ -2290,7 +2292,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingAddToSet)
     people[0].food = {"Beacon", "Eggs"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using Update        = AddToSet<FoodFieldNorm<std::string>>;
+    using Update        = AddToSet<FoodField<std::string>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
@@ -2327,7 +2329,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPopFront)
     people[0].food = {"Beacon", "Eggs", "Ham"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using Update        = PopFront<FoodFieldNorm<std::int32_t>>;
+    using Update        = PopFront<FoodField<std::int32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
@@ -2364,7 +2366,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPopBack)
     people[0].food = {"Beacon", "Eggs", "Ham"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using Update        = PopBack<FoodFieldNorm<std::int32_t>>;
+    using Update        = PopBack<FoodField<std::int32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
@@ -2401,7 +2403,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPull)
     people[0].food = {"Beacon", "Eggs", "Ham"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using Update        = Pull<FoodFieldNorm<std::string>>;
+    using Update        = Pull<FoodField<std::string>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
@@ -2438,7 +2440,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPullWithTest)
     people[0].food = {"Beacon", "Eggs", "Ham"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using Update        = Pull<FoodFieldNorm<Lt<std::string>>>;
+    using Update        = Pull<FoodField<Lt<std::string>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
@@ -2475,7 +2477,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPush)
     people[0].food = {"Beacon", "Eggs", "Ham"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using Update        = Push<FoodFieldNorm<std::string>>;
+    using Update        = Push<FoodField<std::string>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
@@ -2512,7 +2514,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPullAll)
     people[0].food = {"Beacon", "Eggs", "Ham"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using Update        = PullAll<FoodFieldNorm<std::vector<std::string>>>;
+    using Update        = PullAll<FoodField<std::vector<std::string>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
@@ -2549,7 +2551,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingEachAddToSet)
     people[0].food = {"Beacon", "Eggs", "Ham"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using Update        = AddToSet<FoodFieldNorm<Each<std::vector<std::string>>>>;
+    using Update        = AddToSet<FoodField<Each<std::vector<std::string>>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
@@ -2586,7 +2588,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingEachPush)
     people[0].food = {"Beacon", "Eggs", "Ham"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using Update        = Push<FoodFieldNorm<Each<std::vector<std::string>>>>;
+    using Update        = Push<FoodField<Each<std::vector<std::string>>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
@@ -2623,7 +2625,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPosition)
     people[0].food = {"Beacon", "Eggs", "Ham"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using Update        = Push<FoodFieldNorm<Position<std::vector<std::string>>>>;
+    using Update        = Push<FoodField<Position<std::vector<std::string>>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
@@ -2660,7 +2662,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingSlice)
     people[0].food = {"Beacon", "Eggs", "Ham"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using Update        = Push<FoodFieldNorm<Slice<std::vector<std::string>>>>;
+    using Update        = Push<FoodField<Slice<std::vector<std::string>>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
@@ -2697,7 +2699,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingSort)
     people[0].food = {"Beacon", "Ham", "Eggs"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using Update        = Push<FoodFieldNorm<Sort<std::vector<std::string>>>>;
+    using Update        = Push<FoodField<Sort<std::vector<std::string>>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
