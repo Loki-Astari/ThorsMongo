@@ -94,7 +94,26 @@ struct ConstructorType_T<T, false>
 };
 
 template<typename T>
+struct ConstructorType_T<std::optional<T>, false>
+{
+    using CType = T;
+};
+
+template<typename T>
 using ConstructorType = typename ConstructorType_T<T>::CType;
+
+template<typename T>
+struct RemoveOptionalS
+{
+    using NormalType  = T;
+};
+template<typename T>
+struct RemoveOptionalS<std::optional<T>>
+{
+    using NormalType = T;
+};
+template<typename T>
+using RemoveOptional = typename RemoveOptionalS<T>::NormalType;
 
 // Standard utility class re-names.
 template<typename T>

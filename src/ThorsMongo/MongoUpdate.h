@@ -52,93 +52,113 @@ namespace QueryOp
 /*
  * Current Date
  * Usage:
- *      using Update = CurrentDate<BDayField, SetDate>;
+ *      using Update = CurrentDate<BDayField<SetDate>>;
+ *      // using Update = CurrentDate<BDayField<SetTimeStamp>>;
+ *      // using Update = CurrentDate<BDayField<bool>>;
  *      mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{});    // Set bDat to today.
  */
 struct SetDate
 {
-    using CType = bool;
     SetDate(bool){}
     std::string $type = "date";
 };
 struct SetTimeStamp
 {
-    using CType = bool;
     SetTimeStamp(bool){}
     std::string $type = "timestamp";
 };
-template<typename T>
-concept IsDateTimeType = requires {T::$type;};
 
-template<template<typename> typename T, typename Limit>
-requires IsDateTimeType<Limit>
+template<typename T>
 struct CurrentDate
 {
-    using CType = ConstructorType<T<Limit>>;
-    CurrentDate() : $currentDate{CType{}}   {}
-    T<Limit>    $currentDate;
+    using CType = void;
+    CurrentDate() : $currentDate{true}   {}
+    T       $currentDate;
 };
+template<typename T>
+using CurrentDateParam = bool;
+template<typename T>
+using CurrentDateSetDate = CurrentDate<T>;
+template<typename T>
+using CurrentDateSetDateParam = SetDate;
+template<typename T>
+using CurrentDateSetTimeStamp = CurrentDate<T>;
+template<typename T>
+using CurrentDateSetTimeStampParam = SetTimeStamp;
 
 /*
- *  using Update    = Inc<AgeField>;
+ *  using Update    = Inc<AgeField<std::uint32_t>>;
  *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{2});   // Increase age by 2.
  */
-template<template<typename> typename T>
+template<typename T>
 struct Inc
 {
-    using CType = ConstructorType<T<std::uint32_t>>;
+    using CType = ConstructorType<T>;
     Inc(CType init): $inc(init)     {}
-    T<std::uint32_t>    $inc;
+    T                   $inc;
 };
+template<typename T>
+using IncParam = std::uint32_t;
+
 /*
  * Usage
- *  using Update = Min<AgeField>;
+ *  using Update = Min<AgeField<std::uint32_t>>;
  *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{12});   // Set Age to the min of 12 or currentValue
  */
-template<template<typename> typename T>
+template<typename T>
 struct Min
 {
-    using CType = ConstructorType<T<std::uint32_t>>;
+    using CType = ConstructorType<T>;
     Min(CType init): $min(init)     {}
-    T<std::uint32_t>    $min;
+    T                   $min;
 };
+template<typename T>
+using MinParam = T;
+
 /*
  * Usage
- *  using Update = Max<AgeField>;
+ *  using Update = Max<AgeField<std::uint32_t>>;
  *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{12});   // Set Age to the max of 12 or currentValue
  */
-template<template<typename> typename T>
+template<typename T>
 struct Max
 {
-    using CType = ConstructorType<T<std::uint32_t>>;
+    using CType = ConstructorType<T>;
     Max(CType init): $max(init)     {}
-    T<std::uint32_t>    $max;
+    T                   $max;
 };
+template<typename T>
+using MaxParam = T;
+
 /*
  * Usage
- *  using Update = Mul<AgeField>;
+ *  using Update = Mul<AgeField<std::uint32_t>>;
  *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{2.6});   // Multiple the age by 2.6
  */
-template<template<typename> typename T>
+template<typename T>
 struct Mul
 {
-    using CType = ConstructorType<T<std::uint32_t>>;
+    using CType = ConstructorType<T>;
     Mul(CType init): $mul(init)     {}
-    T<std::uint32_t>    $mul;
+    T                   $mul;
 };
+template<typename T>
+using MulParam = std::uint32_t;
 
 /*
  * Usage
  *  using Update = Rename<AgeField>;
  *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{"originalAge"});   // rename the age field to "originalAge"
  */
-template<template<typename> typename T>
+template<typename T>
 struct Rename
 {
-    using CType = ConstructorType<T<std::string>>;
+    using CType = ConstructorType<T>;
     Rename(CType init): $rename(init)     {}
-    T<std::string>    $rename;
+    T           $rename;
 };
+template<typename T>
+using RenameParam = std::string;
 
 /*
  * Usage:
@@ -152,6 +172,8 @@ struct Set
     Set(CType init): $set(std::move(init))     {}
     T           $set;
 };
+template<typename T>
+using SetParam = T;
 
 /*
  * Usage:
@@ -165,22 +187,33 @@ struct SetOnInsert
     SetOnInsert(CType init): $setOnInsert(std::move(init))     {}
     T           $setOnInsert;
 };
+template<typename T>
+using SetOnInsertParam = T;
 
 /*
  * Usage:
- *  using Update = Unset<AgeField>;
+ *  using Update = Unset<AgeField<std::string>>;
  *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{});   // Removed the age field from the object
  */
-template<template<typename> typename T>
+template<typename T>
 struct Unset
 {
-    T<std::string>  $unset;
+    using CType = void;
+    Unset(): $unset(std::string("")) {}
+    T  $unset;
 };
+template<typename T>
+using UnsetParam = std::string;
+
+// TODO
+//          $(update)
+//          $[]
+//          $[<identifier>]
 
 /*
  * Usage:
  *  using Update = AddToSet<FoodField<std::string>>;
- *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{"Ham"});   // Removed the age field from the object
+ *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{"Ham"});   // Add a value to an array
  */
 template<typename T>
 struct AddToSet
@@ -189,41 +222,47 @@ struct AddToSet
     AddToSet(CType init): $addToSet(std::move(init)) {}
     T           $addToSet;
 };
+template<typename T>
+using AddToSetParam = typename T::value_type;
 
 /*
  * Usage:
- *  using Update = PopFront<FoodField>;
- *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{});   // Removed the age field from the object
+ *  using Update = PopFront<FoodField<std::int32_t>>;
+ *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{});   // Pop a value from front of an array.
  */
-template<template<typename> typename T>
+template< typename T>
 struct PopFront
 {
-    using CType = ConstructorType<T<std::uint32_t>>;
+    using CType = void;
     PopFront(): $pop(-1) {}
-    T<std::uint32_t>    $pop;
+    T           $pop;
 };
+template<typename T>
+using PopFrontParam = std::int32_t;
 
 /*
  * Usage:
- *  using Update = PopBack<FoodField>;
- *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{});   // Removed the age field from the object
+ *  using Update = PopBack<FoodField<std::int32_t>>;
+ *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{});   // Pop a value from back of an array
  */
-template<template<typename> typename T>
+template<typename T>
 struct PopBack
 {
-    using CType = ConstructorType<T<std::uint32_t>>;
+    using CType = void;
     PopBack(): $pop(1) {}
-    T<std::uint32_t>    $pop;
+    T           $pop;
 };
+template<typename T>
+using PopBackParam = std::int32_t;
 
 /*
  * Usage:
  *  using Update = Pull<FoodField<std::string>>;
- *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{"Ham"});   // Removed the age field from the object
+ *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{"Ham"});   // Removed all values that match the input
  *
  * or (You can use conditionals)
  *  using Update = Pull<FoodField<Lt<std::string>>>;
- *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{"Ham"});   // Removed the age field from the object
+ *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{"Ham"});   // Removed all values that match the query
  */
 template<typename T>
 struct Pull
@@ -232,11 +271,13 @@ struct Pull
     Pull(CType init): $pull(std::move(init)) {}
     T           $pull;
 };
+template<typename T>
+using PullParam = typename T::value_type;
 
 /*
  * Usage:
  *  using Update = Push<FoodField<std::string>>;
- *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{"Ham"});   // Removed the age field from the object
+ *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{"Ham"});   // Adds a value to the array
  */
 template<typename T>
 struct Push
@@ -245,95 +286,107 @@ struct Push
     Push(CType init): $push(std::move(init)) {}
     T           $push;
 };
+template<typename T>
+using PushParam = typename T::value_type;
 
 /*
  * Usage:
- *  using Update = PullAll<FoodField, std::string>;
- *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{{"Ham", "Jam", "Honey"}});   // Removed the age field from the object
+ *  using Update = PullAll<FoodField<std::vector<std::string>>;
+ *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{{"Ham", "Jam", "Honey"}});   // Removes all values from the input
  */
-template<template<typename> typename T, typename V>
+template<typename T>
 struct PullAll
 {
-    using CType = ConstructorType<T<std::vector<V>>>;
+    using CType = ConstructorType<T>;
     PullAll(CType init): $pullAll(std::move(init)) {}
-    T<std::vector<V>>           $pullAll;
+    T             $pullAll;
 };
+template<typename T>
+using PullAllParam = std::vector<typename T::value_type>;
 
 /*
  * Usage:
- *  using Update = AddToSet<FoodField<Each<std::string>>>;
- *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{{"Ham", "Jam", "Honey"}});   // Removed the age field from the object
+ *  using Update = AddToSet<FoodField<Each<std::vector<std::string>>>>;
+ *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{{"Ham", "Jam", "Honey"}});   // All the items from a vector added into the array in the object
  */
 template<typename T>
 struct Each
 {
-    using CType = std::vector<T>;
+    using CType = T;
     Each(CType init): $each(std::move(init)) {}
-    std::vector<T>          $each;
+    T          $each;
 };
+template<typename T>
+using EachParam = std::vector<typename T::value_type>;
 
 /*
  * Usage:
- *  using Update = Push<FoodField<Position<std::string>>>;
- *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{{{"Ham", "Jam"}, 23}}});   // Removed the age field from the object
+ *  using Update = Push<FoodField<Position<std::vector<std::string>>>>;
+ *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{{{"Ham", "Jam"}, 23}});   // All the items from a vector added into the array at a specific position
  */
 template<typename T>
 struct Position
 {
-    using CType = std::pair<std::vector<T>, std::int32_t>;
+    using CType = std::pair<T, std::int32_t>;
     Position(CType init): $each(std::move(init.first)), $position(init.second) {}
-    std::vector<T>          $each;
+    T                       $each;
     std::int32_t            $position;
 };
+template<typename T>
+using PositionParam = std::vector<typename T::value_type>;
 
 /*
  * Usage:
-    using Update = Push<FoodField<Slice<std::string>>>;
- *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{{{"Ham", "Jam"}, 23}}});   // Removed the age field from the object
+    using Update = Push<FoodField<Slice<std::vector<std::string>>>>;
+ *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{{{"Ham", "Jam"}, 23}});   // Copies vector into array (see documentation https://www.mongodb.com/docs/manual/reference/operator/update/slice/)
  */
 template<typename T>
 struct Slice
 {
-    using CType = std::pair<std::vector<T>, std::int32_t>;
+    using CType = std::pair<T, std::int32_t>;
     Slice(CType init): $each(std::move(init.first)), $slice(init.second) {}
-    std::vector<T>          $each;
+    T                       $each;
     std::int32_t            $slice;
 };
+template<typename T>
+using SliceParam = std::vector<typename T::value_type>;
 
 /*
  * Usage:
- *  using Update = Push<FoodField<Sort<std::string>>>;
- *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{{{"Ham", "Jam"}, SortOrder::Ascending}}});   // Removed the age field from the object
+ *  using Update = Push<FoodField<Sort<std::vector<std::string>>>>;
+ *  mongo["db"]["collection"].findAndUpdateOne<People>(FindAgeEq{32}, Update{{{"Ham", "Jam"}, SortOrder::Ascending}});   // Sorts the input vector before adding into the destination array.
  */
 template<typename T>
 struct Sort
 {
-    using CType = std::pair<std::vector<T>, SortOrder>;
+    using CType = std::pair<T, SortOrder>;
     Sort(CType init): $each(std::move(init.first)), $sort(static_cast<std::int32_t>(init.second)) {}
-    std::vector<T>          $each;
+    T                       $each;
     std::int32_t            $sort;
 };
+template<typename T>
+using SortParam = std::vector<typename T::value_type>;
 
 }
 }
 
 ThorsAnvil_MakeTrait(               ThorsAnvil::DB::Mongo::QueryOp::SetDate,            $type);
 ThorsAnvil_MakeTrait(               ThorsAnvil::DB::Mongo::QueryOp::SetTimeStamp,       $type);
-ThorsAnvil_TTemplate_MakeTrait(2,   ThorsAnvil::DB::Mongo::QueryOp::CurrentDate,        $currentDate);
-ThorsAnvil_TTemplate_MakeTrait(1,   ThorsAnvil::DB::Mongo::QueryOp::Inc,                $inc);
-ThorsAnvil_TTemplate_MakeTrait(1,   ThorsAnvil::DB::Mongo::QueryOp::Min,                $min);
-ThorsAnvil_TTemplate_MakeTrait(1,   ThorsAnvil::DB::Mongo::QueryOp::Max,                $max);
-ThorsAnvil_TTemplate_MakeTrait(1,   ThorsAnvil::DB::Mongo::QueryOp::Mul,                $mul);
-ThorsAnvil_TTemplate_MakeTrait(1,   ThorsAnvil::DB::Mongo::QueryOp::Rename,             $rename);
+ThorsAnvil_Template_MakeTrait(1,    ThorsAnvil::DB::Mongo::QueryOp::CurrentDate,        $currentDate);
+ThorsAnvil_Template_MakeTrait(1,    ThorsAnvil::DB::Mongo::QueryOp::Inc,                $inc);
+ThorsAnvil_Template_MakeTrait(1,    ThorsAnvil::DB::Mongo::QueryOp::Min,                $min);
+ThorsAnvil_Template_MakeTrait(1,    ThorsAnvil::DB::Mongo::QueryOp::Max,                $max);
+ThorsAnvil_Template_MakeTrait(1,    ThorsAnvil::DB::Mongo::QueryOp::Mul,                $mul);
+ThorsAnvil_Template_MakeTrait(1,    ThorsAnvil::DB::Mongo::QueryOp::Rename,             $rename);
 ThorsAnvil_Template_MakeTrait(1,    ThorsAnvil::DB::Mongo::QueryOp::Set,                $set);
 ThorsAnvil_Template_MakeTrait(1,    ThorsAnvil::DB::Mongo::QueryOp::SetOnInsert,        $setOnInsert);
-ThorsAnvil_TTemplate_MakeTrait(1,   ThorsAnvil::DB::Mongo::QueryOp::Unset,              $unset);
+ThorsAnvil_Template_MakeTrait(1,    ThorsAnvil::DB::Mongo::QueryOp::Unset,              $unset);
 ThorsAnvil_Template_MakeTrait(1,    ThorsAnvil::DB::Mongo::QueryOp::AddToSet,           $addToSet);
-ThorsAnvil_TTemplate_MakeTrait(1,   ThorsAnvil::DB::Mongo::QueryOp::PopFront,           $pop);
-ThorsAnvil_TTemplate_MakeTrait(1,   ThorsAnvil::DB::Mongo::QueryOp::PopBack,            $pop);
+ThorsAnvil_Template_MakeTrait(1,    ThorsAnvil::DB::Mongo::QueryOp::PopFront,           $pop);
+ThorsAnvil_Template_MakeTrait(1,    ThorsAnvil::DB::Mongo::QueryOp::PopBack,            $pop);
 ThorsAnvil_Template_MakeTrait(1,    ThorsAnvil::DB::Mongo::QueryOp::Pull,               $pull);
 ThorsAnvil_Template_MakeTrait(1,    ThorsAnvil::DB::Mongo::QueryOp::Push,               $push);
-ThorsAnvil_TTemplate_MakeTrait(2,   ThorsAnvil::DB::Mongo::QueryOp::PullAll,            $pullAll);
+ThorsAnvil_Template_MakeTrait(1,    ThorsAnvil::DB::Mongo::QueryOp::PullAll,            $pullAll);
 ThorsAnvil_Template_MakeTrait(1,    ThorsAnvil::DB::Mongo::QueryOp::Each,               $each);
 ThorsAnvil_Template_MakeTrait(1,    ThorsAnvil::DB::Mongo::QueryOp::Position,           $each, $position);
 ThorsAnvil_Template_MakeTrait(1,    ThorsAnvil::DB::Mongo::QueryOp::Slice,              $each, $slice);

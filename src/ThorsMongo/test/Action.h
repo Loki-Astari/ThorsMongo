@@ -107,11 +107,10 @@ struct TimeStampField
 template<typename T>
 struct FoodField
 {
-    using CType = ThorsAnvil::DB::Mongo::ConstructorType<T>;
-    FoodField(T init): food(std::move(init)) {}
+    using CType = typename ThorsAnvil::DB::Mongo::ConstructorType<T>;
+    FoodField(CType init): food(std::move(init)) {}
     T   food;
 };
-
 
 struct Funky
 {
