@@ -17,7 +17,7 @@ TEST(MongoUpdateTest, CreateFilterOneLevel)
     std::stringstream   s;
 
     using ThorsAnvil::Serialize::PrinterInterface;
-    ThorsMongo_UpdateFromAccessValue(PushToPersonData, Push, People, data);
+    ThorsMongo_UpdateFromAccess(PushToPersonData, Push, People, data);
 
     s << ThorsAnvil::Serialize::jsonExporter(PushToPersonData{12}, PrinterInterface::PrinterConfig{PrinterInterface::OutputType::Stream});
 
@@ -29,7 +29,7 @@ TEST(MongoUpdateTest, CreateFilterTwoLevel)
     std::stringstream   s;
 
     using ThorsAnvil::Serialize::PrinterInterface;
-    ThorsMongo_UpdateFromAccessNorm(SetPersonAddressCity, Set, People, address, city);
+    ThorsMongo_UpdateFromAccess(SetPersonAddressCity, Set, People, address, city);
 
     s << ThorsAnvil::Serialize::jsonExporter(SetPersonAddressCity{"London"}, PrinterInterface::PrinterConfig{PrinterInterface::OutputType::Stream});
 
@@ -41,7 +41,7 @@ TEST(MongoUpdateTest, CreateFilterThreeLevel)
     std::stringstream   s;
 
     using ThorsAnvil::Serialize::PrinterInterface;
-    ThorsMongo_UpdateFromAccessNorm(SetOnInsertFamilyPersonAddressCode, SetOnInsert, Family, mother, address, code);
+    ThorsMongo_UpdateFromAccess(SetOnInsertFamilyPersonAddressCode, SetOnInsert, Family, mother, address, code);
 
     s << ThorsAnvil::Serialize::jsonExporter(SetOnInsertFamilyPersonAddressCode{12}, PrinterInterface::PrinterConfig{PrinterInterface::OutputType::Stream});
 

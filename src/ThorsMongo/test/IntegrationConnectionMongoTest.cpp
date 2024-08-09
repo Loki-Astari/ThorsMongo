@@ -1926,7 +1926,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingCurrentDateDateTime)
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using Update        = CurrentDate<DateField, SetDate>;
+    using Update        = CurrentDate<DateField<SetDate>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
@@ -1968,7 +1968,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingCurrentDateTimeStamp)
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using Update        = CurrentDate<TimeStampField, SetDate>;
+    using Update        = CurrentDate<TimeStampField<SetDate>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
@@ -2046,7 +2046,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMinFail)
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using Update        = Min<AgeField>;
+    using Update        = Min<AgeField<std::uint32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
@@ -2079,7 +2079,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMinWork)
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using Update        = Min<AgeField>;
+    using Update        = Min<AgeField<std::uint32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
@@ -2112,7 +2112,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMaxFail)
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using Update        = Max<AgeField>;
+    using Update        = Max<AgeField<std::uint32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
@@ -2145,7 +2145,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMaxWork)
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using Update        = Max<AgeField>;
+    using Update        = Max<AgeField<std::uint32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
@@ -2178,7 +2178,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMul)
                               };
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using Update        = Mul<AgeField>;
+    using Update        = Mul<AgeField<std::uint32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
@@ -2212,7 +2212,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingRename)
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
     using FindName      = NameField<Eq<std::string>>;
-    using Update        = Rename<AgeField>;
+    using Update        = Rename<AgeField<std::string>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
@@ -2251,7 +2251,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingUnset)
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
     using FindName      = NameField<Eq<std::string>>;
-    using Update        = Unset<AgeField>;
+    using Update        = Unset<AgeField<std::string>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
@@ -2327,7 +2327,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPopFront)
     people[0].food = {"Beacon", "Eggs", "Ham"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using Update        = PopFront<FoodFieldNorm>;
+    using Update        = PopFront<FoodFieldNorm<std::int32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
@@ -2364,7 +2364,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPopBack)
     people[0].food = {"Beacon", "Eggs", "Ham"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using Update        = PopBack<FoodFieldNorm>;
+    using Update        = PopBack<FoodFieldNorm<std::int32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
@@ -2512,7 +2512,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPullAll)
     people[0].food = {"Beacon", "Eggs", "Ham"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using Update        = PullAll<FoodFieldNorm, std::string>;
+    using Update        = PullAll<FoodFieldNorm<std::vector<std::string>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
@@ -2549,7 +2549,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingEachAddToSet)
     people[0].food = {"Beacon", "Eggs", "Ham"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using Update        = AddToSet<FoodFieldNorm<Each<std::string>>>;
+    using Update        = AddToSet<FoodFieldNorm<Each<std::vector<std::string>>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
@@ -2586,7 +2586,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingEachPush)
     people[0].food = {"Beacon", "Eggs", "Ham"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using Update        = Push<FoodFieldNorm<Each<std::string>>>;
+    using Update        = Push<FoodFieldNorm<Each<std::vector<std::string>>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
@@ -2623,7 +2623,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPosition)
     people[0].food = {"Beacon", "Eggs", "Ham"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using Update        = Push<FoodFieldNorm<Position<std::string>>>;
+    using Update        = Push<FoodFieldNorm<Position<std::vector<std::string>>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
@@ -2660,7 +2660,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingSlice)
     people[0].food = {"Beacon", "Eggs", "Ham"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using Update        = Push<FoodFieldNorm<Slice<std::string>>>;
+    using Update        = Push<FoodFieldNorm<Slice<std::vector<std::string>>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
@@ -2697,7 +2697,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingSort)
     people[0].food = {"Beacon", "Ham", "Eggs"};
     using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
     using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
-    using Update        = Push<FoodFieldNorm<Sort<std::string>>>;
+    using Update        = Push<FoodFieldNorm<Sort<std::vector<std::string>>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
