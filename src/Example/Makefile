@@ -14,6 +14,8 @@ LDFLAGS			+= -L $(THORS_ROOT)/lib -L $(SNAPPY_ROOT)/lib
 LDLIBS			+= -lThorsMongo -lThorSerialize -lThorsSocket -lThorsLogging -lsnappy
 
 all:			Example
+install:
+	echo "Not Installing"
 
 Example:		$(OBJ)
 

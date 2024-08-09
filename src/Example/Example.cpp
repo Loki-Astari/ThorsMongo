@@ -1,5 +1,7 @@
 #include "ThorsMongo/ThorsMongo.h"
+#include "ThorSerialize/Traits.h"
 #include <iostream>
+#include <string>
 
 // The structure I want to store.
 // C++ class declarations.
@@ -48,6 +50,10 @@ class Person
 // Declare the types serializable using ThorsSerialize
 ThorsAnvil_MakeTrait(Address, street1, street2, city, country, postCode);
 ThorsAnvil_MakeTrait(Person, name, age, alergies, address);
+ThorsMongo_CreateFieldAccess(Person, name);
+ThorsMongo_CreateFieldAccess(Person, age);
+using FindEqName = ThorsMongo_FilterFromAccess(Eq, Person, name);
+
 
 void addPeopleToMongo(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, std::vector<Person> const& people)
 {
@@ -66,26 +72,6 @@ void addPeopleToMongo(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, std::vector<Pers
         std::cout << "Error: " << result << "\n";
     }
 }
-
-// To match against the "name" field of an object you will need
-// the following boilerplate.
-#if 0
-template<typename T>
-struct NameField
-{
-    using CType = ThorsAnvil::DB::Mongo::ConstructorType<T>;
-    NameField(CType init) : name(std::move(init)) {}
-    T             name;
-};
-ThorsAnvil_Template_MakeTrait(1, NameField, name);
-
-// You can use the "Eq" operator to find exact matches.
-// Note: There are other operators (see below for details).
-using ThorsAnvil::DB::Mongo::QueryOp::Eq;
-using FindEqName    = NameField<Eq<std::string>>;
-#else
-ThorsMongo_CreateFilter(FindEqName, Eq, Person, name);
-#endif
 
 void findPeopleInMongoByName(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, std::string const& name)
 {
@@ -121,11 +107,12 @@ void removePeopelFromMongoByName(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, std::
     }
 };
 
-ThorsMongo_CreateFilter(FindGtAge, Gt, Person, age);
 void removePeopelFromMongoOlderThan(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, std::uint32_t minAge, ThorsAnvil::DB::Mongo::Remove rem)
 {
     using ThorsAnvil::DB::Mongo::Query;
     using ThorsAnvil::DB::Mongo::Remove;
+    using FindGtAge = ThorsMongo_FilterFromAccess(Gt, Person, age);
+
     auto result = mongo["test"]["People"].remove(Query<FindGtAge>{minAge, rem});
     if (result)
     {
@@ -138,10 +125,9 @@ void removePeopelFromMongoOlderThan(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, st
 };
 
 
-ThorsMongo_CreateUpdate(SetAge, Set, Person, age);
-
 void replacePerson(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, std::string const& name, Person const& p)
 {
+
     auto result = mongo["test"]["People"].findAndReplaceOne(FindEqName{name}, p);
     if (result)
     {
@@ -184,6 +170,8 @@ void updateAddressCity(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, std::string con
 {
     using ThorsAnvil::DB::Mongo::Query;
     using ThorsAnvil::DB::Mongo::Remove;
+    using SetAge = ThorsMongo_UpdateFromAccess(Set, Person, age);
+
     std::cerr << "Checking: " <<  ThorsAnvil::Serialize::jsonExporter(SetAge{newAge}) << "\n";
     auto result = mongo["test"]["People"].findAndUpdateOne<Person>(FindEqName{name}, SetAge{newAge});
     if (result)
