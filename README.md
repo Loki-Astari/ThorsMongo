@@ -226,7 +226,8 @@ The `find()` method takes a filter and returns a C++ range.
     // This macro creates a type called "FindEqName"
     // It can be used to filter records by Person.name on the server using "Eq" (Equality)
 
-    ThorsMongo_CreateFilter(FindEqName, Eq, Person, name);
+    ThorsMongo_CreateFieldAccess(Person, name);
+    using FindEqName = ThorsMongo_FilterFromAccess(Set, Person, age);
 
     void findPeopleInMongoByName(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, std::string const& name)
     {
@@ -258,7 +259,8 @@ Note: If you are only deleting one and the filter matches multiple records in th
 
 ```C++
     // Create a filter on Person.age using the "Gt" (Greater than) operator
-    ThorsMongo_CreateFilter(FindGtAge, Gt, Person, age);
+    ThorsMongo_CreateFieldAccess(Person, age);
+    using FindGtAge = ThorsMongo_FilterFromAccess(Gt, Person, age);
 
     void removePeopelFromMongoByName(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, std::uint32_t minAge, bool removeOne)
     {
@@ -348,7 +350,8 @@ The update is expressed as an "[Expression](Documentation/Update.md)" that requi
     // This macro creates a type called "SetAge"
     // It will "Set" the value of Person.age on the server.
 
-    ThorsMongo_CreateUpdate(SetAge, Set, Person, age);
+    ThorsMongo_CreateFieldAccess(Person, age);
+    using SetAge = ThorsMongo_UpdateFromAccess(Set, Person, age);
 
     void updateAddressCity(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, std::string const& name, std::uint32_t newAge)
     {
