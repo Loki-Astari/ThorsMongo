@@ -7,9 +7,12 @@
 #include "ThorSerialize/JsonThor.h"
 #include <sstream>
 
-ThorsMongo_CreateFilter(FindByPersonNameEq, Eq, People, name);
-ThorsMongo_CreateFilter(FindByPersonAddressCCEq, Eq, People, address, city);
-ThorsMongo_CreateFilter(FindByFamilyMotherAddress, Eq, Family, mother, address, code);
+ThorsMongo_CreateFieldAccess(People, name);
+using FindByPersonNameEq = ThorsMongo_FilterFromAccess(Eq, People, name);
+ThorsMongo_CreateFieldAccess(People, address, city);
+using FindByPersonAddressCCEq = ThorsMongo_FilterFromAccess(Eq, People, address, city);
+ThorsMongo_CreateFieldAccess(Family, mother, address, code);
+using FindByFamilyMotherAddress = ThorsMongo_FilterFromAccess(Eq, Family, mother, address, code);
 
 TEST(MongoQueryTest, CreateFilterOneLevel)
 {

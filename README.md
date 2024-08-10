@@ -1,32 +1,92 @@
+[![Brew package](https://img.shields.io/badge/Brew-package-blueviolet)](https://formulae.brew.sh/formula/thors-serializer)
+
+![ThorsMongo](img/thorsmongo.jpg)
+
 # ThorsMongo:
 Mongo API for C++
 
+# TOC:
+* [Description](#description)  
+* [Installation](#installation)  
+  * [Easy Brew](#easy-brew)  
+  * [Medium Build](#medium-build)  
+  * [Header Only](#header-only)  
+* [Usage](#usage)  
+  * [Connecting](#connecting)  
+  * [Serializing Data](#serializing-data)  
+  * [Inserting Data](#inserting-data)  
+  * [Find Data](#find-data)  
+  * [Delete Data](#delete-data)  
+  * [Find And Modify One](#find-and-modify-one)  
+    * [Find and Replace](#find-and-replace)  
+    * [Find and Remove](#find-and-remove)  
+    * [Find and Update](#find-and-update)  
+* [Documentation](#documentation)  
+
 # Description:
-This is an attempt to have a simple to use TypeSafe API to connect and manipulate data on a Mongo Server.  
+This is an attempt to have a simple to use Type-Safe API to connect and manipulate data on a Mongo Server.  
 
 This API does not currently implement the full Mongo API, but rather the subset of the API around data manipulation and storage.  
 
 This library makes heavy use of ThorsSerialize API to automate the generation of the BSON documents that are exchanged between the application and the Mongo Server. The advantage of this library is that no code needs to be written to create or generate BSON objects (this is all automated).  
 
+# Installation:
+
+## Easy Brew:
+
+These libraries are available via [brew](https://brew.sh/)
+
+```Shell
+    > brew install thors-serializer
+```
+
+## Medium Build:
+
+Build and install the libraries manually:
+
+```Shell
+    > git clone git@github.com:Loki-Astari/ThorsSerializer.git
+    > cd ThorsSerializer
+    > ./configure
+    > make
+    > make install
+```
+
+Note: The configuration script should check for all dependencies and give instructions on how to fix any issues.
+
+
+## Header Only:
+
+There is a header only version. You will need to install it and a couple of other libraries manually.
+
+```Shell
+    > git clone --single-branch --branch header-only git@github.com:Loki-Astari/ThorsSerializer.git
+    > git clone git@github.com:Neargye/magic_enum
+    > # or brew install magic_enum
+    > brew install snappy
+```
+
 # Usage:
 
-Note: All the code documented here is in file [Example.cpp](./src/Example/Example.cpp) code.
+Look at the [Example](./src/Example) folder for example of how to build against this project. This project also includes all the code on this page.
 
 
 ## Connecting:
 All communication done with the Mongo Server id done via the `ThorsMongo` class.  
 
-````
+```C++
+    #include "ThorsMongo/ThorsMongo.h"
+
     // Connecting to Mongo
 
     using ThorsAnvil::DB::Mongo::ThorsMongo;
     ThorsMongo          mongo({"localhost", 27017}, {"usernmae", "password", "DB"});
-````
+```
 
 
 Note: I have currently only implemented SCRAM-SHA-256 authentication mechanism. So the user must have this enabled.  
 
-````
+```Shell
    // Mongo Shell
    DB> show users
     [
@@ -42,14 +102,14 @@ Note: I have currently only implemented SCRAM-SHA-256 authentication mechanism. 
                     ^^^^^^^^^^^^^^^^^^ Please check your user has this enabled.
       }
     ]
-````
+```
 
 On a Mongo Server there are multiple Databases. Each Database can have multiple Collections. There are appropriate class for these types of object.  
 
 * `ThorsAnvil::DB::Mongo::DB`
 * `ThorsAnvil::DB::Mongo::Collection`
 
-````
+```C++
     using ThorsAnvil::DB::Mongo::DB;
     using ThorsAnvil::DB::Mogno::Collection;
 
@@ -61,14 +121,14 @@ On a Mongo Server there are multiple Databases. Each Database can have multiple 
     mongo["DB"].method();               // Has same affect as: db.method();
     mongo["DB"]["People"].method();     // Has same effect as: db["People"].method()
                                         //                and: collection.method();
-````
+```
 
-## Inserting Data:
+## Serializing Data:
 
 You can insert any data you like into a collection.  
-To serialize the data you must declare the class you are sending to Mongo as serializable (using ThorsSerialize). This has a tiny bit of boilerplate declaration per class. I provide a simple example here. More detailed examples and documentation can be found [here](https://github.com/Loki-Astari/ThorsSerializer/blob/master/README.md).  
+To serialize the data you must declare the class you are sending to Mongo as serializeable (using [ThorsSerialize](https://github.com/Loki-Astari/ThorsSerializer/) ). This has a tiny bit of boilerplate declaration per class. I provide a simple example here. More detailed examples and documentation can be found [here](https://github.com/Loki-Astari/ThorsSerializer/blob/master/README.md).  
 
-````
+```C++
     // The structure I want to store.
     // C++ class declarations.
     class Address
@@ -116,13 +176,13 @@ To serialize the data you must declare the class you are sending to Mongo as ser
 
     ThorsAnvil_MakeTrait(Address, street1, street2, city, country, postCode);
     ThorsAnvil_MakeTrait(Person, name, age, alergies, address);
-````
+```
 
 ## Inserting Data:
 
-To insert data into a collection call the `insert()` method passing either a vector or a tuple of objects. Note: The types of all the objects have to be serializable.  
+To insert data into a collection call the `insert()` method passing either a vector or a tuple of objects. Note: The types of all the objects have to be serializeable.  
 
-````
+```C++
     void addPeopleToMongo(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, std::vector<Person> const& people)
     {
         // The insert() method takes either
@@ -145,34 +205,34 @@ To insert data into a collection call the `insert()` method passing either a vec
             std::cout << "Error: " << result << "\n";
         }
     }
-````
+```
 
 If you only want to insert a single item you can invisibly create a vector by wrapping the object in curly braces.        
 
-````
+```C++
         auto result = mongo["DB"]["Collection"].insert({ aSinglePersonObject });
-````
+```
 
 
 ## Find Data:
 
-To find data you must specify a "Filter".  
+To find data you must specify a "[Filter](Documentation/Filter.md)".  
 This requires some boilerplate to allow you to match against specific fields in your data. I will provide a simple examples here. Details will be provided below in the Query documentation.  
 
 The `find()` method takes a filter and returns a C++ range.  
 
 
-````
+```C++
     // This macro creates a type called "FindEqName"
-    // It can be used to filter recors by Person.name on the server using "Eq" (Equality)
+    // It can be used to filter records by Person.name on the server using "Eq" (Equality)
 
-    ThorsMongo_CreateFilter(FindEqName, Person, name, Eq);
+    ThorsMongo_CreateFilter(FindEqName, Eq, Person, name);
 
     void findPeopleInMongoByName(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, std::string const& name)
     {
-        // Retuns a C++ range of all the objects that match the query.
-        // Note:  The range hides a Mongo cursor so as you you iterate across the query
-        //        this may result in more calls to Mongo to retrieve more data automatically.
+        // Returns a C++ range of all the objects that match the query.
+        // Note:   The range hides a Mongo cursor so as you you iterate across the query
+        //         this may result in more calls to Mongo to retrieve more data automatically.
 
         auto range = mongo["DB"]["Collection"].find<Person>(FindEqName{name});
 
@@ -188,17 +248,17 @@ The `find()` method takes a filter and returns a C++ range.
             std::cout << "Error: " << range << "\n";
         }
     }
-````
+```
 
 ## Delete Data:
 
-The remove method operates on a `Query`. This is basically a "Filter" with an extra parameter indicating if the remove should apply to the first or all matches. The example below shows remove using a single `Query` object, but this method can take any number of `Query` objects that are all applied in parallel.  
+The remove method operates on a `Query`. This is basically a "[Filter](Documentation/Filter.md)" with an extra parameter indicating if the remove should apply to the first or all matches. The example below shows remove using a single `Query` object, but this method can take any number of `Query` objects that are all applied in parallel.  
 Note: If you are only deleting one and the filter matches multiple records in the collection then you are effectively deleting a random matching record. Please read the full documentation to understand how to control the filter to get an exact match or use findAndRemoveOne() method for more control.  
 
 
-````
+```C++
     // Create a filter on Person.age using the "Gt" (Greater than) operator
-    ThorsMongo_CreateFilter(FindGtAge, Person, age, Gt);
+    ThorsMongo_CreateFilter(FindGtAge, Gt, Person, age);
 
     void removePeopelFromMongoByName(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, std::uint32_t minAge, bool removeOne)
     {
@@ -214,9 +274,9 @@ Note: If you are only deleting one and the filter matches multiple records in th
             std::cerr << "Error: " << result << "\n";
         }
     };
-````
+```
 
-## Find And Modify One
+## Find And Modify One:
 
 There is a family of functions to find and modify a single record.  
 
@@ -224,13 +284,13 @@ There is a family of functions to find and modify a single record.
 * findAndRemoveOne();
 * findAndUpdateOne();
 
-All these functions use a "Filter" to select a single record. If your filter matches multiple records you can add a sort order (the first item in the sorted results is modified. See full documentation for details).  
+All these functions use a "[Filter](Documentation/Filter.md)" to select a single record. If your filter matches multiple records you can add a sort order (the first item in the sorted results is modified. See full documentation for details).  
 
-### Find and Replace
+### Find and Replace:
 
-The `findAndReplaceOne()` methods find and update a single record using a "Filter" and replaces the record with a new record. This is useful if all the updates are done in the application side.  
+The `findAndReplaceOne()` methods find and update a single record using a "[Filter](Documentation/Filter.md)" and replaces the record with a new record. This is useful if all the updates are done in the application side.  
 
-````
+```C++
     void replacePerson(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, std::string const& name, Person const& p)
     {
         auto result = mongo["test"]["People"].findAndReplaceOne(FindEqName{name}, p);
@@ -250,13 +310,13 @@ The `findAndReplaceOne()` methods find and update a single record using a "Filte
             std::cerr << "Error: " << result << "\n";
         }
     }
-````
+```
 
-### Find and Remove
+### Find and Remove:
 
-The `findAndRemoveOne()` methods find and removes a single record using a "Filter".
+The `findAndRemoveOne()` methods find and removes a single record using a "[Filter](Documentation/Filter.md)".
 
-````
+```C++
     void removePerson(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, std::string const& name)
     {
         auto result = mongo["test"]["People"].findAndRemoveOne<Person>(FindEqName{name});
@@ -276,15 +336,15 @@ The `findAndRemoveOne()` methods find and removes a single record using a "Filte
             std::cerr << "Error: " << result << "\n";
         }
     }
-````
+```
 
-### Find and Update
+### Find and Update:
 
-The `findAndUpdateOne()` methods find a single record using a "Filter" and then applies a custom update operation on the server side. This can simplify the client code and allow updates to parts of the document on the server without having to download the data onto the client.
+The `findAndUpdateOne()` methods find a single record using a "[Filter](Documentation/Filter.md)" and then applies a custom update operation on the server side. This can simplify the client code and allow updates to parts of the document on the server without having to download the data onto the client.
 
-The update is expressed as an "Expression" that requires some boilerplate. I will provide a simple example here. Details will be provided below in the Update documentation.  
+The update is expressed as an "[Expression](Documentation/Update.md)" that requires some boilerplate. I will provide a simple example here. Details will be provided below in the Update documentation.  
 
-````
+```C++
     // This macro creates a type called "SetAge"
     // It will "Set" the value of Person.age on the server.
 
@@ -294,7 +354,6 @@ The update is expressed as an "Expression" that requires some boilerplate. I wil
     {
         using ThorsAnvil::DB::Mongo::Query;
         using ThorsAnvil::DB::Mongo::Remove;
-        std::cerr << "Checking: " <<  ThorsAnvil::Serialize::jsonExporter(SetAge{newAge}) << "\n";
         auto result = mongo["test"]["People"].findAndUpdateOne<Person>(FindEqName{name}, SetAge{newAge});
         if (result)
         {
@@ -312,7 +371,20 @@ The update is expressed as an "Expression" that requires some boilerplate. I wil
             std::cerr << "Error: " << result << "\n";
         }
     };
-````
+```
 
+## Documentation:
 
+* [Serializing C++ classes](https://github.com/Loki-Astari/ThorsSerializer/blob/master/README.md)
+* [`ThorsMongo`: Connection to the Mongo Server](Documentation/ThorsMongo.md)
+* [`DB`: The DB object](Documentation/DB.md)
+* [`Collection`: The Collection object](Documentation/Collection.md)
+  * [Inserting Data](Documentation/Insert.md)
+  * [Find Data](Documentation/Find.md)
+  * [Delete Data](Documentation/Delete.md)
+  * [Find And Modify One](Documentation/FindAndModifyOne.md)
+  * [Distinct](Documentation/Distinct.md)
+  * [Count](Documentation/Count.md)
+* [Filter Creation](Documentation/Filter.md)
+* [Update Expression](Documentation/Update.md)
 
