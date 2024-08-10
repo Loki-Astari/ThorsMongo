@@ -107,11 +107,11 @@ The language does not support class members with a `"."` in the middle, but Thor
     };
     struct FindByCountryCodeEqual
     {
-        EqualString     addressCountry;
-        FindByCountryEqual(std::uint64_t init) : addressCountry(init)   {}
+        EqualString     address_countryCode;
+        FindByCountryCodeEqual(std::uint64_t init) : addressCountry(init)   {}
     };
     ThorsAnvil_MakeTrait(EqualCountryCode, $eq);
-    ThorsAnvil_MakeOverride(FindByCountryCodeEqual, {"addressCountry", "address.countryCode"});
+    ThorsAnvil_MakeOverride(FindByCountryCodeEqual, {"address_countryCode", "address.countryCode"});
     ThorsAnvil_MakeTrait(FindByCountryCodeEqual, addressCountry);
 
     // .....
@@ -137,41 +137,41 @@ Lets repeat the above example, but using the builtin types that represent the qu
     // So the engineer still needs to specify a class that can defines the field being searched for.
     // T is the operation will perform (Eq/Lt/Gte etc)
     template<typename T>
-    struct FindByName
+    struct FieldAccessName
     {
         // Boilerplate to get constructor input type needed by T.
         using CType = ThorsAnvil::DB::Mongo::ConstructorType<T>;
-        FindByName(CType init)  : name(std::move(init)) {}
+        FieldAccessName(CType init)  : name(std::move(init)) {}
 
         // The field we will be searching for
         T           name;
     };
-    ThorsAnvil_Template_MakeTrait(1, FindByName, name);
+    ThorsAnvil_Template_MakeTrait(1, FieldAccessName, name);
 
     using ThorsAnvil::DB::Mongo::QueryOp::Lt;
     // Remove all people with a name Lt than "Tom"
-    mongo["People"]["Home"].remove(Query<FindByName<Lt<std::string>>{"Tom"});
+    mongo["People"]["Home"].remove(Query<FieldAccessName<Lt<std::string>>{"Tom"});
 ```
 
 ### Find by Country Code:
 
 ```C++
     template<typename T>
-    struct FindByCountryCode
+    struct FieldAccessCountryCode
     {
         // Boilerplate to get constructor input type needed by T.
         using CType = ThorsAnvil::DB::Mongo::ConstructorType<T>;
-        FindByCountryCode(CType init)  : addressCountry(std::move(init)) {}
+        FieldAccessCountryCode(CType init)  : addressCountry(std::move(init)) {}
 
         // The field we will be searching for
         T           addressCountry;
     };
-    ThorsAnvil_Template_MakeOverride(1, FindByCountryCode, {"addressCountry", "address.countryCode"});
-    ThorsAnvil_Template_MakeTrait(1, FindByCountryCode, addressCountry);
+    ThorsAnvil_Template_MakeOverride(1, FieldAccessCountryCode, {"addressCountry", "address.countryCode"});
+    ThorsAnvil_Template_MakeTrait(1, FieldAccessCountryCode, addressCountry);
 
     using ThorsAnvil::DB::Mongo::QueryOp::In;
     // Find by Country code that is the set 235,236,237
-    mongo["People"]["Home"].remove(Query<FindByCountryCode<In<std::uint64_t>>{{235, 236, 237}});
+    mongo["People"]["Home"].remove(Query<FieldAccessCountryCode<In<std::uint64_t>>{{235, 236, 237}});
 ```
 
 ### Extend to more interesting classes:
@@ -179,8 +179,8 @@ Lets repeat the above example, but using the builtin types that represent the qu
 ```C++
     using ThorsAnvil::DB::Mongo::QueryOp::Eq;
     using ThorsAnvil::DB::Mongo::QueryOp::And;
-    using FindByCountryCodeEq   = FindByCountryCode<Eq<std::uint64_t>>;
-    using FindByNameEq          = FindByName<Eq<std::string>>;
+    using FindByCountryCodeEq   = FieldAccessCountryCode<Eq<std::uint64_t>>;
+    using FindByNameEq          = FieldAccessName<Eq<std::string>>;
     using FindByCountryAndName  = And<FindByCountryCodeEq, FindByNameEq>
 
     // Removes all people in countryCode 345 with the name Branden
@@ -189,10 +189,10 @@ Lets repeat the above example, but using the builtin types that represent the qu
 
 If you look carefully the pattern is very similar for most filter operations:
 ```C++
-    using FindByCountryCodeEq   = FindByCountryCode<Eq<std::uint64_t>>;
-                                  ^^^^^^^^^^^^^^^^                          FieldAccess
-                                                    ^^                      Operation
-                                                       ^^^^^^^^^^^^         Type of the CountryCode in Address class
+    using FindByCountryCodeEq   = FieldAccessCountryCode<Eq<std::uint64_t>>;
+                                  ^^^^^^^^^^^^^^^^                              FieldAccess
+                                                         ^^                     Operation
+                                                            ^^^^^^^^^^^^        Type of the CountryCode in Address class
 ```
 
 We can take advantage of this commonality in the [Tool generation](#Tool generated filters).
@@ -211,7 +211,7 @@ There are two steps:
 
 ### Field Access class:
 ```C++
-    // Field accesses class (See: FindByCountryCode) are very regular.
+    // Field accesses class (See: FieldAccessCountryCode) are very regular.
     // So to simplify their creation and remove the manual boilerplate
     // the ThorsMongo_CreateFieldAccess() can be used to create the class.
     //
