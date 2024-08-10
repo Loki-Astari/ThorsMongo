@@ -151,7 +151,7 @@ To serialize the data you must declare the class you are sending to Mongo as ser
                 , postCode(postCode)
             {}
     };
-    struct Person
+    class Person
     {
         // To give the serializer accesses to private data.
         friend class ThorsAnvil::Serialize::Traits<Person>;
@@ -227,7 +227,7 @@ The `find()` method takes a filter and returns a C++ range.
     // It can be used to filter records by Person.name on the server using "Eq" (Equality)
 
     ThorsMongo_CreateFieldAccess(Person, name);
-    using FindEqName = ThorsMongo_FilterFromAccess(Set, Person, age);
+    using FindEqName = ThorsMongo_FilterFromAccess(Eq, Person, age);
 
     void findPeopleInMongoByName(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, std::string const& name)
     {
