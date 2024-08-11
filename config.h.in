@@ -9,6 +9,9 @@
 
     
 
+/* define if the Boost library is available */
+#undef HAVE_BOOST
+
 /* We have found package CRYPTO */
 #undef HAVE_CRYPTO
 
