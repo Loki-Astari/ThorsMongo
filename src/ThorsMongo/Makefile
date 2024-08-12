@@ -2,7 +2,7 @@ THORSANVIL_ROOT             ?= $(realpath ../../)
 
 TARGET                      = ThorsMongo.slib
 
-LDLIBS_EXTERN_BUILD			= MagicEnum snappy crypto ThorSerialize
+LDLIBS_EXTERN_BUILD			= MagicEnum snappy crypto ThorSerialize yaml
 
 UNITTEST_LDLIBS				+= $(LDLIBS_$(PLATFORM))
 LDLIBS						+= $(LDLIBS_$(PLATFORM))

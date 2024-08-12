@@ -29,6 +29,7 @@ struct LevelSerializer
             case Level::Linearizable:   return 4 + 13;
             case Level::Snapshot:       return 4 + 9;
         }
+        return 0;
     }
     static void writeCustom(ThorsAnvil::Serialize::PrinterInterface& printer, Level const& object)
     {

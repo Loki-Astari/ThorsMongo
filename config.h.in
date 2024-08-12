@@ -93,6 +93,9 @@
 
 /* For header only convert to inline */
 
+/* Set up to build on Conan */
+#undef THOR_CONAN
+
 /* Disable test that require the Mongo server to support the OP_QUERY command
    */
 #undef THOR_DISABLE_TEST_WITH_MONGO_QUERY
