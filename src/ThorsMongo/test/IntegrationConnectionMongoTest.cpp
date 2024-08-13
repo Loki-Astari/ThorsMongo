@@ -1,4 +1,8 @@
 #include "gtest/gtest.h"
+#include "ThorsMongoConfig.h"
+
+#define MONGO_AUTH      THOR_TESTING_MONGO_USER, THOR_TESTING_MONGO_PASS, THOR_TESTING_MONGO_DB
+
 
 #include "ConnectionMongo.h"
 #include "ThorsMongo.h"
@@ -75,19 +79,19 @@ TEST(IntegrationConnectionMongoTest, connectToMongoWithAuthenticator)
 {
     SKIP_INTEGRATION_TEST();
 
-    ConnectionMongo     mongo({"localhost", 27017});
+    ConnectionMongo     mongo({THOR_TESTING_MONGO_HOST, 27017});
     MongoMessageHandler sender(mongo);
     Authenticate        authenticate;
 
     authenticate.addAuthenticator("SCRAM-SHA-256", ThorsAnvil::DB::Mongo::Auth::ScramSha256::authenticate);
-    authenticate.handShake(sender, {"test", "testPassword", "test"}, Compression::None, Client{"IntegrationConnectionMongoTest::connectToMongo"});
+    authenticate.handShake(sender, {MONGO_AUTH}, Compression::None, Client{"IntegrationConnectionMongoTest::connectToMongo"});
 }
 
 TEST(IntegrationConnectionMongoTest, connectToMongoWithAuthenticatorUsingSnappy)
 {
     SKIP_INTEGRATION_TEST();
 
-    ConnectionMongo     mongo({"localhost", 27017});
+    ConnectionMongo     mongo({THOR_TESTING_MONGO_HOST, 27017});
     MongoMessageHandler sender(mongo);
     Authenticate        authenticate;
 
@@ -99,7 +103,7 @@ TEST(IntegrationConnectionMongoTest, insertData)
 {
     SKIP_INTEGRATION_TEST();
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}};
 
     InsertResult        result = mongo["test"]["People"].insert(people);
@@ -116,7 +120,7 @@ TEST(IntegrationConnectionMongoTest, removeData)
 {
     SKIP_INTEGRATION_TEST();
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
@@ -142,7 +146,7 @@ TEST(IntegrationConnectionMongoTest, removeUsingMultiLevelFilter)
 {
     SKIP_INTEGRATION_TEST();
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<Family> family{
                                 {{"Mother", 45, {"Court", "NY", 12}, {}}, {"Father", 45, {"Court", "NY", 88}, {}}},
                                 {{"Aunt",   67, {"Suart", "CT", 18}, {}}, {"Uncle",  57, {"Court", "NY", 12}, {}}},
@@ -165,7 +169,7 @@ TEST(IntegrationConnectionMongoTest, insertRemoveTuple)
 {
     SKIP_INTEGRATION_TEST();
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     auto                add{std::make_tuple(People{"Pam", 46, {"Lane", "WA", 65}, {}}, Funky{"time"}, Splotch{1,2,3})};
     auto                rem{std::make_tuple(Query<NameField<std::string>>{"Pam"}, Query<Funky>{"time"}, Query<LengthField<int>>{1})};
 
@@ -184,7 +188,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryEq)
 {
     SKIP_INTEGRATION_TEST();
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
     using QNameEQ       = Query<NameField<Eq<std::string>>>;
     using VEQ           = std::vector<QNameEQ>;
@@ -208,7 +212,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryNe)
     SKIP_INTEGRATION_TEST();
 
     using namespace std::string_literals;
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
     using QNameNE       = Query<NameField<Ne<std::string>>>;
     using VNE           = std::vector<QNameNE>;
@@ -231,7 +235,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryGt)
 {
     SKIP_INTEGRATION_TEST();
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
     using QNameGT       = Query<AgeField<Gt<int>>>;
     using VGT           = std::vector<QNameGT>;
@@ -254,7 +258,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryGte)
 {
     SKIP_INTEGRATION_TEST();
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
     using QNameGTE      = Query<AgeField<Gte<int>>>;
     using VGTE          = std::vector<QNameGTE>;
@@ -277,7 +281,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryLt)
 {
     SKIP_INTEGRATION_TEST();
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
     using QNameLT       = Query<AgeField<Lt<int>>>;
     using VLT           = std::vector<QNameLT>;
@@ -300,7 +304,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryLte)
 {
     SKIP_INTEGRATION_TEST();
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
     using QNameLTE      = Query<AgeField<Lte<int>>>;
     using VLTE          = std::vector<QNameLTE>;
@@ -323,7 +327,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryIn)
 {
     SKIP_INTEGRATION_TEST();
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
     using QNameIN       = Query<AgeField<In<int>>>;
     using VIN           = std::vector<QNameIN>;
@@ -346,7 +350,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryNin)
 {
     SKIP_INTEGRATION_TEST();
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
     using QNameNIN      = Query<AgeField<Nin<int>>>;
     using VNIN          = std::vector<QNameNIN>;
@@ -371,7 +375,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryAnd)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
     using QNameAND      = Query<And<NameField<std::string>, AgeField<Lt<int>>>>;
 
@@ -395,7 +399,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryOr)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
     using QNameOR       = Query<Or<NameField<std::string>, AgeField<Lt<int>>>>;
 
@@ -419,7 +423,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryNor)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
     using QNameNOR      = Query<Nor<NameField<std::string>, AgeField<Lt<int>>>>;
 
@@ -446,7 +450,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryNot)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
     using QNameNOT       = Query<NameField<Not<Eq<std::string>>>>;
 
@@ -470,7 +474,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryExists)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
     using QNameEXISTS   = Query<NameField<Exists<std::string>>>;
 
@@ -494,7 +498,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryType)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"Sam", 22, {"Court", "NY", 12}, {}}, {"Sam", 23, {"Jester", "FW", 23}, {}}, {"Sam", 45, {"Limbo", "FG", 56}, {}}};
     using QNameEXISTS   = Query<NameField<Type<std::string>>>;
 
@@ -518,7 +522,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryMod)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"Sam", 25, {"Court", "NY", 12}, {}}, {"Sam", 37, {"Jester", "FW", 23}, {}}, {"Sam", 49, {"Limbo", "FG", 56}, {}}};
     using QNameMod      = Query<AgeField<Mod<std::int32_t>>>;
 
@@ -542,7 +546,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryRegEx)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"Samual", 25, {"Court", "NY", 12}, {}}, {"Samantha", 37, {"Jester", "FW", 23}, {}}, {"Samtra", 49, {"Limbo", "FG", 56}, {}}};
     using QNameRegEx    = Query<NameField<RegEx<std::string>>>;
 
@@ -572,7 +576,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryAll)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
         {"Sam", 25, {"Cour terror",  "NY", 12}, {{10, 13, 14, 15}}},
         {"Sam", 37, {"Jes terror",   "FW", 23}, {{13, 14, 15}}},
@@ -600,7 +604,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryElemMatch)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
         {"Sam", 25, {"Cour terror",  "NY", 12}, {{10, 13, 14, 15}}},
         {"Sam", 37, {"Jes terror",   "FW", 23}, {{13, 14, 15}}},
@@ -630,7 +634,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryElemSize)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
         {"Sam", 25, {"Cour terror",  "NY", 12}, {{10, 13, 14}}},
         {"Sam", 37, {"Jes terror",   "FW", 23}, {{13, 14, 15}}},
@@ -658,7 +662,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryAllClear)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"Sam", 17, {"Cour terror",  "NY", 12}, {}}, {"Sam", 25, {"Jes terror",   "FW", 23}, {}}, {"Sam", 33, {"Limbo terror", "FG", 56}, {}}};
     using QAgeAllClear  = Query<AgeField<AllClear<std::uint32_t>>>;
 
@@ -682,7 +686,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryAllSet)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"Sam", 17, {"Cour terror",  "NY", 12}, {}}, {"Sam", 25, {"Jes terror",   "FW", 23}, {}}, {"Sam", 33, {"Limbo terror", "FG", 56}, {}}};
     using QAgeAllSet    = Query<AgeField<AllSet<std::uint32_t>>>;
 
@@ -708,7 +712,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryAnyClear)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"Sam", 17, {"Cour terror",  "NY", 12}, {}}, {"Sam", 25, {"Jes terror",   "FW", 23}, {}}, {"Sam", 33, {"Limbo terror", "FG", 56}, {}}};
     using QAgeAnyClear  = Query<AgeField<AnyClear<std::uint32_t>>>;
 
@@ -732,7 +736,7 @@ TEST(IntegrationConnectionMongoTest, removeQueryAnySet)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"Sam", 17, {"Cour terror",  "NY", 12}, {}}, {"Sam", 25, {"Jes terror",   "FW", 23}, {}}, {"Sam", 33, {"Limbo terror", "FG", 56}, {}}};
     using QAgeAnySet    = Query<AgeField<AnySet<std::uint32_t>>>;
 
@@ -756,7 +760,7 @@ TEST(IntegrationConnectionMongoTest, findQueryEq)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"Sam", 45, {"Cour terror",  "NY", 12}, {}}, {"John", 45, {"Jes terror",   "FW", 23}, {}}, {"John", 45, {"Limbo terror", "FG", 56}, {}}};
     using FindName      = NameField<Eq<std::string>>;
     using FindAge       = AgeField<Eq<std::uint32_t>>;
@@ -781,7 +785,7 @@ TEST(IntegrationConnectionMongoTest, ListCollections)
 {
     SKIP_INTEGRATION_TEST();
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
 
     LCRange                   r1Result = mongo["test"].listCollections();
     TestFindResult<ListCollectionResult>  findResult(r1Result);
@@ -800,7 +804,7 @@ TEST(IntegrationConnectionMongoTest, ListDatabases)
 {
     SKIP_INTEGRATION_TEST();
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
 
     DBRange                   r1Result = mongo.listDatabases();
     EXPECT_EQ(1, r1Result.rangeData->ok);
@@ -817,7 +821,7 @@ TEST(IntegrationConnectionMongoTest, RenameCollection)
 {
     SKIP_INTEGRATION_TEST();
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
 
     LCRange             collections1 = mongo["test"].listCollections();
     auto find1 = std::find_if(std::begin(collections1), std::end(collections1), [](CollectionInfo const& v) {return v.name == "Blob";});
@@ -840,7 +844,7 @@ TEST(IntegrationConnectionMongoTest, CreateDropCollection)
 {
     SKIP_INTEGRATION_TEST();
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
 
     LCRange             collections1 = mongo["test"].listCollections();
     auto find1 = std::find_if(std::begin(collections1), std::end(collections1), [](CollectionInfo const& v) {return v.name == "CreateTest";});
@@ -868,7 +872,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindAddSort)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}, {}},{"Sam", 45, {"Cour terror",  "NY", 12}, {}}, {"John", 38, {"Limbo terror", "FG", 56}, {}}};
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
@@ -901,7 +905,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindAddProjection)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}, {}},{"John", 45, {"Cour terror",  "NY", 12}, {}}, {"John", 38, {"Limbo terror", "FG", 56}, {}}};
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
@@ -948,7 +952,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetSkip)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}, {}},{"Sam", 45, {"Cour terror",  "NY", 12}, {}}, {"John", 38, {"Limbo terror", "FG", 56}, {}}};
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
@@ -980,7 +984,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetLimit)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}, {}},{"Sam", 45, {"Cour terror",  "NY", 12}, {}}, {"John", 38, {"Limbo terror", "FG", 56}, {}}};
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
@@ -1013,7 +1017,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetBatchSize)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}, {}},{"Sam", 45, {"Cour terror",  "NY", 12}, {}}, {"John", 38, {"Limbo terror", "FG", 56}, {}}};
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
@@ -1040,7 +1044,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetSingleBatch)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}, {}},{"Sam", 45, {"Cour terror",  "NY", 12}, {}}, {"John", 38, {"Limbo terror", "FG", 56}, {}}};
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
@@ -1068,7 +1072,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetComment)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}, {}},{"Sam", 45, {"Cour terror",  "NY", 12}, {}}, {"John", 38, {"Limbo terror", "FG", 56}, {}}};
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
@@ -1094,7 +1098,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetMaxTimeMS)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}, {}},{"Sam", 45, {"Cour terror",  "NY", 12}, {}}, {"John", 38, {"Limbo terror", "FG", 56}, {}}};
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
@@ -1138,7 +1142,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetReturnKey)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}, {}},{"Sam", 45, {"Cour terror",  "NY", 12}, {}}, {"John", 38, {"Limbo terror", "FG", 56}, {}}};
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
@@ -1168,7 +1172,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindSetShowRecordId)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{{"John", 45, {"Jes terror",   "FW", 23}, {}},{"Sam", 45, {"Cour terror",  "NY", 12}, {}}, {"John", 38, {"Limbo terror", "FG", 56}, {}}};
     using FindAge       = AgeField<Gt<std::uint32_t>>;
 
@@ -1234,7 +1238,7 @@ TEST(IntegrationConnectionMongoTest, SerializeFindAndIterate)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"John", 45, {"Jes terror",   "FW", 48}, {}},
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
@@ -1282,7 +1286,7 @@ TEST(IntegrationConnectionMongoTest, FindAndReplace)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"John", 45, {"Jes terror",   "FW", 48}, {}},
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
@@ -1325,7 +1329,7 @@ TEST(IntegrationConnectionMongoTest, FindAndReplaceUsingSortAscending)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"John", 45, {"Jes terror",   "FW", 48}, {}},
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},   // Two people aged 32
@@ -1368,7 +1372,7 @@ TEST(IntegrationConnectionMongoTest, FindAndReplaceUsingSortDescending)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"John", 45, {"Jes terror",   "FW", 48}, {}},
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},   // Two people aged 32
@@ -1411,7 +1415,7 @@ TEST(IntegrationConnectionMongoTest, FindAndReplaceUsingNew)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"John", 45, {"Jes terror",   "FW", 48}, {}},
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
@@ -1454,7 +1458,7 @@ TEST(IntegrationConnectionMongoTest, FindAndReplaceUsingFields)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"John", 45, {"Jes terror",   "FW", 48}, {}},
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
@@ -1497,7 +1501,7 @@ TEST(IntegrationConnectionMongoTest, FindAndReplaceUpsertFalse)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"John", 45, {"Jes terror",   "FW", 48}, {}},
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
@@ -1530,7 +1534,7 @@ TEST(IntegrationConnectionMongoTest, FindAndReplaceUpsertTrue)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"John", 45, {"Jes terror",   "FW", 48}, {}},
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
@@ -1571,7 +1575,7 @@ TEST(IntegrationConnectionMongoTest, FindAndReplaceUpsertTrueMatch)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"John", 45, {"Jes terror",   "FW", 48}, {}},
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
@@ -1655,7 +1659,7 @@ TEST(IntegrationConnectionMongoTest, FindAndRemove)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"John", 45, {"Jes terror",   "FW", 48}, {}},
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
@@ -1696,7 +1700,7 @@ TEST(IntegrationConnectionMongoTest, FindAndRemoveSortAsc)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"John", 45, {"Jes terror",   "FW", 48}, {}},
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}}, // Two people are 32
@@ -1736,7 +1740,7 @@ TEST(IntegrationConnectionMongoTest, FindAndRemoveSortDec)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"John", 45, {"Jes terror",   "FW", 48}, {}},
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}}, // Two people aged 32
@@ -1777,7 +1781,7 @@ TEST(IntegrationConnectionMongoTest, FindAndRemoveMiss)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"John", 45, {"Jes terror",   "FW", 48}, {}},
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
@@ -1813,7 +1817,7 @@ TEST(IntegrationConnectionMongoTest, FindAndRemoveFields)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"John", 45, {"Jes terror",   "FW", 48}, {}},
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
@@ -1890,7 +1894,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingSet)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
                               };
@@ -1923,7 +1927,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingCurrentDateDateTime)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
                               };
@@ -1965,7 +1969,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingCurrentDateTimeStamp)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
                               };
@@ -2010,7 +2014,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingIncrement)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
                               };
@@ -2043,7 +2047,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMinFail)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
                               };
@@ -2076,7 +2080,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMinWork)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
                               };
@@ -2109,7 +2113,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMaxFail)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
                               };
@@ -2142,7 +2146,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMaxWork)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
                               };
@@ -2175,7 +2179,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMul)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
                               };
@@ -2208,7 +2212,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingRename)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
                               };
@@ -2247,7 +2251,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingUnset)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
                               };
@@ -2285,7 +2289,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingAddToSet)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<PeopleWithFood> people
                                 {
                                     {"Sam",  32, {"Cour terror",  "NY", 35}, {}, {}}
@@ -2322,7 +2326,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPopFront)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<PeopleWithFood> people
                                 {
                                     {"Sam",  32, {"Cour terror",  "NY", 35}, {}, {}}
@@ -2359,7 +2363,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPopBack)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<PeopleWithFood> people
                                 {
                                     {"Sam",  32, {"Cour terror",  "NY", 35}, {}, {}}
@@ -2396,7 +2400,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPull)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<PeopleWithFood> people
                                 {
                                     {"Sam",  32, {"Cour terror",  "NY", 35}, {}, {}}
@@ -2433,7 +2437,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPullWithTest)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<PeopleWithFood> people
                                 {
                                     {"Sam",  32, {"Cour terror",  "NY", 35}, {}, {}}
@@ -2470,7 +2474,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPush)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<PeopleWithFood> people
                                 {
                                     {"Sam",  32, {"Cour terror",  "NY", 35}, {}, {}}
@@ -2507,7 +2511,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPullAll)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<PeopleWithFood> people
                                 {
                                     {"Sam",  32, {"Cour terror",  "NY", 35}, {}, {}}
@@ -2544,7 +2548,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingEachAddToSet)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<PeopleWithFood> people
                                 {
                                     {"Sam",  32, {"Cour terror",  "NY", 35}, {}, {}}
@@ -2581,7 +2585,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingEachPush)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<PeopleWithFood> people
                                 {
                                     {"Sam",  32, {"Cour terror",  "NY", 35}, {}, {}}
@@ -2618,7 +2622,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingPosition)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<PeopleWithFood> people
                                 {
                                     {"Sam",  32, {"Cour terror",  "NY", 35}, {}, {}}
@@ -2655,7 +2659,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingSlice)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<PeopleWithFood> people
                                 {
                                     {"Sam",  32, {"Cour terror",  "NY", 35}, {}, {}}
@@ -2692,7 +2696,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingSort)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<PeopleWithFood> people
                                 {
                                     {"Sam",  32, {"Cour terror",  "NY", 35}, {}, {}}
@@ -2729,7 +2733,7 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingMultipleExpressions)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
                               };
@@ -2763,7 +2767,7 @@ TEST(IntegrationConnectionMongoTest, Count)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"John", 45, {"Jes terror",   "FW", 48}, {}},
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
@@ -2797,7 +2801,7 @@ TEST(IntegrationConnectionMongoTest, CountWithLimit)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"John", 45, {"Jes terror",   "FW", 48}, {}},
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
@@ -2831,7 +2835,7 @@ TEST(IntegrationConnectionMongoTest, CountWithSkip)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"John", 45, {"Jes terror",   "FW", 48}, {}},
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
@@ -2890,7 +2894,7 @@ TEST(IntegrationConnectionMongoTest, CountAll)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"John", 45, {"Jes terror",   "FW", 48}, {}},
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
@@ -2923,7 +2927,7 @@ TEST(IntegrationConnectionMongoTest, Distinct)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"John", 45, {"Jes terror",   "FW", 48}, {}},
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
@@ -2974,7 +2978,7 @@ TEST(IntegrationConnectionMongoTest, DistinctAll)
 
     using namespace std::string_literals;
 
-    ThorsMongo          mongo({"localhost", 27017}, {"test", "testPassword", "test"});
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
     std::vector<People> people{
                                 {"John", 45, {"Jes terror",   "FW", 48}, {}},
                                 {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
