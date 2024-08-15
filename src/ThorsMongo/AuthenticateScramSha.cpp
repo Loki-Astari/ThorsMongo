@@ -12,7 +12,7 @@ void authenticate(MessageHandler& messageHandler, Auth::UserNamePassword const& 
 {
     // Create and send the AuthInit object to Mongo.
     // Read the AuthReply from Mongo.
-    TC::ScramClientSha256   client(authInfo.username);
+    TC::ScramClient256      client(authInfo.username, authInfo.password);
     MessageId               authInitId;
     AuthReply               authInitReply;
     bool                    authInitOK = false;
@@ -49,7 +49,7 @@ void authenticate(MessageHandler& messageHandler, Auth::UserNamePassword const& 
     if (messageHandler.sendMessage(
                                    AuthCont{authInitReply.conversationId,
                                             authInfo.database,
-                                            client.getProofMessage(authInfo.password, authInitReply.payload.getData())
+                                            client.getFinalMessage(authInitReply.payload.getData())
                                            },
                                    authContId,
                                    OP_MsgFlag::empty,
