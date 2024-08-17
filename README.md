@@ -1,6 +1,6 @@
 [![Brew package](https://img.shields.io/badge/Brew-package-blueviolet)](https://formulae.brew.sh/formula/thors-serializer)
 
-![ThorsMongo](img/thorsmongo.jpg)
+![ThorsMongo](img/thorsmongoapi.jpg)
 
 # ThorsMongo:
 Mongo API for C++
@@ -45,8 +45,8 @@ These libraries are available via [brew](https://brew.sh/)
 Build and install the libraries manually:
 
 ```Shell
-    > git clone git@github.com:Loki-Astari/ThorsSerializer.git
-    > cd ThorsSerializer
+    > git clone git@github.com:Loki-Astari/ThorsMongo.git
+    > cd ThorsMongo
     > ./configure
     > make
     > make install
@@ -60,7 +60,7 @@ Note: The configuration script should check for all dependencies and give instru
 There is a header only version. You will need to install it and a couple of other libraries manually.
 
 ```Shell
-    > git clone --single-branch --branch header-only git@github.com:Loki-Astari/ThorsSerializer.git
+    > git clone --single-branch --branch header-only git@github.com:Loki-Astari/ThorsMongo.git
     > git clone git@github.com:Neargye/magic_enum
     > # or brew install magic_enum
     > brew install snappy

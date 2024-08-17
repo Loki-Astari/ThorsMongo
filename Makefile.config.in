@@ -11,7 +11,6 @@ BOOST_LDFLAGS=@BOOST_LDFLAGS@
 MagicEnumHeaderOnly_ROOT_DIR=@MagicEnumHeaderOnly_ROOT_DIR@
 
 ThorSerialize_ROOT_DIR=@ThorSerialize_ROOT_DIR@
-ThorSerialize_ROOT_LIB=@ThorSerialize_ROOT_LIB@
 ThorSerializeHeaderOnly_ROOT_DIR=@ThorSerializeHeaderOnly_ROOT_DIR@
 
 
