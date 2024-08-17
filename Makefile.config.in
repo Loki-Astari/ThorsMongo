@@ -5,9 +5,6 @@ snappy_ROOT_LIB=@snappy_ROOT_LIB@
 crypto_ROOT_DIR=@crypto_ROOT_DIR@
 crypto_ROOT_LIB=@crypto_ROOT_LIB@
 
-BOOST_CPPFLAGS=@BOOST_CPPFLAGS@
-BOOST_LDFLAGS=@BOOST_LDFLAGS@
-
 MagicEnumHeaderOnly_ROOT_DIR=@MagicEnumHeaderOnly_ROOT_DIR@
 
 ThorSerialize_ROOT_DIR=@ThorSerialize_ROOT_DIR@
