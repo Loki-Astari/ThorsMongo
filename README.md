@@ -1,4 +1,4 @@
-[![Brew package](https://img.shields.io/badge/Brew-package-blueviolet)](https://formulae.brew.sh/formula/thors-serializer)
+[![Brew package](https://img.shields.io/badge/Brew-package-blueviolet)](https://formulae.brew.sh/formula/thors-mongo)
 
 ![ThorsMongo](img/thorsmongoapi.jpg)
 
@@ -37,7 +37,7 @@ This library makes heavy use of ThorsSerialize API to automate the generation of
 These libraries are available via [brew](https://brew.sh/)
 
 ```Shell
-    > brew install thors-serializer
+    > brew install thors-mongo
 ```
 
 ## Medium Build:
