@@ -1,4 +1,4 @@
-![ThorsMongo](../img/thorsmongo.jpg)
+![ThorsMongo](../img/thorsmongoapi.jpg)
 
 # Filter:
 
