@@ -3008,3 +3008,38 @@ TEST(IntegrationConnectionMongoTest, DistinctAll)
     EXPECT_EQ(9, r2Result.n);
 }
 
+TEST(IntegrationConnectionMongoTest, FindAll)
+{
+    SKIP_INTEGRATION_TEST();
+
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
+    std::vector<People> people{
+                                {"John", 45, {"Jes terror",   "FW", 48}, {}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}, {}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}, {}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}, {}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}, {}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}, {}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}, {}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}, {}}
+                              };
+    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(9, iResult.n);
+    EXPECT_EQ(9, iResult.inserted.size());
+
+    auto find = mongo["test"]["People"].find<People>(Any{});
+    int count = 0;
+    for (auto const& p: find) {
+        ++count;
+    }
+    EXPECT_EQ(9, count);
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<Any>{});
+    EXPECT_EQ(9, r2Result.n);
+}
+
