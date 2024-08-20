@@ -3026,7 +3026,6 @@ TEST(IntegrationConnectionMongoTest, FindAll)
                                 {"Klin", 49, {"Court Film",   "PL", 52}, {}},
                                 {"Blow", 28, {"Court Port",   "PL", 31}, {}}
                               };
-    using FindAgeLt     = AgeField<Lt<std::uint32_t>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
     EXPECT_EQ(1, iResult.ok);
