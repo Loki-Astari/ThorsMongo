@@ -3036,6 +3036,7 @@ TEST(IntegrationConnectionMongoTest, FindAll)
     auto find = mongo["test"]["People"].find<People>(Any{});
     int count = 0;
     for (auto const& p: find) {
+        ((void)p);
         ++count;
     }
     EXPECT_EQ(9, count);
