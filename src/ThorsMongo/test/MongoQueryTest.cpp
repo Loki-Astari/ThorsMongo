@@ -18,8 +18,9 @@ TEST(MongoQueryTest, CreateFilterOneLevel)
 {
     std::stringstream   s;
 
-    using ThorsAnvil::Serialize::PrinterInterface;
-    s << ThorsAnvil::Serialize::jsonExporter(FindByPersonNameEq{"Tim"}, PrinterInterface::PrinterConfig{PrinterInterface::OutputType::Stream});
+    using ThorsAnvil::Serialize::PrinterConfig;
+    using ThorsAnvil::Serialize::OutputType;
+    s << ThorsAnvil::Serialize::jsonExporter(FindByPersonNameEq{"Tim"}, PrinterConfig{OutputType::Stream});
 
     EXPECT_EQ(R"({"name":{"$eq":"Tim"}})", s.str());
 }
@@ -28,8 +29,9 @@ TEST(MongoQueryTest, CreateFilterTwoLevel)
 {
     std::stringstream   s;
 
-    using ThorsAnvil::Serialize::PrinterInterface;
-    s << ThorsAnvil::Serialize::jsonExporter(FindByPersonAddressCCEq{"London"}, PrinterInterface::PrinterConfig{PrinterInterface::OutputType::Stream});
+    using ThorsAnvil::Serialize::PrinterConfig;
+    using ThorsAnvil::Serialize::OutputType;
+    s << ThorsAnvil::Serialize::jsonExporter(FindByPersonAddressCCEq{"London"}, PrinterConfig{OutputType::Stream});
 
     EXPECT_EQ(R"({"address.city":{"$eq":"London"}})", s.str());
 }
@@ -38,8 +40,9 @@ TEST(MongoQueryTest, CreateFilterThreeLevel)
 {
     std::stringstream   s;
 
-    using ThorsAnvil::Serialize::PrinterInterface;
-    s << ThorsAnvil::Serialize::jsonExporter(FindByFamilyMotherAddress{12}, PrinterInterface::PrinterConfig{PrinterInterface::OutputType::Stream});
+    using ThorsAnvil::Serialize::PrinterConfig;
+    using ThorsAnvil::Serialize::OutputType;
+    s << ThorsAnvil::Serialize::jsonExporter(FindByFamilyMotherAddress{12}, PrinterConfig{OutputType::Stream});
 
     EXPECT_EQ(R"({"mother.address.code":{"$eq":12}})", s.str());
 }

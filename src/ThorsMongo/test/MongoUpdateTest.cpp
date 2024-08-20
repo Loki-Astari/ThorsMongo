@@ -16,10 +16,11 @@ TEST(MongoUpdateTest, CreateFilterOneLevel)
 {
     std::stringstream   s;
 
-    using ThorsAnvil::Serialize::PrinterInterface;
+    using ThorsAnvil::Serialize::PrinterConfig;
+    using ThorsAnvil::Serialize::OutputType;
     using PushToPersonData = ThorsMongo_UpdateFromAccess(Push, People, data);
 
-    s << ThorsAnvil::Serialize::jsonExporter(PushToPersonData{12}, PrinterInterface::PrinterConfig{PrinterInterface::OutputType::Stream});
+    s << ThorsAnvil::Serialize::jsonExporter(PushToPersonData{12}, PrinterConfig{OutputType::Stream});
 
     EXPECT_EQ(R"({"$push":{"data":12}})", s.str());
 }
@@ -28,10 +29,11 @@ TEST(MongoUpdateTest, CreateFilterTwoLevel)
 {
     std::stringstream   s;
 
-    using ThorsAnvil::Serialize::PrinterInterface;
+    using ThorsAnvil::Serialize::PrinterConfig;
+    using ThorsAnvil::Serialize::OutputType;
     using SetPersonAddressCity = ThorsMongo_UpdateFromAccess(Set, People, address, city);
 
-    s << ThorsAnvil::Serialize::jsonExporter(SetPersonAddressCity{"London"}, PrinterInterface::PrinterConfig{PrinterInterface::OutputType::Stream});
+    s << ThorsAnvil::Serialize::jsonExporter(SetPersonAddressCity{"London"}, PrinterConfig{OutputType::Stream});
 
     EXPECT_EQ(R"({"$set":{"address.city":"London"}})", s.str());
 }
@@ -40,10 +42,11 @@ TEST(MongoUpdateTest, CreateFilterThreeLevel)
 {
     std::stringstream   s;
 
-    using ThorsAnvil::Serialize::PrinterInterface;
+    using ThorsAnvil::Serialize::PrinterConfig;
+    using ThorsAnvil::Serialize::OutputType;
     using SetOnInsertFamilyPersonAddressCode = ThorsMongo_UpdateFromAccess(SetOnInsert, Family, mother, address, code);
 
-    s << ThorsAnvil::Serialize::jsonExporter(SetOnInsertFamilyPersonAddressCode{12}, PrinterInterface::PrinterConfig{PrinterInterface::OutputType::Stream});
+    s << ThorsAnvil::Serialize::jsonExporter(SetOnInsertFamilyPersonAddressCode{12}, PrinterConfig{OutputType::Stream});
 
     EXPECT_EQ(R"({"$setOnInsert":{"mother.address.code":12}})", s.str());
 }
