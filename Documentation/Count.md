@@ -2,7 +2,7 @@
 
 # Count:
 
-This method uses the Mongo API [**count**](https://www.mongodb.com/docs/manual/reference/command/count/). Please read the Mongo documentation for details.
+This method uses the MongoDB API [**count**](https://www.mongodb.com/docs/manual/reference/command/count/). Please read the MongoDB documentation for details.
 
 ```C++
         template<typename F>    CountResult     countDocuments(F const& query, CountConfig const& config);

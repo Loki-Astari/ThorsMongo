@@ -4,11 +4,11 @@
 
 In the API [findAndUpdateOne](FindAndModifyOne.md#findAndUpdateOne) you can specify an update operation.
 
-Like "[Filter](Filter.md) these are special format documents the Mongo Server executes. This is not a specific API but just specially formatted documents that are passed to the Mongo Server that provide the ability to perform update operations on a record.
+Like "[Filter](Filter.md) these are special format documents the MongoDB Server executes. This is not a specific API but just specially formatted documents that are passed to the MongoDB Server that provide the ability to perform update operations on a record.
 
 This library provides a mechanism to easily generate these documents without the developer needing to understand the lowest level details; BUT I feel it is worth explaining this from the bottom up. So I will explain the basics of these documents and how to build them manually from scratch. I will will then go over how to use some templates provided by ThorsMongo to simplify this processes. Finally I will introduce a set of tools that will do all the work automatically.
 
-The Mongo [Update and Operators](https://www.mongodb.com/docs/manual/reference/operator/update/) define some basic operations. Please have a read of the Mongo documents.
+The MongoDB [Update and Operators](https://www.mongodb.com/docs/manual/reference/operator/update/) define some basic operations. Please have a read of the MongoDB documents.
 
 ## Building from Scratch:
 
@@ -48,7 +48,7 @@ If we store a `Person` in a collection.
 
 ### Find by Name:
 
-If we want to "Update" a name to "John" you would need to construct and send the Mongo document.
+If we want to "Update" a name to "John" you would need to construct and send the MongoDB document.
 
 ````
     {
@@ -59,7 +59,7 @@ If we want to "Update" a name to "John" you would need to construct and send the
     }
 ````
 
-To represent this using ThorsSerializer you would need to declare two classes.
+To represent this using ThorSerializer you would need to declare two classes.
 
 ```C++
     struct NameFieldToMark
@@ -83,7 +83,7 @@ Now we could use this with [findAndUpdateOne](FindAndModifyOne.md#findAndUpdateO
 
 ### Update the city:
 
-To update the city you need to access the address sub object. In Mongo this would look like:
+To update the city you need to access the address sub object. In MongoDB this would look like:
 
 ````
     {
@@ -94,7 +94,7 @@ To update the city you need to access the address sub object. In Mongo this woul
     }
 ````
 
-The language does not support class members with a `"."` in the middle, but ThorsSerialize has a technique to compensate for this `ThorsAnvil_MakeOverride`. Also we did not specify a specific value but want to allow the code to pass in something appropriate; So will also add some constructor to pass the value to the destination.
+The language does not support class members with a `"."` in the middle, but ThorSerialize has a technique to compensate for this `ThorsAnvil_MakeOverride`. Also we did not specify a specific value but want to allow the code to pass in something appropriate; So will also add some constructor to pass the value to the destination.
 
 ```C++
     struct CityField
@@ -199,8 +199,8 @@ The filters described in the last section are so regular that we can define tool
 
 There are two steps:
 1. Create a "Field Access" class: [ThorsMongo_CreateFieldAccess](../src/ThorsMongo/MongoUtil.h#L31-L51)   
-    This step is identicial to Filters (and can be "Field Access" class can be reused.
-2. Delcare a "Update" class: [ThorsMongo_UpdateFromAccess](../src/ThorsMongo/MongoUtil.h#L61-L68)
+    This step is identical to Filters (and can be "Field Access" class can be reused.
+2. Declare a "Update" class: [ThorsMongo_UpdateFromAccess](../src/ThorsMongo/MongoUtil.h#L61-L68)
 
 ### Field Access class:
 ```C++
@@ -231,7 +231,7 @@ There are two steps:
     // with the ThorsMongo_FilterFromAccess
     //
     // The format is:
-    //      ThorsMongo_UpdateFromAccess( <Filter Op>, <Type>, <List of fields the drill donw> )
+    //      ThorsMongo_UpdateFromAccess( <Filter Op>, <Type>, <List of fields that drill down> )
 
     // Example of Set check on a persons name
     using SetPeopleName = ThorsMongo_UpdateFromAccess(Set, People, name);
@@ -242,7 +242,7 @@ There are two steps:
 
 ### Overview:
 
-The macros `ThorsMongo_CreateFieldAccess()` and `ThorsMongo_FilterFromAccess()` pull type information from the class to make sure that the "Filter Op" is correctly parameterized with the type of the field you speciy.
+The macros `ThorsMongo_CreateFieldAccess()` and `ThorsMongo_FilterFromAccess()` pull type information from the class to make sure that the "Filter Op" is correctly parameterized with the type of the field you specify.
 
 ```C++
     ThorsMongo_CreateFieldAccess(People, address, countryCode);

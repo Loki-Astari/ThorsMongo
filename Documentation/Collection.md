@@ -2,11 +2,11 @@
 
 # Collection:
 
-An object if type `Collection` is a lightweight representation of a specific database/collection on the Mongo Server. There can be multiple `Collection` objects representing the same Mongo Server database/collection; an action applied to any of these objects has the same affect.
+An object if type `Collection` is a lightweight representation of a specific database/collection on the MongoDB Server. There can be multiple `Collection` objects representing the same MongoDB Server database/collection; an action applied to any of these objects has the same affect.
 
 You can explicitly create objects of type `Collection` or you can use the `operator[]` on an [`DB`](DB.md) object to get a reference to an object.
 
-It is **NOT** an error to create an object that does not represent a database/collection on the Mongo Server (i.e. The name does not match an existing database or collection name). You will get an error response when you communicate with the server using any of the methods on `Collection` object.
+It is **NOT** an error to create an object that does not represent a database/collection on the MongoDB Server (i.e. The name does not match an existing database or collection name). You will get an error response when you communicate with the server using any of the methods on `Collection` object.
 
 ## Constructor:
 
@@ -59,7 +59,7 @@ This class has the following interface:
 
 ### rename:
 
-This method uses the Mongo API [**renameCollection**](https://www.mongodb.com/docs/manual/reference/command/renameCollection/). Please read the Mongo documentation for details.
+This method uses the MongoDB API [**renameCollection**](https://www.mongodb.com/docs/manual/reference/command/renameCollection/). Please read the MongoDB documentation for details.
 
 ```C++
         AdminResult             rename(std::string const& name, RenameConfig const& config = RenameConfig{});
@@ -90,7 +90,7 @@ The [`AdminResult`](../src/ThorsMongo/ThorsMongoAdmin.h#L71) type contains no da
 
 ### drop:
 
-This method uses the Mongo API [**drop**](https://www.mongodb.com/docs/manual/reference/command/drop/). Please read the Mongo documentation for details.
+This method uses the Mongo API [**drop**](https://www.mongodb.com/docs/manual/reference/command/drop/). Please read the MongoDB documentation for details.
 
 ```C++
         AdminResult             drop(DropCollectionConfig const& config = DropCollectionConfig{});

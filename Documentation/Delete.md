@@ -2,7 +2,7 @@
 
 # Delete:
 
-This method uses the Mongo API [**delete**](https://www.mongodb.com/docs/manual/reference/command/delete/). Please read the Mongo documentation for details.
+This method uses the MongoDB API [**delete**](https://www.mongodb.com/docs/manual/reference/command/delete/). Please read the MongoDB documentation for details.
 
 ```C++
         template<typename T>        RemoveResult    remove(std::vector<T> const& search, RemoveConfig const& config = RemoveConfig{});

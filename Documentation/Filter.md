@@ -4,11 +4,11 @@
 
 In the API there are several places that you can specify a "Filter".  
 
-There are special documents in Mongo that allow you to perform filtering of the records. This is not a specific API but just specially formatted documents that are passed to the Mongo Server that provide the ability to perform boolean based operations to filter out records.
+There are special documents in MongoDB that allow you to perform filtering of the records. This is not a specific API but just specially formatted documents that are passed to the MongoDB Server that provide the ability to perform boolean based operations to filter out records.
 
 This library provides a mechanism to easily generate these documents without the developer needing to understand the lowest level details; BUT I feel it is worth explaining this from the bottom up. So I will explain the basics of these documents and how to build them manually from scratch. I will will then go over how to use some templates provided by ThorsMongo to simplify this processes. Finally I will introduce a set of tools that will do all the work automatically.
 
-The Mongo [Query and Projection Operators](https://www.mongodb.com/docs/manual/reference/operator/query/) define some basic operations. Please have a read of the Mongo documents.
+The MongoDB [Query and Projection Operators](https://www.mongodb.com/docs/manual/reference/operator/query/) define some basic operations. Please have a read of the MongoDB documents.
 
 ## Building from Scratch:
 
@@ -48,7 +48,7 @@ If we store a `Person` in a collection.
 
 ### Find by Name:
 
-If we want to "Filter" on a name equaling a "John" you would need to construct and send the Mongo document.
+If we want to "Filter" on a name equaling a "John" you would need to construct and send the MongoDB document.
 
 ````
     {
@@ -59,7 +59,7 @@ If we want to "Filter" on a name equaling a "John" you would need to construct a
     }
 ````
 
-To represent this using ThorsSerializer you would need to declare two classes.
+To represent this using ThorSerializer you would need to declare two classes.
 
 ```C++
     struct EqualToJohn
@@ -77,7 +77,7 @@ To represent this using ThorsSerializer you would need to declare two classes.
 Now we could use this with [`remove()`](Delete.md) method on [Collection](Collection.md) to remove all the records having the name "John".
 
 ```C++
-    // See the main README.md on how to create the mongo object.
+    // See the main README.md on how to create the MongoDB object.
     using ThorsAnvil::DB::Mongo::Query;
 
     // removes all the people with name John.
@@ -86,7 +86,7 @@ Now we could use this with [`remove()`](Delete.md) method on [Collection](Collec
 
 ### Find by Country:
 
-To find by country you need to access the address sub object. In Mongo this would look like:
+To find by country you need to access the address sub object. In MongoDB this would look like:
 
 ````
     {
@@ -97,7 +97,7 @@ To find by country you need to access the address sub object. In Mongo this woul
     }
 ````
 
-The language does not support class members with a `"."` in the middle, but ThorsSerialize has a technique to compensate for this `ThorsAnvil_MakeOverride`. Also we did not specify a specific value but want to allow the code to pass in something appropriate; So will also add some constructor to pass the value to the destination.
+The language does not support class members with a `"."` in the middle, but ThorSerialize has a technique to compensate for this `ThorsAnvil_MakeOverride`. Also we did not specify a specific value but want to allow the code to pass in something appropriate; So will also add some constructor to pass the value to the destination.
 
 ```C++
     struct EqualCountryCode
@@ -125,7 +125,7 @@ The language does not support class members with a `"."` in the middle, but Thor
 
 For simple cases like this its a tiny overhead but doable. But once you start using and/or and combining multiple conditions this looks like it could becomes a bit tiresome quickly. Mainly because you would need to define a class for every type of comparison you needed on a field (e.g. FindByCountryCodeEqual, FindByCountryCodeLess, FindByCountryCodeIn etc).
 
-## BuiltIn Query Operators:
+## Built-In Query Operators:
 
 This library defines classes for the basic operators in [MongoQuery.h](../src/ThorsMongo/MongoQuery.h). These types are designed to be used with types provided by the engineer to specify a field.
 
@@ -238,9 +238,9 @@ There are two steps:
     // with the ThorsMongo_FilterFromAccess
     //
     // The format is:
-    //      ThorsMongo_FilterFromAccess( <Filter Op>, <Type>, <List of fields the drill donw> )
+    //      ThorsMongo_FilterFromAccess( <Filter Op>, <Type>, <List of fields that drill down> )
 
-    // Example of Eqality (Eq) check on a persons name
+    // Example of Equality (Eq) check on a persons name
     using FindByPeopleName = ThorsMongo_FilterFromAccess(Eq, People, name);
 
     // Example of Equality (Eq) check for a city in a person address field.
@@ -249,7 +249,7 @@ There are two steps:
 
 ### Overview:
 
-The macros `ThorsMongo_CreateFieldAccess()` and `ThorsMongo_FilterFromAccess()` pull type information from the class to make sure that the "Filter Op" is correctly parameterized with the type of the field you speciy.
+The macros `ThorsMongo_CreateFieldAccess()` and `ThorsMongo_FilterFromAccess()` pull type information from the class to make sure that the "Filter Op" is correctly parameterized with the type of the field you specify.
 
 ```C++
     ThorsMongo_CreateFieldAccess(People, address, city);

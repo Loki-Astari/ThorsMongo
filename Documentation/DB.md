@@ -2,11 +2,11 @@
 
 # DB:
 
-An object if type `DB` is a lightweight representation of a specific database on the Mongo Server. There can be multiple `DB` objects representing the same Mongo Server database; an action applied to any of these objects has the same affect.
+An object if type `DB` is a lightweight representation of a specific database on the MongoDB Server. There can be multiple `DB` objects representing the same MongoDB Server database; an action applied to any of these objects has the same affect.
 
 You can explicitly create objects of type `DB` or you can use the `operator[]` on the [`ThorsMongo`](ThorsMongo.md) connection object to get a reference to an object.
 
-It is **NOT** an error to create an object that does not represent a database on the Mongo Server (i.e. The name does not match an existing database). You will get an error response when you communicate with the server using any of the methods on `DB` or associated [`Collection`](Collection.md) objects.
+It is **NOT** an error to create an object that does not represent a database on the MongoDB Server (i.e. The name does not match an existing database). You will get an error response when you communicate with the server using any of the methods on `DB` or associated [`Collection`](Collection.md) objects.
 
 ## Constructor:
 
@@ -51,7 +51,7 @@ This class has the following interface:
 
 ### listCollections:
 
-This method uses the Mongo API [**listCollections**](https://www.mongodb.com/docs/manual/reference/command/listCollections/). Please read the Mongo documentation for details.
+This method uses the Mongo API [**listCollections**](https://www.mongodb.com/docs/manual/reference/command/listCollections/). Please read the MongoDB documentation for details.
 
 ```C++
         template<typename F>
@@ -60,7 +60,7 @@ This method uses the Mongo API [**listCollections**](https://www.mongodb.com/doc
 ```
 
 #### Parameters:
-There are no required parameters but (I suspect) that a filter is often used. So this method takes an optional [filter](Filter.md) followed by an optional [config](../src/ThorsMongo/ThorsMongoCommandConfig.h#L10-L24) object. The config object is used to pass any optional parameters that the Mongo API can take. If a parameter is not explicitly set then it will not be sent to the MongoServer.
+There are no required parameters but (I suspect) that a filter is often used. So this method takes an optional [filter](Filter.md) followed by an optional [config](../src/ThorsMongo/ThorsMongoCommandConfig.h#L10-L24) object. The config object is used to pass any optional parameters that the MongoDB API can take. If a parameter is not explicitly set then it will not be sent to the MongoDB Server.
 
 | Parameter | Description |
 | --------- | ----------- |

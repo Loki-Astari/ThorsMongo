@@ -2,9 +2,9 @@
 
 # FindAndModifyOne:
 
-This method uses the Mongo API [**findAndModify**](https://www.mongodb.com/docs/manual/reference/command/findAndModify/). Please read the Mongo documentation for details.
+This method uses the MongoDB API [**findAndModify**](https://www.mongodb.com/docs/manual/reference/command/findAndModify/). Please read the MongoDB documentation for details.
 
-The behavior of this API depends a lot on the parameters passed. So I have split it usage into three distinct methods. But because the methods share a lot of commonality I will discuss them all together. The main point of this API is that it will "Modify" zero or one record. If the search criteria match multiple records on the Mongo Server only one will be updated (effectively this is Random (or you should think of it as Random)). To compensate for this you should use an appropriate search function to select a single value, or provide a sort order (operation will be applied to the top of the sort) so that you know explicitly which document will be modified.
+The behavior of this API depends a lot on the parameters passed. So I have split it usage into three distinct methods. But because the methods share a lot of commonality I will discuss them all together. The main point of this API is that it will "Modify" zero or one record. If the search criteria match multiple records on the MongoDB Server only one will be updated (effectively this is Random (or you should think of it as Random)). To compensate for this you should use an appropriate search function to select a single value, or provide a sort order (operation will be applied to the top of the sort) so that you know explicitly which document will be modified.
 
 ## findAndReplaceOne
 

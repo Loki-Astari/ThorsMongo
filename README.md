@@ -24,11 +24,11 @@ Mongo API for C++
 * [Documentation](#documentation)  
 
 # Description:
-This is an attempt to have a simple to use Type-Safe API to connect and manipulate data on a Mongo Server.  
+This is an attempt to have a simple to use Type-Safe API to connect and manipulate data on a MongoDB Server.  
 
-This API does not currently implement the full Mongo API, but rather the subset of the API around data manipulation and storage.  
+This API does not currently implement the full MongoDB API, but rather the subset of the API around data manipulation and storage.  
 
-This library makes heavy use of ThorsSerialize API to automate the generation of the BSON documents that are exchanged between the application and the Mongo Server. The advantage of this library is that no code needs to be written to create or generate BSON objects (this is all automated).  
+This library makes heavy use of ThorSerialize API to automate the generation of the BSON documents that are exchanged between the application and the MongoDB Server. The advantage of this library is that no code needs to be written to create or generate BSON objects (this is all automated).  
 
 # Installation:
 
@@ -72,12 +72,12 @@ Look at the [Example](./src/Example) folder for example of how to build against 
 
 
 ## Connecting:
-All communication done with the Mongo Server id done via the `ThorsMongo` class.  
+All communication done with the MongoDB Server id done via the `ThorsMongo` class.  
 
 ```C++
     #include "ThorsMongo/ThorsMongo.h"
 
-    // Connecting to Mongo
+    // Connecting to MongoDB
 
     using ThorsAnvil::DB::Mongo::ThorsMongo;
     ThorsMongo          mongo({"localhost", 27017}, {"usernmae", "password", "DB"});
@@ -104,7 +104,7 @@ Note: I have currently only implemented SCRAM-SHA-256 authentication mechanism. 
     ]
 ```
 
-On a Mongo Server there are multiple Databases. Each Database can have multiple Collections. There are appropriate class for these types of object.  
+On a MongoDB Server there are multiple Databases. Each Database can have multiple Collections. There are appropriate class for these types of object.  
 
 * `ThorsAnvil::DB::Mongo::DB`
 * `ThorsAnvil::DB::Mongo::Collection`
@@ -126,7 +126,7 @@ On a Mongo Server there are multiple Databases. Each Database can have multiple 
 ## Serializing Data:
 
 You can insert any data you like into a collection.  
-To serialize the data you must declare the class you are sending to Mongo as serializeable (using [ThorsSerialize](https://github.com/Loki-Astari/ThorsSerializer/) ). This has a tiny bit of boilerplate declaration per class. I provide a simple example here. More detailed examples and documentation can be found [here](https://github.com/Loki-Astari/ThorsSerializer/blob/master/README.md).  
+To serialize the data you must declare the class you are sending to MongoDB as serializable (using [ThorsSerialize](https://github.com/Loki-Astari/ThorsSerializer/) ). This has a tiny bit of boilerplate declaration per class. I provide a simple example here. More detailed examples and documentation can be found [here](https://github.com/Loki-Astari/ThorsSerializer/blob/master/README.md).  
 
 ```C++
     // The structure I want to store.
@@ -180,7 +180,7 @@ To serialize the data you must declare the class you are sending to Mongo as ser
 
 ## Inserting Data:
 
-To insert data into a collection call the `insert()` method passing either a vector or a tuple of objects. Note: The types of all the objects have to be serializeable.  
+To insert data into a collection call the `insert()` method passing either a vector or a tuple of objects. Note: The types of all the objects have to be serializable.  
 
 ```C++
     void addPeopleToMongo(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, std::vector<Person> const& people)
@@ -232,8 +232,8 @@ The `find()` method takes a filter and returns a C++ range.
     void findPeopleInMongoByName(ThorsAnvil::DB::Mongo::ThorsMongo& mongo, std::string const& name)
     {
         // Returns a C++ range of all the objects that match the query.
-        // Note:   The range hides a Mongo cursor so as you you iterate across the query
-        //         this may result in more calls to Mongo to retrieve more data automatically.
+        // Note:   The range hides a MongoDB cursor so as you you iterate across the query
+        //         this may result in more calls to MongoDB to retrieve more data automatically.
 
         auto range = mongo["DB"]["Collection"].find<Person>(FindEqName{name});
 

@@ -2,7 +2,7 @@
 
 # Distinct:
 
-This method uses the Mongo API [**distinct**](https://www.mongodb.com/docs/manual/reference/command/distinct/). Please read the Mongo documentation for details.
+This method uses the MongoDB API [**distinct**](https://www.mongodb.com/docs/manual/reference/command/distinct/). Please read the MongoDB documentation for details.
 
 ```C++
         template<typename T, typename F>    DistinctResult<T>   distinct(std::string const& key, F const& query, DistinctConfig const& config = DistinctConfig{});

@@ -2,7 +2,7 @@
 
 # Insert:
 
-This method uses the Mongo API [**insert**](https://www.mongodb.com/docs/manual/reference/command/insert/). Please read the Mongo documentation for details.
+This method uses the MongoDB API [**insert**](https://www.mongodb.com/docs/manual/reference/command/insert/). Please read the MongoDB documentation for details.
 
 ```C++
         template<typename T>        InsertResult    insert(std::vector<T> const& data, InsertConfig const& config = InsertConfig{});
@@ -11,13 +11,13 @@ This method uses the Mongo API [**insert**](https://www.mongodb.com/docs/manual/
 
 The `insert()` method inserts a container of individual records into a collection.
 
-Note: All objects in the vector or tuple must be a type that has been marked as serializeable via [ThorsSerialize](https://github.com/Loki-Astari/ThorsSerializer).
+Note: All objects in the vector or tuple must be a type that has been marked as serializable via [ThorsSerialize](https://github.com/Loki-Astari/ThorsSerializer).
 
 ```C++
     // Example
     class BankAccount
     {
-        // Make the serializeable class a friend so it can accesses private members.
+        // Make the serializable class a friend so it can accesses private members.
         friend class ThorsAnvil::Serialize::Traits<BankAccount>;
         std::string     name;
         std::uint64_t   accountId;
@@ -27,7 +27,7 @@ Note: All objects in the vector or tuple must be a type that has been marked as 
             // public Members;
     };
 
-    // Declare the class as serializeable:
+    // Declare the class as serializable:
     ThorsAnvil_MakeTrait(BankAccount, name, accountId, balance);
 ```
 

@@ -2,7 +2,7 @@
 
 # Connection:
 
-To communicate with a Mongo Server you need a connection to the server. This is achieved by the class `ThorsMongo`. This page describes the construction of this object and the parameters needed.
+To communicate with a MongoDB Server you need a connection to the server. This is achieved by the class `ThorsMongo`. This page describes the construction of this object and the parameters needed.
 
 Note 1: Currently only SCRAM-SHA-256 authentication is supported.  
 Note 2: I do plan to support SCRAM-SHA-1 in the near future.  
@@ -24,20 +24,20 @@ The constructor for [`ThorsMongo`](../src/ThorsMongo/ThorsMongo.h#L86-L90) looks
 ### Parameters:
 
 #### url:
-`url` is the address where there Mongo server is located, which can be simply represented by a string and an optional port number (if the port number is not provided it defaults to 27017). So this will usually look like this `{"mongo.server.company.com"}`.
+`url` is the address where there MongoDB Server is located, which can be simply represented by a string and an optional port number (if the port number is not provided it defaults to 27017). So this will usually look like this `{"mongo.server.company.com"}`.
 
 #### authInfo:
 `authInfo` provides authentication information to connect with the server (username/password/db). These are all provided as a single object as strings. Example: `{"testUser", "myPassword", "db"}` (PS please don't put passwords in your code :-) ).
 
 #### compression:
-This parameter is passed as the compression you would like to use with the Mongo Server. The supported [compressions](../src/ThorsMongo/MongoUtil.h#L64-L70) in Mongo are Snappy / Zlib / ZStd. This parameter can be the 'binary or' of these enum values representing the compression you would like to use. Example: `(Compression::Snappy | Compression::ZStd)`.
+This parameter is passed as the compression you would like to use with the MongoDB Server. The supported [compressions](../src/ThorsMongo/MongoUtil.h#L64-L70) in Mongo are Snappy / Zlib / ZStd. This parameter can be the 'binary or' of these enum values representing the compression you would like to use. Example: `(Compression::Snappy | Compression::ZStd)`.
 
 Note 1: As part of the handshake the server and client will agree on a mutually supported compression or none.  
 Note 2: Currently this library only support Snappy.  
 Note 3: I plan on support ZLib / ZStd at some point depending on requests.  
 
 #### clientInfo:
-clientInfo is information about your application/os/hardware provided to the Mongo Server.
+clientInfo is information about your application/os/hardware provided to the MongoDB Server.
 
 The most commonly overridden values in this are the application name and platform name. You can set these values in the constructor. All other values have generated default values but you are free to modify these values as you see fit.
 
@@ -48,7 +48,7 @@ The most commonly overridden values in this are the application name and platfor
     using ThorsAnvil::DB::Mongo::Compression;
     using ThorsAnvil::DB::Mongo::Auth::Client;
 
-    ThorsMongo          mongo({"localhost"},                                // Host where Mongo Server lives (default Mongo port used).
+    ThorsMongo          mongo({"localhost"},                                // Host where MongoDB Server lives (default MongoDB port used).
                               {"Loki", getPassword(), "DB"},                // Authentication Information.
                               Compression::Snappy | Compression::ZStd,      // Requested Compression.
                               Auth::Client{"MyApplication", "Platform"}     // Client Information for the Server.
@@ -65,7 +65,7 @@ This class has the following interface:
 
 ### listDatabases:
 
-This method uses the Mongo API [**listDatabases**](https://www.mongodb.com/docs/manual/reference/command/listDatabases/). Please read the Mongo documentation for details.
+This method uses the Mongo API [**listDatabases**](https://www.mongodb.com/docs/manual/reference/command/listDatabases/). Please read the MongoDB documentation for details.
 
 ```C++
         template<typename F>
@@ -74,7 +74,7 @@ This method uses the Mongo API [**listDatabases**](https://www.mongodb.com/docs/
 ```
 
 #### Parameters:
-There are no required parameters but (I suspect) that a filter is often used. So this method takes an optional "[filter](Filter.md)" followed by an optional [config](../src/ThorsMongo/ThorsMongoCommandConfig.h#L10-L24) object. The config object is used to pass any optional parameters that the Mongo API can take. If a parameter is not explicitly set then it will not be sent to the MongoServer.
+There are no required parameters but (I suspect) that a filter is often used. So this method takes an optional "[filter](Filter.md)" followed by an optional [config](../src/ThorsMongo/ThorsMongoCommandConfig.h#L10-L24) object. The config object is used to pass any optional parameters that the MongoDB API can take. If a parameter is not explicitly set then it will not be sent to the MongoDB Server.
 
 | Parameter | Description |
 | --------- | ----------- |

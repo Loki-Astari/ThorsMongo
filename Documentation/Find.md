@@ -2,14 +2,14 @@
 
 # Find:
 
-This method uses the Mongo API [**find**](https://www.mongodb.com/docs/manual/reference/command/find/). Please read the Mongo documentation for details.
+This method uses the MongoDB API [**find**](https://www.mongodb.com/docs/manual/reference/command/find/). Please read the MongoDB documentation for details.
 
 ```C++
         template<typename T>                FindRange<T>    find(FindConfig const& config = FindConfig{});                  // Find All
         template<typename T, typename F>    FindRange<T>    find(F const& search, FindConfig const& config = FindConfig{});
 ```
 
-The `find()` method takes an optional "[Filter](Filter.md)" and returns a C++ `range` of type T. Iterating through this range may result in subsequent calls to the Mongo API [**getMore**](https://www.mongodb.com/docs/manual/reference/command/getMore/) but this is invisible to the user of the API.
+The `find()` method takes an optional "[Filter](Filter.md)" and returns a C++ `range` of type T. Iterating through this range may result in subsequent calls to the MongoDB API [**getMore**](https://www.mongodb.com/docs/manual/reference/command/getMore/) but this is invisible to the user of the API.
 
 #### Parameters:
 The optional parameter `search` is a "[Filter](Filter.md)". Other optional parameter that can be passed using the [`config`](../src/ThorsMongo/ThorsMongoFind.h#L11-L79) object. Any optional parameters that are not explicitly set on the `config` object will not be sent to the server.
