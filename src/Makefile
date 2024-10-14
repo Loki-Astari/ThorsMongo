@@ -1,7 +1,7 @@
 
 THORSANVIL_ROOT				= $(realpath ../)
 
-TARGET						= ThorsLogging ThorsIOUtil Serialize ThorsStorage ThorsCrypto ThorsSocket ThorsMongo
+TARGET						= ThorsLogging ThorsIOUtil ThorsSocket
 
 include $(THORSANVIL_ROOT)/build/tools/Project.Makefile
 
