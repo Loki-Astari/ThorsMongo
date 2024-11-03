@@ -79,8 +79,8 @@ TEST(IntegrationConnectionMongoTest, connectToMongoWithAuthenticator)
 {
     SKIP_INTEGRATION_TEST();
 
-    ConnectionMongo     mongo({THOR_TESTING_MONGO_HOST, 27017});
-    MongoMessageHandler sender(mongo);
+    //ConnectionMongo     mongo({THOR_TESTING_MONGO_HOST, 27017});
+    MongoMessageHandler sender({THOR_TESTING_MONGO_HOST, 27017});
     Authenticate        authenticate;
 
     authenticate.addAuthenticator("SCRAM-SHA-256", ThorsAnvil::DB::Mongo::Auth::ScramSha256::authenticate);
@@ -91,8 +91,8 @@ TEST(IntegrationConnectionMongoTest, connectToMongoWithAuthenticatorUsingSnappy)
 {
     SKIP_INTEGRATION_TEST();
 
-    ConnectionMongo     mongo({THOR_TESTING_MONGO_HOST, 27017});
-    MongoMessageHandler sender(mongo);
+    //ConnectionMongo     mongo({THOR_TESTING_MONGO_HOST, 27017});
+    MongoMessageHandler sender({THOR_TESTING_MONGO_HOST, 27017});
     Authenticate        authenticate;
 
     authenticate.addAuthenticator("SCRAM-SHA-256", ThorsAnvil::DB::Mongo::Auth::ScramSha256::authenticate);
