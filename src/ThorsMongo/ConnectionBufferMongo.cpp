@@ -14,6 +14,7 @@ ConnectionBufferMongo::ConnectionBufferMongo(ConnectionBufferMongo&& move) noexc
     , outMessagePlaced(std::exchange(move.outMessagePlaced, 0))
 {}
 
+THORS_MONGO_HEADER_ONLY_INCLUDE
 ConnectionBufferMongo& ConnectionBufferMongo::operator=(ConnectionBufferMongo&& move) noexcept
 {
     SocketStreamBuffer::operator=(std::move(move));
