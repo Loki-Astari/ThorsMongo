@@ -96,7 +96,8 @@ TEST(IntegrationConnectionMongoTest, connectToMongoWithAuthenticatorUsingSnappy)
     Authenticate        authenticate;
 
     authenticate.addAuthenticator("SCRAM-SHA-256", ThorsAnvil::DB::Mongo::Auth::ScramSha256::authenticate);
-    authenticate.handShake(sender, {"root", "underMongo", "admin"}, Compression::Snappy, Client{"IntegrationConnectionMongoTest::connectToMongo"});
+    //authenticate.handShake(sender, {"root", "underMongo", "admin"}, Compression::Snappy, Client{"IntegrationConnectionMongoTest::connectToMongo"});
+    authenticate.handShake(sender, {MONGO_AUTH}, Compression::Snappy, Client{"IntegrationConnectionMongoTest::connectToMongo"});
 }
 
 TEST(IntegrationConnectionMongoTest, insertData)
