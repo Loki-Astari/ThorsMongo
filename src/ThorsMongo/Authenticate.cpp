@@ -91,18 +91,18 @@ void Authenticate::authenticteHandShake(
     // Check the handshake worked.
     if (!handShakeOK)
     {
-        ThorsLogAndThrowCritical("ThorsAnvil::DB::Mongo::Authenticate",
-                                 "authenticteHandShake",
-                                 "Handshake request or response failed");
+        ThorsLogAndThrowError("ThorsAnvil::DB::Mongo::Authenticate",
+                              "authenticteHandShake",
+                              "Handshake request or response failed");
     }
     if (reply.ok != 1)
     {
         messageHandler.setStreamBad();
-        ThorsLogAndThrowCritical("ThorsAnvil::DB::Mongo::Authenticate",
-                                 "authenticteHandShake",
-                                 "Handshake Request Failed: ",
-                                 "Code: ", reply.codeName,
-                                 "Msg:  ", reply.errmsg);
+        ThorsLogAndThrowError("ThorsAnvil::DB::Mongo::Authenticate",
+                              "authenticteHandShake",
+                              "Handshake Request Failed: ",
+                              "Code: ", reply.codeName,
+                              "Msg:  ", reply.errmsg);
     }
 
     /*
@@ -140,8 +140,8 @@ void Authenticate::authenticteHandShake(
     // Then must throw as the server will not allow any actions.
     if (!authenticated)
     {
-        ThorsLogAndThrowCritical("ThorsAnvil::DB::Mongo::Authenticate",
-                                 "authenticteHandShake",
-                                 "No compatable authentication mechanism found");
+        ThorsLogAndThrowError("ThorsAnvil::DB::Mongo::Authenticate",
+                              "authenticteHandShake",
+                              "No compatable authentication mechanism found");
     }
 }

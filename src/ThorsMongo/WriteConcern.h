@@ -70,7 +70,7 @@ struct RequestAcknowledgmentSerializer
                 object.option = RequestAcknowledgment::WOpt::Majority;
             }
             else {
-                ThorsLogAndThrow("ThorsAnvil::DB::Mongo::RequestAcknowledgmentSerializer", "read", "Invalid input string");
+                ThorsLogAndThrowDebug("ThorsAnvil::DB::Mongo::RequestAcknowledgmentSerializer", "read", "Invalid input string");
             }
         }
         else
