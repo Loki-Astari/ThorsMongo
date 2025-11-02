@@ -91,14 +91,16 @@ void Authenticate::authenticteHandShake(
     // Check the handshake worked.
     if (!handShakeOK)
     {
-        ThorsLogAndThrowError("ThorsAnvil::DB::Mongo::Authenticate",
+        ThorsLogAndThrowError(std::runtime_error,
+                              "ThorsAnvil::DB::Mongo::Authenticate",
                               "authenticteHandShake",
                               "Handshake request or response failed");
     }
     if (reply.ok != 1)
     {
         messageHandler.setStreamBad();
-        ThorsLogAndThrowError("ThorsAnvil::DB::Mongo::Authenticate",
+        ThorsLogAndThrowError(std::runtime_error,
+                              "ThorsAnvil::DB::Mongo::Authenticate",
                               "authenticteHandShake",
                               "Handshake Request Failed: ",
                               "Code: ", reply.codeName,
@@ -140,7 +142,8 @@ void Authenticate::authenticteHandShake(
     // Then must throw as the server will not allow any actions.
     if (!authenticated)
     {
-        ThorsLogAndThrowError("ThorsAnvil::DB::Mongo::Authenticate",
+        ThorsLogAndThrowError(std::runtime_error,
+                              "ThorsAnvil::DB::Mongo::Authenticate",
                               "authenticteHandShake",
                               "No compatable authentication mechanism found");
     }

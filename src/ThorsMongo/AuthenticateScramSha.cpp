@@ -26,14 +26,16 @@ void authenticate(MessageHandler& messageHandler, Auth::UserNamePassword const& 
 
     if (!authInitOK)
     {
-        ThorsLogAndThrowError("ThorsAnvil::DB::Mongo::AuthenticateScramSha",
+        ThorsLogAndThrowError(std::runtime_error,
+                              "ThorsAnvil::DB::Mongo::AuthenticateScramSha",
                               "authenticate",
                               "AuthInit request or response failed");
     }
     if (authInitReply.ok != 1)
     {
         messageHandler.setStreamBad();
-        ThorsLogAndThrowError("ThorsAnvil::DB::Mongo::AuthenticateScramSha",
+        ThorsLogAndThrowError(std::runtime_error,
+                              "ThorsAnvil::DB::Mongo::AuthenticateScramSha",
                               "authenticate",
                               "Handshake FirstMessage: ",
                               "Code: ", authInitReply.code,
@@ -63,13 +65,15 @@ void authenticate(MessageHandler& messageHandler, Auth::UserNamePassword const& 
 
     if (!authContOK)
     {
-        ThorsLogAndThrowError("ThorsAnvil::DB::Mongo::AuthenticateScramSha",
+        ThorsLogAndThrowError(std::runtime_error,
+                              "ThorsAnvil::DB::Mongo::AuthenticateScramSha",
                               "authenticate",
                               "AuthCont request or response failed");
     }
     if (authContReply.ok != 1)
     {
-        ThorsLogAndThrowError("ThorsAnvil::DB::Mongo::AuthenticateScramSha",
+        ThorsLogAndThrowError(std::runtime_error,
+                              "ThorsAnvil::DB::Mongo::AuthenticateScramSha",
                               "authenticate",
                               "Handshake Proof: ",
                               "Code: ", authContReply.code,
@@ -92,13 +96,15 @@ void authenticate(MessageHandler& messageHandler, Auth::UserNamePassword const& 
 
     if (!authContOK2)
     {
-        ThorsLogAndThrowError("ThorsAnvil::DB::Mongo::AuthenticateScramSha",
+        ThorsLogAndThrowError(std::runtime_error,
+                              "ThorsAnvil::DB::Mongo::AuthenticateScramSha",
                               "authenticate",
                               "AuthCont2 request or response failed");
     }
     if (authContReply2.ok != 1)
     {
-        ThorsLogAndThrowError("ThorsAnvil::DB::Mongo::AuthenticateScramSha",
+        ThorsLogAndThrowError(std::runtime_error,
+                              "ThorsAnvil::DB::Mongo::AuthenticateScramSha",
                               "authenticate",
                               "Handshake DB Connect: ",
                               "Code: ", authContReply2.code,
@@ -111,7 +117,8 @@ void authenticate(MessageHandler& messageHandler, Auth::UserNamePassword const& 
     // We now have a TCP/IP connection that is authenticated and connected to Mongo.
     if (!authContReply2.done)
     {
-        ThorsLogAndThrowError("ThorsAnvil::DB::Mongo::AuthenticateScramSha",
+        ThorsLogAndThrowError(std::runtime_error,
+                              "ThorsAnvil::DB::Mongo::AuthenticateScramSha",
                               "authenticate",
                               "Handshake DB Connect: ", "Expected handshake to be complete");
     }
