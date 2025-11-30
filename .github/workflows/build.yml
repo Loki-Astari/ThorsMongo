@@ -73,6 +73,8 @@ jobs:
                     mingw-w64-x86_64-libyaml
                     mingw-w64-x86_64-dlfcn
                     mingw-w64-x86_64-snappy
+                    cmake
+                    ninja
             - name: GetInfo
               shell: msys2 {0}
               run: |
