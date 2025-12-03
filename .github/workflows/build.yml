@@ -22,6 +22,8 @@ jobs:
             - run: env HOMEBREW_NO_AUTO_UPDATE=1 brew install vera++
             - run: env HOMEBREW_NO_AUTO_UPDATE=1 brew install magic_enum
             - run: env HOMEBREW_NO_AUTO_UPDATE=1 brew install snappy
+            - run: env HOMEBREW_NO_AUTO_UPDATE=1 brew install libevent
+            - run: env HOMEBREW_NO_AUTO_UPDATE=1 brew install boost
             - uses: actions/checkout@master
               with:
                 submodules: recursive
@@ -36,6 +38,9 @@ jobs:
             - run: which g++
             - run: sudo apt-get install vera++
             - run: sudo apt-get install libsnappy-dev
+            - run: sudo apt-get install libevent-dev
+            - run: sudo apt-get install libsnappy-dev
+            - run: sudo apt-get install libboost-all-dev
             - run: sudo apt-get update -y && sudo apt-get install lsb-release -y && sudo apt-get clean all
             - run: git clone https://github.com/Neargye/magic_enum.git /tmp/magic_enum
             - uses: actions/checkout@master
@@ -73,6 +78,8 @@ jobs:
                     mingw-w64-x86_64-libyaml
                     mingw-w64-x86_64-dlfcn
                     mingw-w64-x86_64-snappy
+                    mingw-w64-x86_64-libevent
+                    mingw-w64-x86_64-boost
                     cmake
                     ninja
             - name: GetInfo
