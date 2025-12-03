@@ -109,9 +109,6 @@
    */
 #undef THOR_DISABLE_TEST_WITH_MONGO_QUERY
 
-/* Name of package for header files */
-#undef THOR_PACKAGE_NAME
-
 /* mongosh DB for testing */
 #undef THOR_TESTING_MONGO_DB
 
