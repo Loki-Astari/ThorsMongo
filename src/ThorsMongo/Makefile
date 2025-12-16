@@ -1,4 +1,4 @@
-CONFIG_NAME					= ThorsMongoAPI
+CONFIG_NAME					= ThorsMongo
 THORSANVIL_ROOT             ?= $(realpath ../../)
 
 TARGET                      = ThorsMongo.slib

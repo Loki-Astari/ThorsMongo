@@ -51,7 +51,7 @@ This class has the following interface:
 
 ### listCollections:
 
-This method uses the Mongo API [**listCollections**](https://www.mongodb.com/docs/manual/reference/command/listCollections/). Please read the MongoDB documentation for details.
+This method uses the MongoDB API [**listCollections**](https://www.mongodb.com/docs/manual/reference/command/listCollections/). Please read the MongoDB documentation for details.
 
 ```C++
         template<typename F>

@@ -65,7 +65,7 @@ This class has the following interface:
 
 ### listDatabases:
 
-This method uses the Mongo API [**listDatabases**](https://www.mongodb.com/docs/manual/reference/command/listDatabases/). Please read the MongoDB documentation for details.
+This method uses the MongoDB API [**listDatabases**](https://www.mongodb.com/docs/manual/reference/command/listDatabases/). Please read the MongoDB documentation for details.
 
 ```C++
         template<typename F>

@@ -90,7 +90,7 @@ The [`AdminResult`](../src/ThorsMongo/ThorsMongoAdmin.h#L71) type contains no da
 
 ### drop:
 
-This method uses the Mongo API [**drop**](https://www.mongodb.com/docs/manual/reference/command/drop/). Please read the MongoDB documentation for details.
+This method uses the MongoDB API [**drop**](https://www.mongodb.com/docs/manual/reference/command/drop/). Please read the MongoDB documentation for details.
 
 ```C++
         AdminResult             drop(DropCollectionConfig const& config = DropCollectionConfig{});
