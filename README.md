@@ -2,7 +2,7 @@
 
 [![Brew package](https://img.shields.io/badge/Brew-package-blueviolet)](https://formulae.brew.sh/formula/thors-mongo)
 
-![ThorsMongo](img/thorsmongoapi.jpg)
+![ThorsMongo](img/thorsmongo.jpg)
 
 # ThorsMongo:
 Mongo API for C++
@@ -392,4 +392,82 @@ The update is expressed as an "[Expression](Documentation/Update.md)" that requi
   * [Count](Documentation/Count.md)
 * [Filter Creation](Documentation/Filter.md)
 * [Update Expression](Documentation/Update.md)
+
+
+## Example:
+
+```C++
+    #include "ThorsMongo/ThorsMongo.h"
+    #include <vector>
+    #include <string>
+
+    class Address
+    {
+        friend class ThorsAnvil::Serialize::Traits<Address>;
+        std::string     street;
+        std::string     city;
+        std::string     country;
+        std::string     postCode;
+        public:
+            // Add your API here
+    };
+    using Allergies = std::vector<std::string>;
+    class Person
+    {
+        friend class ThorsAnvil::Serialize::Traits<Person>;
+        std::string     name;
+        std::uint32_t   age;
+        Address         address;
+        Allergies       alergies;
+        public:
+            // Add your API here
+    };
+
+    // Make the classes serialize able into BSON.
+    ThorsAnvil_MakeTrait(Address, street, city, country, postCode);
+    ThorsAnvil_MakeTrait(Person, name, age, address, alergies);
+
+    // Define what fields can be used in Search/Update
+    ThorsMongo_CreateFieldAccess(Person, name);             // Search/Update a person by name.
+    ThorsMongo_CreateFieldAccess(Person, age);              // Search/Update a person by age.
+    ThorsMongo_CreateFieldAccess(Person, address, country); // Search/Update a person by country.
+
+    // Define a class that can be used to search for a person by name using 'Eq' (equal)
+    using FindEqName = ThorsMongo_FilterFromAccess(Eq, Person, name);
+    // Define a class that can be used to search for a person by age age using 'Gt' (Greater than)
+    using FindGtAge = ThorsMongo_FilterFromAccess(Gt, Person, age);
+    // Define a class that increments age
+    using IncAge = ThorsMongo_UpdateFromAccess(Inc, Person, age);
+    // Define a class that sets the country.
+    using SetCountry = ThorsMongo_UpdateFromAccess(Set, Person, address, country);
+
+    std::vector<Person> readDataFromFile()
+    {
+        // Read all the people you want to put in the DB
+        return {};
+    }
+    int main()
+    {
+        using ThorsAnvil::DB::Mongo::ThorsMongo;
+        using ThorsAnvil::DB::Mongo::Query;
+        std::vector<Person> data = readDataFromFile();  // Write this function to read data from file.
+
+        ThorsMongo  mongo({"localhost", 27017}, {"DbUser", "UserPassword"});
+        mongo["DB"]["PeopleCollection"].insert(data);
+        mongo["DB"]["PeopleCollection"].remove(Query<FindEqName>{"John"});      // Remove all the people named "John"
+        auto find = mongo["DB"]["PeopleCollection"].find<Person>(FindGtAge{51});// Find all the people over 51
+        for (auto const& person: find) {
+            // Now you a person
+        }
+        mongo["DB"]["PeopleCollection"].findAndUpdateOne<Person>(FindEqName{"Tom"}, IncAge{2});         // Increment the age of Tom by 2
+        mongo["DB"]["PeopleCollection"].findAndUpdateOne<Person>(FindEqName{"Sam"}, SetCountry{"USA"}); // Sam now lives in the USA
+    }
+```
+
+Builing the above application:
+
+```bash
+> export THORS_ROOT=<Location where ThorsMongo Is Installed>
+> g++ -std=c++20 Example.cpp -I ${THORS_ROOT}/include -L ${THORS_ROOT}/lib -lThorSerialize -lThorsLogging -lThorsMongo -lThorsSocket
+```
 
