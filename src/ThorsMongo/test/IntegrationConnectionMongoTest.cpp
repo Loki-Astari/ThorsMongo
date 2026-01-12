@@ -61,12 +61,10 @@ class TestFindResult
     using T = typename R::ValueType;
 
     ThorsAnvil::DB::Mongo::CursorFirst<T>&              cursor;
-    std::size_t&                                        index;
     double&                                             ok;
     R&                                                  result;
     TestFindResult(Range<R>& range)
         : cursor(range.getResult().cursor)
-        , index(range.getResult().index)
         , ok(range.getResult().ok)
         , result(range.getResult())
     {}
@@ -1270,6 +1268,55 @@ TEST(IntegrationConnectionMongoTest, SerializeFindAndIterate)
         code.emplace_back(v.address.code);
 
         EXPECT_EQ(v.age + 3, v.address.code);
+    }
+    EXPECT_EQ(9, age.size());
+    std::sort(std::begin(age), std::end(age));
+    std::vector<std::uint32_t>  expectedResult{22, 23, 25, 28, 32, 36, 38, 45, 49};
+    EXPECT_EQ(age, expectedResult);
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAge>{0});
+    EXPECT_EQ(9, r2Result.n);
+}
+
+TEST(IntegrationConnectionMongoTest, SerializeFindAndIterateUsePostIncrement)
+{
+    SKIP_INTEGRATION_TEST();
+
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
+    std::vector<People> people{
+                                {"John", 45, {"Jes terror",   "FW", 48}, {}},
+                                {"Sam",  32, {"Cour terror",  "NY", 35}, {}},
+                                {"Lam",  38, {"Limbo terror", "FG", 41}, {}},
+                                {"Ted",  36, {"Line Flog",    "TW", 39}, {}},
+                                {"Rose", 22, {"Twine Forge",  "GB", 25}, {}},
+                                {"Blond",23, {"Glome Blob",   "FV", 26}, {}},
+                                {"Litle",25, {"Time Bob",     "HB", 28}, {}},
+                                {"Klin", 49, {"Court Film",   "PL", 52}, {}},
+                                {"Blow", 28, {"Court Port",   "PL", 31}, {}}
+                              };
+    using FindAge       = AgeField<Gt<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(9, iResult.n);
+    EXPECT_EQ(9, iResult.inserted.size());
+
+    FindRange<People>   r1Result = mongo["test"]["People"].find<People>(FindAge{12}, FindConfig{}
+        .setBatchSize(2)
+    );
+    std::vector<std::uint32_t>  age;
+    std::vector<std::uint32_t>  code;
+
+    for (auto loop = r1Result.begin(); loop != r1Result.end();)
+    {
+        People& p = *loop++;
+        std::cerr << "Age: " << p.age << "\n";
+        age.emplace_back(p.age);
+        code.emplace_back(p.address.code);
+
+        EXPECT_EQ(p.age + 3, p.address.code);
     }
     EXPECT_EQ(9, age.size());
     std::sort(std::begin(age), std::end(age));
