@@ -3,6 +3,7 @@
 #include "test/Action.h"
 #include "MongoQuery.h"
 #include "MongoUpdate.h"
+#include "ThorSerialize/JsonThor.h"
 
 
 using ThorsAnvil::Serialize::PrinterConfig;
