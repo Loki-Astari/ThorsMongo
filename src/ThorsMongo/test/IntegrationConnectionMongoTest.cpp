@@ -780,6 +780,33 @@ TEST(IntegrationConnectionMongoTest, findQueryEq)
     EXPECT_EQ(0, findResult.cursor.getId());
 }
 
+TEST(IntegrationConnectionMongoTest, findQueryEqLoop)
+{
+    SKIP_INTEGRATION_TEST();
+
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
+    std::vector<People> people{{"Sam", 45, {"Cour terror",  "NY", 12}, {}}, {"John", 45, {"Jes terror",   "FW", 23}, {}}, {"John", 45, {"Limbo terror", "FG", 56}, {}}};
+    using FindName      = NameField<Eq<std::string>>;
+    using FindAge       = AgeField<Eq<std::uint32_t>>;
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    FindRange<People>   r1Result = mongo["test"]["People"].find<People>(FindName{"John"});
+    FindRange<People> const& r1 = r1Result;
+
+    std::size_t sum = 0;
+    std::size_t count = 0;
+    for (auto const& loop: r1) {
+        sum += loop.age;
+        ++count;
+    }
+    EXPECT_EQ(90, sum);
+    EXPECT_EQ(2, count);
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAge>{45});
+    EXPECT_EQ(3, r2Result.n);
+}
 TEST(IntegrationConnectionMongoTest, ListCollections)
 {
     SKIP_INTEGRATION_TEST();
