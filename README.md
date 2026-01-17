@@ -1,6 +1,6 @@
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/G2G216KZR3)
 
-[![Brew package](https://img.shields.io/badge/Brew-package-blueviolet)](https://formulae.brew.sh/formula/thors-mongo)
+[![Brew package](https://img.shields.io/badge/Brew-package-blueviolet)](https://formulae.brew.sh/formula/thors-anvil)
 
 ![ThorsMongo](img/thorsmongo.jpg)
 
@@ -39,7 +39,7 @@ This library makes heavy use of ThorSerialize API to automate the generation of 
 These libraries are available via [brew](https://brew.sh/)
 
 ```Shell
-    > brew install thors-mongo
+    > brew install thors-anvil
 ```
 
 ## Medium Build:
