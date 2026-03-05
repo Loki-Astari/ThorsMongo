@@ -4,6 +4,8 @@
 
 ![ThorsMongo](img/thorsmongo.jpg)
 
+**Online documentation:** https://loki-astari.github.io/ThorsAnvil/ThorsMongo.html
+
 # ThorsMongo:
 Mongo API for C++
 
