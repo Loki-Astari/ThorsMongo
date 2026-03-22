@@ -3,6 +3,9 @@
 .*.swp
 *.gcov
 
+.cluade
+.clangd
+
 unittest
 
 coverage/
