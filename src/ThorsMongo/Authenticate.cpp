@@ -1,5 +1,4 @@
 #include "Authenticate.h"
-#include "ConnectionBufferMongo.h"
 
 #if !defined(__WINNT__)
 #include <sys/utsname.h>
