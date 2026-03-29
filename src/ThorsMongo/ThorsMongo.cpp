@@ -33,7 +33,7 @@ ThorsMongo::ThorsMongo(MongoURL const&                  /*url*/,
                    TestAuthenticator const&             /*authInfo*/,
                    Compression                          /*compression*/,
                    Auth::Client const&                  /*clientInfo*/)
-    : messageHandler({"google.com", 80})
+    : messageHandler({"google.com", 443})
 {
     // No authentication done.
     // Just used for testing.
