@@ -25,6 +25,7 @@ ThorsMongo::ThorsMongo(MongoURL const&                  url,
                        Auth::Client const&              /*clientInfo*/)
     : messageHandler(url)
 {
+    // TODO
     throw std::runtime_error("TODO: Certificate authentication has not been done");
 }
 
