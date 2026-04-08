@@ -1,4 +1,4 @@
-AC_INIT([ThorsMongo], [0.1], [YourName+ThorsMongo@Email.com])
+AC_INIT([ThorsMongo], [0.1], [Loki.Astari+ThorsMongo@gmail.com.com])
 AC_PREREQ([2.65])
 
 AC_CONFIG_MACRO_DIR([build/autotools/m4])
