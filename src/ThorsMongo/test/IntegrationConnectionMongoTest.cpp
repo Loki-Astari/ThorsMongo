@@ -1996,6 +1996,45 @@ TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingSet)
     EXPECT_EQ(1, r2Result.n);
 }
 
+ThorsMongo_CreateFieldAccess(People, age);
+ThorsMongo_CreateFieldAccess(People, address, city);
+
+TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingSetMultiField)
+{
+    SKIP_INTEGRATION_TEST();
+
+    using namespace std::string_literals;
+
+    ThorsMongo          mongo({THOR_TESTING_MONGO_HOST, 27017}, {MONGO_AUTH});
+    std::vector<People> people{
+                                {"Fart",  181, {"Cour terror",  "NY", 35}, {}},
+                              };
+    using FindAgeGt     = AgeField<Gt<std::uint32_t>>;
+    using FindAgeEq     = AgeField<Eq<std::uint32_t>>;
+
+    using UpdateAge     = ThorsMongo_ActionSpec(Set, People, age);
+    using UpdateCity    = ThorsMongo_ActionSpec(Set, People, address, city);
+    using Update        = ThorsMongo_UpdateFromAccessSpec(Set, UpdateCity, UpdateAge);
+
+    InsertResult        iResult = mongo["test"]["People"].insert(people);
+    EXPECT_EQ(1, iResult.ok);
+    EXPECT_EQ(1, iResult.n);
+    EXPECT_EQ(1, iResult.inserted.size());
+
+    FAModifyResult<People>  r1Result = mongo["test"]["People"].findAndUpdateOne<People>(FindAgeEq{181}, Update{"WA"s, 189}, FAModifyConfig{}.setReturnNew(true));
+    EXPECT_EQ(1, r1Result.ok);
+    ASSERT_NE(nullptr,       r1Result.value.get());
+    EXPECT_EQ("Fart",        r1Result.value->name);
+    EXPECT_EQ(189,           r1Result.value->age);
+    EXPECT_EQ("Cour terror", r1Result.value->address.street);
+    EXPECT_EQ("WA",          r1Result.value->address.city);
+    EXPECT_EQ(35,            r1Result.value->address.code);
+    EXPECT_EQ(true,           r1Result.lastErrorObject.updatedExisting);
+
+    RemoveResult        r2Result = mongo["test"]["People"].remove(Query<FindAgeGt>{100});
+    EXPECT_EQ(1, r2Result.n);
+}
+
 TEST(IntegrationConnectionMongoTest, FindAndUpdateUsingCurrentDateDateTime)
 {
     SKIP_INTEGRATION_TEST();
