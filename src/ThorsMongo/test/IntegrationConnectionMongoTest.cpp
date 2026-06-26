@@ -379,8 +379,8 @@ TEST(IntegrationConnectionMongoTest, removeQueryAnd)
     using QNameAND      = Query<And<NameField<std::string>, AgeField<Lt<int>>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
-    RemoveResult        r1Result = mongo["test"]["People"].remove(std::make_tuple(QNameAND{{"Sam", 23}}));
-    RemoveResult        r2Result = mongo["test"]["People"].remove(std::make_tuple(QNameAND{{"Sam", 58}}));
+    RemoveResult        r1Result = mongo["test"]["People"].remove(std::make_tuple(QNameAND{{"Sam"s, 23}}));
+    RemoveResult        r2Result = mongo["test"]["People"].remove(std::make_tuple(QNameAND{{"Sam"s, 58}}));
 
     EXPECT_EQ(1, iResult.ok);
     EXPECT_EQ(3, iResult.n);
@@ -403,8 +403,8 @@ TEST(IntegrationConnectionMongoTest, removeQueryOr)
     using QNameOR       = Query<Or<NameField<std::string>, AgeField<Lt<int>>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
-    RemoveResult        r1Result = mongo["test"]["People"].remove(std::make_tuple(QNameOR{{"Tom", 23}}));
-    RemoveResult        r2Result = mongo["test"]["People"].remove(std::make_tuple(QNameOR{{"Sam", 18}}));
+    RemoveResult        r1Result = mongo["test"]["People"].remove(std::make_tuple(QNameOR{{"Tom"s, 23}}));
+    RemoveResult        r2Result = mongo["test"]["People"].remove(std::make_tuple(QNameOR{{"Sam"s, 18}}));
 
     EXPECT_EQ(1, iResult.ok);
     EXPECT_EQ(3, iResult.n);
@@ -427,9 +427,9 @@ TEST(IntegrationConnectionMongoTest, removeQueryNor)
     using QNameNOR      = Query<Nor<NameField<std::string>, AgeField<Lt<int>>>>;
 
     InsertResult        iResult = mongo["test"]["People"].insert(people);
-    RemoveResult        r1Result = mongo["test"]["People"].remove(std::make_tuple(QNameNOR{{"Sam", 22}}));
-    RemoveResult        r2Result = mongo["test"]["People"].remove(std::make_tuple(QNameNOR{{"Tom", 30}}));
-    RemoveResult        r3Result = mongo["test"]["People"].remove(std::make_tuple(QNameNOR{{"Tom", 12}}));
+    RemoveResult        r1Result = mongo["test"]["People"].remove(std::make_tuple(QNameNOR{{"Sam"s, 22}}));
+    RemoveResult        r2Result = mongo["test"]["People"].remove(std::make_tuple(QNameNOR{{"Tom"s, 30}}));
+    RemoveResult        r3Result = mongo["test"]["People"].remove(std::make_tuple(QNameNOR{{"Tom"s, 12}}));
 
     EXPECT_EQ(1, iResult.ok);
     EXPECT_EQ(3, iResult.n);

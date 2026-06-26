@@ -282,6 +282,7 @@ TEST(MacroTests, BinaryNor)
 }
 TEST(MacroTests, BinaryNot)
 {
+    using namespace std::string_literals;
     using ThorsAnvil::DB::Mongo::QueryOp::And;
     using ThorsAnvil::DB::Mongo::QueryOp::Not;
 
@@ -290,7 +291,7 @@ TEST(MacroTests, BinaryNot)
     using FilterRHS = ThorsMongo_FilterFromAccess(Gt, Family, mother, address, code);
     using Filter = Not<And<FilterLHS, FilterRHS>>;
 
-    s << ThorsAnvil::Serialize::jsonExporter(Filter{{"Tim",386}}, PrinterConfig{OutputType::Stream});
+    s << ThorsAnvil::Serialize::jsonExporter(Filter{{"Tim"s,386}}, PrinterConfig{OutputType::Stream});
     EXPECT_EQ(R"({"$not":{"$and":[{"mother.name":{"$lt":"Tim"}},{"mother.address.code":{"$gt":386}}]}})", s.str());
 }
 TEST(MacroTests, ElementExists)
