@@ -47,3 +47,31 @@ TEST(MongoQueryTest, CreateFilterThreeLevel)
     EXPECT_EQ(R"({"mother.address.code":{"$eq":12}})", s.str());
 }
 
+TEST(MongoQueryTest, And2Values)
+{
+    using namespace std::string_literals;
+    using ThorsAnvil::Serialize::PrinterConfig;
+    using ThorsAnvil::Serialize::OutputType;
+    using ThorsAnvil::DB::Mongo::QueryOp::And;
+    using TwoAnd = And<FindByPersonNameEq, FindByFamilyMotherAddress>;
+
+    std::stringstream   s;
+
+    s << ThorsAnvil::Serialize::jsonExporter(TwoAnd{"Hi"s, 12}, PrinterConfig{OutputType::Stream});
+    EXPECT_EQ(R"({"$and":[{"name":{"$eq":"Hi"}},{"mother.address.code":{"$eq":12}}]})", s.str());
+}
+
+TEST(MongoQueryTest, And3Values)
+{
+    using namespace std::string_literals;
+    using ThorsAnvil::Serialize::PrinterConfig;
+    using ThorsAnvil::Serialize::OutputType;
+    using ThorsAnvil::DB::Mongo::QueryOp::And;
+    using TwoAnd = And<FindByPersonNameEq, FindByFamilyMotherAddress,FindByPersonAddressCCEq>;
+
+    std::stringstream   s;
+
+    s << ThorsAnvil::Serialize::jsonExporter(TwoAnd{"Hi"s, 12, "London"s}, PrinterConfig{OutputType::Stream});
+    EXPECT_EQ(R"({"$and":[{"name":{"$eq":"Hi"}},{"mother.address.code":{"$eq":12}},{"address.city":{"$eq":"London"}}]})", s.str());
+}
+

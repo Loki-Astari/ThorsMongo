@@ -452,9 +452,9 @@ ThorsAnvil_Template_MakeTrait(1, ThorsAnvil::DB::Mongo::QueryOp::Lt,        $lt)
 ThorsAnvil_Template_MakeTrait(1, ThorsAnvil::DB::Mongo::QueryOp::Lte,       $lte);
 ThorsAnvil_Template_MakeTrait(1, ThorsAnvil::DB::Mongo::QueryOp::In,        $in);
 ThorsAnvil_Template_MakeTrait(1, ThorsAnvil::DB::Mongo::QueryOp::Nin,       $nin);
-ThorsAnvil_Template_MakeTrait(2, ThorsAnvil::DB::Mongo::QueryOp::And,       $and);
-ThorsAnvil_Template_MakeTrait(2, ThorsAnvil::DB::Mongo::QueryOp::Or,        $or);
-ThorsAnvil_Template_MakeTrait(2, ThorsAnvil::DB::Mongo::QueryOp::Nor,       $nor);
+ThorsAnvil_TemplatePack_MakeTrait(ThorsAnvil::DB::Mongo::QueryOp::And,      $and);
+ThorsAnvil_TemplatePack_MakeTrait(ThorsAnvil::DB::Mongo::QueryOp::Or,       $or);
+ThorsAnvil_TemplatePack_MakeTrait(ThorsAnvil::DB::Mongo::QueryOp::Nor,      $nor);
 ThorsAnvil_Template_MakeTrait(1, ThorsAnvil::DB::Mongo::QueryOp::Not,       $not);
 ThorsAnvil_Template_MakeTrait(1, ThorsAnvil::DB::Mongo::QueryOp::Exists,    $exists);
 ThorsAnvil_Template_MakeTrait(1, ThorsAnvil::DB::Mongo::QueryOp::Type,      $type);
