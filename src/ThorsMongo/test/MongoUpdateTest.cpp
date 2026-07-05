@@ -94,3 +94,31 @@ TEST(MongoUpdateTest, SetCityAndCodeBSON)
 
     EXPECT_EQ(49, ThorsAnvil::Serialize::bsonGetPrintSize(MySet{"Paris"s, 35}));
 }
+
+#if 0
+TEST(MongoUpdateTest, SetCityAndMasterEnum)
+{
+    std::stringstream   s;
+
+    using namespace std::literals;
+    using ThorsAnvil::Serialize::PrinterConfig;
+    using ThorsAnvil::Serialize::OutputType;
+    using SetPersonAddressCity = ThorsMongo_ActionSpec(Set, People, address, city);
+    using SetMaster            = ThorsMongo_ActionSpec(Set, People, master);
+
+    using MySet = ThorsMongo_UpdateFromAccessSpec(Set, SetPersonAddressCity, SetMaster);
+
+    s << ThorsAnvil::Serialize::bsonExporter(MySet{"Paris"s, Master::Active}, PrinterConfig{OutputType::Stream});
+
+    EXPECT_EQ("\x3B\x00\x00\x00" // 4 + 1 + 5 + 48 + 1
+                    "\x03"  "$set\0"    "\x30\x00\x00\x00" // => 4 + 24 + 19 + 1 => 48
+                                            "\x02" "address.city\0"  "\x06\x00\x00\x00" "Paris\0"   // 1 + 13 + 4 + 6 => 24
+                                            "\x02" "master\0"        "\x07\x00\x00\x00" "Active\0"  // 1 + 7 + 4 + 7 => 19
+                                        "\x00"
+              "\x00"s,
+
+            s.str());
+
+    EXPECT_EQ(59, ThorsAnvil::Serialize::bsonGetPrintSize(MySet{"Paris"s, Master::Active}));
+}
+#endif
