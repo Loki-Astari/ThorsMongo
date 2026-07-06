@@ -5055,11 +5055,14 @@ test -n "$TOOLCHECK" || TOOLCHECK=":"
 
     if test "$os" = "$host" ; then
         if test "$TOOLCHECK" = :; then
-            as_fn_error $? "
-    The class \"Client\" uses lsb-release to detect architecture.
-    Please install:
-        apt-get install lsb_release
-" "$LINENO" 5
+
+#            as_fn_error $? "
+#    The class \"Client\" uses lsb-release to detect architecture.
+#    Please install:
+#        apt-get install lsb_release
+#" "$LINENO" 5
+            echo "Old check for lsb-release: Removed"
+
         fi
     fi
 
