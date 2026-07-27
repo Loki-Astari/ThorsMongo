@@ -67,7 +67,7 @@ TEST(MongoUpdateTest, SetCityAndCode)
     s << ThorsAnvil::Serialize::jsonExporter(MySet{"Paris"s, 35}, PrinterConfig{OutputType::Stream});
 
     EXPECT_EQ(R"({"$set":{"address.city":"Paris","age":35}})", s.str());
-    EXPECT_EQ(42, ThorsAnvil::Serialize::jsonStreanSize(MySet{"Paris"s, 35}));
+    EXPECT_EQ(42, ThorsAnvil::Serialize::jsonStreamSize(MySet{"Paris"s, 35}));
 }
 TEST(MongoUpdateTest, SetCityAndCodeBSON)
 {
